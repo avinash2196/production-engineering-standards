@@ -56,8 +56,8 @@ enterprise-ai-engineering/
 
 ### For Developers
 
-1. Read [core/principles.md](../core/principles.md) to understand the foundational values.
-2. Read [core/architecture.md](../core/architecture.md) for the layered architecture rules.
+1. Read [standards/engineering-principles.md](../standards/engineering-principles.md) to understand the foundational values.
+2. Read [standards/architecture.md](../standards/architecture.md) for the layered architecture rules.
 3. Use your stack guide ([Java](../stacks/java-springboot/README.md) | [Python](../stacks/python-fastapi/README.md)) for implementation details.
 4. Follow [playbooks/local-dev/](../playbooks/local-dev/) to set up your development environment.
 
@@ -84,6 +84,6 @@ See [glossary.md](glossary.md) for full term definitions.
 
 ## References
 
-- [Core principles](../core/principles.md)
-- [Core architecture](../core/architecture.md)
+- [Engineering principles](../standards/engineering-principles.md)
+- [Architecture](../standards/architecture.md)
 - [Glossary](glossary.md)

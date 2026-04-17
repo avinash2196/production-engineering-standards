@@ -17,9 +17,9 @@ Evaluate the provided service or system architecture against ALL organisation ar
 
 ## Reference Standards (apply all)
 
-- Architecture rules: [core/architecture.md](../core/architecture.md)
-- Engineering principles: [core/principles.md](../core/principles.md)
-- Capability interfaces: [core/contracts/](../core/contracts/)
+- Architecture rules: [standards/architecture.md](../standards/architecture.md)
+- Engineering principles: [standards/engineering-principles.md](../standards/engineering-principles.md)
+- Capability interfaces: [contracts/](../contracts/)
 - API design: [standards/api-design.md](../standards/api-design.md)
 - DTO guidelines: [standards/dto-guidelines.md](../standards/dto-guidelines.md)
 - Full agent spec: [agents/architecture-reviewer.md](../agents/architecture-reviewer.md)

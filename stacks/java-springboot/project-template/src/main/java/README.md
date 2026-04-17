@@ -31,6 +31,6 @@ com/myorg/{servicename}/
 
 ## References
 
-- [Core architecture](../../../../../../core/architecture.md)
+- [Architecture](../../../../../../standards/architecture.md)
 - [Java Spring Boot stack](../../../../README.md)
 - [Scaffolding agent spec](../../../../../../agents/scaffolding-agent/spec.md)

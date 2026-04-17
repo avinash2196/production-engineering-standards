@@ -41,7 +41,7 @@ Check each external dependency:
 | S3 | ✅/❌ | ✅/❌ | ✅/❌ |
 | Vault | ✅/❌ | ✅/❌ | ✅/❌ |
 
-Reference: `standards/fallback-strategy.md`, `core/contracts/`
+Reference: `standards/fallback-strategy.md`, `contracts/`
 
 ### 4. Configuration Review
 

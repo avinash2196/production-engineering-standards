@@ -60,7 +60,7 @@ State the decision clearly in one or two sentences.
 
 - [Link to relevant standards or RFCs]
 - [Link to related ADRs]
-- [Enterprise standards](../../core/principles.md)
+- [Engineering principles](../../standards/engineering-principles.md)
 
 ---
 

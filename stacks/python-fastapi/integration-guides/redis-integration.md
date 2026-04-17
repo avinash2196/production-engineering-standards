@@ -142,7 +142,7 @@ import time
 from core.abstractions import CacheProvider
 
 class InMemoryCacheProvider(CacheProvider):
-    """See core/fallbacks/redis-fallback.md for full implementation."""
+    """See standards/fallbacks/redis-fallback.md for full implementation."""
     def __init__(self):
         self._store: dict[str, tuple[object, float]] = {}
         self._lock = threading.Lock()
@@ -199,6 +199,6 @@ async def test_put_and_get(redis_container):
 
 ## References
 
-- [CacheProvider.md](../../../core/contracts/CacheProvider.md)
-- [redis-fallback.md](../../../core/fallbacks/redis-fallback.md)
-- [config-model.md](../../../core/config/config-model.md)
+- [CacheProvider.md](../../../contracts/CacheProvider.md)
+- [redis-fallback.md](../../../standards/fallbacks/redis-fallback.md)
+- [config-model.md](../../../standards/config/config-model.md)

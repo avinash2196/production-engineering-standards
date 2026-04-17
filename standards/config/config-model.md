@@ -26,7 +26,7 @@ When `ConfigProvider.get(key)` is called, sources are checked in this order. Fir
 
 Secrets are **never** resolved through `ConfigProvider`. If a key is a secret, use `SecretProvider` exclusively.
 
-See [ConfigProvider.md](../abstractions/ConfigProvider.md) for the full interface contract.
+See [ConfigProvider.md](../../contracts/ConfigProvider.md) for the full interface contract.
 
 ## Static Configuration
 
@@ -76,7 +76,7 @@ See: [dynamic-db-provider.md](providers/dynamic-db-provider.md)
 - Never logged, never in error messages, never in metrics.
 - In local development, `FALLBACK_SECRETS=env` allows env-var resolution.
 
-See: [SecretProvider.md](../abstractions/SecretProvider.md), [vault-provider.md](providers/vault-provider.md)
+See: [SecretProvider.md](../../contracts/SecretProvider.md), [vault-provider.md](providers/vault-provider.md)
 
 ## Deciding the Category
 

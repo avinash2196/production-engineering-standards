@@ -75,5 +75,5 @@ docker compose -f docker-compose.dev.yml up -d
 ## References
 
 - [Java Spring Boot stack](../../stacks/java-springboot/README.md)
-- [Core architecture](../../core/architecture.md)
-- [Core abstractions](../../core/contracts/)
+- [Architecture](../../standards/architecture.md)
+- [Contracts](../../contracts/)

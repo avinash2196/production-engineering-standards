@@ -34,5 +34,5 @@ Key terms used throughout this repository.
 ## References
 
 - [Overview](overview.md)
-- [Core principles](../core/principles.md)
-- [Core abstractions](../core/contracts/)
+- [Engineering principles](../standards/engineering-principles.md)
+- [Contracts](../contracts/)

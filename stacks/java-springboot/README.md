@@ -70,6 +70,6 @@ Fallback activation is controlled via environment variables and Spring `@Profile
 ## References
 
 - [java-spring.md](java-spring.md) — Full stack conventions
-- [Core abstractions](../../core/contracts/)
+- [Contracts](../../contracts/)
 - [Fallback strategy](../../standards/fallback-strategy.md)
 - [Observability standard](../../standards/observability.md)

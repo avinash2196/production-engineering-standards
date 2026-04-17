@@ -134,7 +134,7 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
 @Component
 @Profile("fallback-cache")
 public class InMemoryCacheProvider implements CacheProvider {
-    // See core/fallbacks/redis-fallback.md for implementation
+    // See standards/fallbacks/redis-fallback.md for implementation
 }
 ```
 
@@ -194,6 +194,6 @@ class RedisCacheProviderTest {
 
 ## References
 
-- [CacheProvider.md](../../../core/contracts/CacheProvider.md)
-- [redis-fallback.md](../../../core/fallbacks/redis-fallback.md)
-- [config-model.md](../../../core/config/config-model.md)
+- [CacheProvider.md](../../../contracts/CacheProvider.md)
+- [redis-fallback.md](../../../standards/fallbacks/redis-fallback.md)
+- [config-model.md](../../../standards/config/config-model.md)

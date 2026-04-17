@@ -142,10 +142,10 @@ Do NOT batch multiple files silently. Each file gets its own step.
 
 ## Reference Standards (apply to all generated files)
 
-- Architecture rules: [core/architecture.md](../core/architecture.md)
-- Engineering principles: [core/principles.md](../core/principles.md)
-- Capability interfaces: [core/contracts/](../core/contracts/)
-- Fallback strategy: [core/fallbacks/fallback-strategy.md](../core/fallbacks/fallback-strategy.md)
+- Architecture rules: [standards/architecture.md](../standards/architecture.md)
+- Engineering principles: [standards/engineering-principles.md](../standards/engineering-principles.md)
+- Capability interfaces: [contracts/](../contracts/)
+- Fallback strategy: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 - Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
 - DTO guidelines: [standards/dto-guidelines.md](../standards/dto-guidelines.md)
 - Observability: [standards/observability.md](../standards/observability.md)

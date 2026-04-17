@@ -101,4 +101,4 @@ curl http://localhost:8080/actuator/health
 
 - [Run with fallbacks workflow](../../playbooks/local-dev/run-with-fallbacks.md)
 - [Fallback strategy](../../standards/fallback-strategy.md)
-- [Core fallbacks](../../core/fallbacks/)
+- [Fallback implementations](../../standards/fallbacks/)

@@ -118,8 +118,8 @@ List capability interfaces used:
 
 ### 12. References
 
-- [Core architecture](../../core/architecture.md)
-- [Core principles](../../core/principles.md)
+- [Architecture](../../standards/architecture.md)
+- [Engineering principles](../../standards/engineering-principles.md)
 - Related ADRs: [ADR-NNN](../adr/ADR-NNN.md) *(create docs/adr/ when first ADR is recorded)*
 
 ---

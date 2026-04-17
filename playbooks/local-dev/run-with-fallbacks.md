@@ -113,10 +113,10 @@ def get_publisher(settings: Settings = Depends(get_settings)) -> MessagePublishe
 | Env secrets | Read secrets by key | Rotation, dynamic refresh, access audit |
 
 See individual fallback docs for full details:
-- [kafka-fallback.md](../../core/fallbacks/kafka-fallback.md)
-- [redis-fallback.md](../../core/fallbacks/redis-fallback.md)
-- [storage-fallback.md](../../core/fallbacks/storage-fallback.md)
-- [secret-fallback.md](../../core/fallbacks/secret-fallback.md)
+- [kafka-fallback.md](../../standards/fallbacks/kafka-fallback.md)
+- [redis-fallback.md](../../standards/fallbacks/redis-fallback.md)
+- [storage-fallback.md](../../standards/fallbacks/storage-fallback.md)
+- [secret-fallback.md](../../standards/fallbacks/secret-fallback.md)
 
 ## Testing With Fallbacks
 

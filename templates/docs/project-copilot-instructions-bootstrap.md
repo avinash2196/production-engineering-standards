@@ -29,7 +29,7 @@ Controller → Service → Domain → Repository → Infrastructure
 - **Repository**: data access. One class per aggregate root.
 - **Infrastructure**: capability implementations + fallbacks.
 
-Full rules: `{STANDARDS_REPO}/core/architecture.md`
+Full rules: `{STANDARDS_REPO}/standards/architecture.md`
 
 ---
 
@@ -43,7 +43,7 @@ Full rules: `{STANDARDS_REPO}/core/architecture.md`
 | `SecretProvider` | Secrets (Vault/Key Vault) |
 | `ConfigProvider` | Runtime configuration |
 
-Full specs: `{STANDARDS_REPO}/core/contracts/`
+Full specs: `{STANDARDS_REPO}/contracts/`
 
 ---
 
@@ -55,7 +55,7 @@ Every service must run with zero infrastructure:
 FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env
 ```
 
-Full guide: `{STANDARDS_REPO}/core/fallbacks/fallback-strategy.md`
+Full guide: `{STANDARDS_REPO}/standards/fallback-strategy.md`
 
 ---
 
@@ -67,7 +67,7 @@ Full guide: `{STANDARDS_REPO}/core/fallbacks/fallback-strategy.md`
 4. No N+1 queries — every collection fetch uses a join or batch.
 5. Every external call has a timeout and a documented fallback.
 
-Full principles: `{STANDARDS_REPO}/core/principles.md`
+Full principles: `{STANDARDS_REPO}/standards/engineering-principles.md`
 
 ---
 

@@ -79,5 +79,5 @@ uvicorn src.order_service.main:app --reload --port 8000
 ## References
 
 - [Python FastAPI stack](../../stacks/python-fastapi/README.md)
-- [Core architecture](../../core/architecture.md)
-- [Core abstractions](../../core/contracts/)
+- [Architecture](../../standards/architecture.md)
+- [Contracts](../../contracts/)

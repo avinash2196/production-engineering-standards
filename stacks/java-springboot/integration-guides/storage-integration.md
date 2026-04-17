@@ -170,7 +170,7 @@ public void uploadLarge(String key, Path filePath) {
 @Component
 @Profile("fallback-storage")
 public class LocalFileStorageProvider implements ObjectStorageProvider {
-    // See core/fallbacks/storage-fallback.md for implementation
+    // See standards/fallbacks/storage-fallback.md for implementation
 }
 ```
 
@@ -222,6 +222,6 @@ class S3StorageProviderTest {
 
 ## References
 
-- [ObjectStorageProvider.md](../../../core/contracts/ObjectStorageProvider.md)
-- [storage-fallback.md](../../../core/fallbacks/storage-fallback.md)
+- [ObjectStorageProvider.md](../../../contracts/ObjectStorageProvider.md)
+- [storage-fallback.md](../../../standards/fallbacks/storage-fallback.md)
 - [security-standards.md](../../../standards/security/security-standards.md)

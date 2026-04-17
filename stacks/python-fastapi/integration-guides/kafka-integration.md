@@ -163,7 +163,7 @@ from collections import defaultdict
 from core.abstractions import MessagePublisher
 
 class InMemoryMessagePublisher(MessagePublisher):
-    """See core/fallbacks/kafka-fallback.md for full implementation."""
+    """See standards/fallbacks/kafka-fallback.md for full implementation."""
     def __init__(self):
         self._queues: dict[str, list] = defaultdict(list)
 
@@ -219,7 +219,7 @@ def kafka_container():
 
 ## References
 
-- [MessagePublisher.md](../../../core/contracts/MessagePublisher.md)
-- [MessageSubscriber.md](../../../core/contracts/MessageSubscriber.md)
-- [kafka-fallback.md](../../../core/fallbacks/kafka-fallback.md)
+- [MessagePublisher.md](../../../contracts/MessagePublisher.md)
+- [MessageSubscriber.md](../../../contracts/MessageSubscriber.md)
+- [kafka-fallback.md](../../../standards/fallbacks/kafka-fallback.md)
 - [messaging-abstraction standard](../../../standards/messaging-abstraction.md)

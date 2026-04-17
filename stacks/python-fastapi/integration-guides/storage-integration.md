@@ -178,7 +178,7 @@ from pathlib import Path
 from core.abstractions import ObjectStorageProvider
 
 class LocalFileStorageProvider(ObjectStorageProvider):
-    """See core/fallbacks/storage-fallback.md for full implementation."""
+    """See standards/fallbacks/storage-fallback.md for full implementation."""
 
     def __init__(self, base_path: str = "./data/fallback-storage"):
         self._base = Path(base_path)
@@ -247,6 +247,6 @@ async def test_upload_and_download(localstack):
 
 ## References
 
-- [ObjectStorageProvider.md](../../../core/contracts/ObjectStorageProvider.md)
-- [storage-fallback.md](../../../core/fallbacks/storage-fallback.md)
+- [ObjectStorageProvider.md](../../../contracts/ObjectStorageProvider.md)
+- [storage-fallback.md](../../../standards/fallbacks/storage-fallback.md)
 - [security-standards.md](../../../standards/security/security-standards.md)

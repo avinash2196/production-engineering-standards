@@ -179,5 +179,5 @@ FALLBACK_STORAGE=local FALLBACK_SECRETS=env ./mvnw spring-boot:run -Dspring-boot
 ## References
 
 - [Run with fallbacks](run-with-fallbacks.md)
-- [Config model](../../core/config/config-model.md)
+- [Config model](../../standards/config/config-model.md)
 - [Fallback strategy](../../standards/fallback-strategy.md)

@@ -34,7 +34,7 @@ String dbPassword = config.get("database.password");      // wrong provider (Con
 String dbPassword = "hardcoded-password-123";             // hardcoded
 ```
 
-See: [SecretProvider.md](../../core/contracts/SecretProvider.md)
+See: [SecretProvider.md](../../contracts/SecretProvider.md)
 
 ### 3. Rotation
 
@@ -95,7 +95,7 @@ API_KEY=test-key-12345
 - `.env.local` must be in `.gitignore`.
 - Pre-commit hook should reject commits containing `.env.local` or patterns matching secrets.
 
-See: [secret-fallback.md](../../core/fallbacks/secret-fallback.md)
+See: [secret-fallback.md](../../standards/fallbacks/secret-fallback.md)
 
 ## CI/CD Pipeline Secrets
 

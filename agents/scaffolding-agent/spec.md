@@ -113,7 +113,7 @@ The agent presents this checklist after generation:
 ## References
 
 - [Project scaffold prompt](prompts/project-scaffold.prompt.md)
-- [Core architecture](../../core/architecture.md)
-- [Core abstractions](../../core/contracts/)
+- [Architecture standard](../../standards/architecture.md)
+- [Contracts](../../contracts/)
 - [Java stack README](../../stacks/java-springboot/README.md)
 - [Python stack README](../../stacks/python-fastapi/README.md)

@@ -15,17 +15,17 @@ Apply all rules here when generating, reviewing, or scaffolding code for this pr
 | **Repository** | Data access — one per aggregate root | Business logic |
 | **Infrastructure** | Capability implementations + fallbacks | Domain logic |
 
-Full rules: [core/architecture.md](core/architecture.md)
+Full rules: [standards/architecture.md](standards/architecture.md)
 
 ## Capability Interfaces — Always Use
 
 Inject **interfaces**, never concrete infrastructure classes, into the service layer:
 
-- `MessagePublisher` / `MessageSubscriber` → [spec](core/contracts/MessagePublisher.md)
-- `CacheProvider` → [spec](core/contracts/CacheProvider.md)
-- `ObjectStorageProvider` → [spec](core/contracts/ObjectStorageProvider.md)
-- `SecretProvider` → [spec](core/contracts/SecretProvider.md)
-- `ConfigProvider` → [spec](core/contracts/ConfigProvider.md)
+- `MessagePublisher` / `MessageSubscriber` → [spec](contracts/MessagePublisher.md)
+- `CacheProvider` → [spec](contracts/CacheProvider.md)
+- `ObjectStorageProvider` → [spec](contracts/ObjectStorageProvider.md)
+- `SecretProvider` → [spec](contracts/SecretProvider.md)
+- `ConfigProvider` → [spec](contracts/ConfigProvider.md)
 
 ## Fallback Toggles — Required
 
@@ -38,7 +38,7 @@ Every service must run with zero infrastructure via these env vars:
 | `FALLBACK_STORAGE` | `s3` | `local` filesystem |
 | `FALLBACK_SECRETS` | `vault` | `env` variables |
 
-Details: [core/fallbacks/fallback-strategy.md](core/fallbacks/fallback-strategy.md)
+Details: [standards/fallback-strategy.md](standards/fallback-strategy.md)
 
 ## Non-Negotiable Rules
 
@@ -48,7 +48,7 @@ Details: [core/fallbacks/fallback-strategy.md](core/fallbacks/fallback-strategy.
 4. No N+1 queries — every collection fetch uses a join/batch.
 5. All external calls have a timeout and a documented fallback.
 
-Full principles: [core/principles.md](core/principles.md)
+Full principles: [standards/engineering-principles.md](standards/engineering-principles.md)
 
 ## Standards — Key References
 

@@ -19,7 +19,7 @@ Review the provided code against ALL applicable organisation standards. Every fi
 
 - Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
 - Naming: [standards/naming.md](../standards/naming.md)
-- Architecture rules: [core/architecture.md](../core/architecture.md)
+- Architecture rules: [standards/architecture.md](../standards/architecture.md)
 - DTO guidelines: [standards/dto-guidelines.md](../standards/dto-guidelines.md)
 - Security: [standards/security/security-standards.md](../standards/security/security-standards.md)
 - Observability: [standards/observability.md](../standards/observability.md)

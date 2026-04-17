@@ -17,8 +17,8 @@ Evaluate the provided service for distributed systems correctness. Every outboun
 
 ## Reference Standards (apply all)
 
-- Architecture: [core/architecture.md](../core/architecture.md)
-- Fallback strategy: [core/fallbacks/fallback-strategy.md](../core/fallbacks/fallback-strategy.md)
+- Architecture: [standards/architecture.md](../standards/architecture.md)
+- Fallback strategy: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 - Kafka integration: [stacks/java-springboot/integration-guides/kafka-integration.md](../stacks/java-springboot/integration-guides/kafka-integration.md)
 - Redis integration: [stacks/java-springboot/integration-guides/redis-integration.md](../stacks/java-springboot/integration-guides/redis-integration.md)
 - Full agent spec: [agents/distributed-systems-reviewer.md](../agents/distributed-systems-reviewer.md)

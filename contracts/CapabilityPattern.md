@@ -100,7 +100,7 @@ Every service must validate at startup:
 
 ## Adding a New Capability
 
-1. Define the interface in `core/contracts/<Name>.md` following the template of existing ones.
+1. Define the interface in `contracts/<Name>.md` following the template of existing ones.
 2. Provide Java and Python interface definitions with method signatures, semantics, and error types.
 3. Document production vs fallback differences.
 4. Define the fallback toggle.

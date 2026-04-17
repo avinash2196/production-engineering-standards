@@ -10,7 +10,7 @@ Automate compliance audits by scanning service designs, configuration, and code 
 
 | Capability | Description |
 |-----------|-------------|
-| Architecture review | Evaluate service design docs against `core/architecture.md` layer rules |
+| Architecture review | Evaluate service design docs against `standards/architecture.md` layer rules |
 | Data classification check | Verify PHI/PII handling aligns with `standards/compliance/data-classification.md` |
 | HIPAA control mapping | Map service controls to `standards/compliance/hipaa-controls.md` safeguards |
 | Security standards audit | Check against `standards/security/security-standards.md` |

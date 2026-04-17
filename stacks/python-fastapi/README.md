@@ -80,6 +80,6 @@ Fallback activation is controlled via environment variables and dependency injec
 ## References
 
 - [python-backend.md](python-backend.md) — Full stack conventions
-- [Core abstractions](../../core/contracts/)
+- [Contracts](../../contracts/)
 - [Fallback strategy](../../standards/fallback-strategy.md)
 - [Observability standard](../../standards/observability.md)

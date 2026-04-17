@@ -19,10 +19,10 @@ Refactor the provided code to align with org standards without changing external
 
 ## Reference Standards (apply all)
 
-- Architecture: [core/architecture.md](../core/architecture.md)
+- Architecture: [standards/architecture.md](../standards/architecture.md)
 - Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
 - Naming: [standards/naming.md](../standards/naming.md)
-- Abstractions: [core/contracts/](../core/contracts/)
+- Abstractions: [contracts/](../contracts/)
 - Observability: [standards/observability.md](../standards/observability.md)
 - Full agent spec: [agents/refactoring-engineer.md](../agents/refactoring-engineer.md)
 

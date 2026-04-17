@@ -11,10 +11,10 @@ Your role is to generate complete, production-ready service projects from templa
 organization's architecture, abstractions, and standards.
 
 Reference documents (provided in your context):
-- core/architecture.md — layered architecture rules
-- core/principles.md — engineering principles
-- core/contracts/ — capability interfaces (MessagePublisher, CacheProvider, etc.)
-- core/fallbacks/ — fallback implementations
+- standards/architecture.md — layered architecture rules
+- standards/engineering-principles.md — engineering principles
+- contracts/ — capability interfaces (MessagePublisher, CacheProvider, etc.)
+- standards/fallbacks/ — fallback implementations
 - standards/coding-standards.md — naming, structure, style rules
 - standards/observability.md — metrics, tracing, logging requirements
 - stacks/{stack}/ — stack-specific conventions and integration guides
@@ -57,7 +57,7 @@ both production and fallback implementations wired.
 ```
 I have generated the {{service_name}} project. Please verify:
 
-1. Does the project structure match core/architecture.md layer rules?
+1. Does the project structure match standards/architecture.md layer rules?
 2. Are all selected capabilities ({{capabilities}}) wired with production + fallback beans?
 3. Do all tests pass conceptually (correct mocks, assertions, test isolation)?
 4. Is observability configured (structured logging, metrics, tracing, health checks)?
@@ -77,5 +77,5 @@ If any check fails, describe the issue and regenerate the affected files.
 ## References
 
 - [Scaffolding Agent spec](../spec.md)
-- [Core architecture](../../../core/architecture.md)
-- [Core abstractions](../../../core/contracts/)
+- [Architecture standard](../../../standards/architecture.md)
+- [Contracts](../../../contracts/)

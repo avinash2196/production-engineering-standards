@@ -19,7 +19,7 @@ Evaluate whether the provided service is ready for production deployment. Run ev
 
 - Observability: [standards/observability.md](../standards/observability.md)
 - Security: [standards/security/security-standards.md](../standards/security/security-standards.md)
-- Fallback strategy: [core/fallbacks/fallback-strategy.md](../core/fallbacks/fallback-strategy.md)
+- Fallback strategy: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 - Stack guide (Java): [stacks/java-springboot/java-spring.md](../stacks/java-springboot/java-spring.md)
 - Stack guide (Python): [stacks/python-fastapi/python-backend.md](../stacks/python-fastapi/python-backend.md)
 - Full agent spec: [agents/production-readiness-reviewer.md](../agents/production-readiness-reviewer.md)
