@@ -43,7 +43,7 @@ Rules:
 | External service endpoints | Complex structured config (use file-provider) |
 | Port numbers | Large config blocks (use file-provider) |
 | Log level | Values needing runtime change (use dynamic provider) |
-| Fallback toggles (`FALLBACK_KAFKA=true`) | Multi-line values |
+| Fallback toggles (`FALLBACK_KAFKA=db`) | Multi-line values |
 | Simple feature toggles (static) | |
 
 ## Java Implementation

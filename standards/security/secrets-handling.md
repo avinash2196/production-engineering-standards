@@ -34,7 +34,7 @@ String dbPassword = config.get("database.password");      // wrong provider (Con
 String dbPassword = "hardcoded-password-123";             // hardcoded
 ```
 
-See: [SecretProvider.md](../../core/abstractions/SecretProvider.md)
+See: [SecretProvider.md](../../core/contracts/SecretProvider.md)
 
 ### 3. Rotation
 

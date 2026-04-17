@@ -35,7 +35,7 @@ Define the capability interface for publishing messages to topics/queues with ex
 ## Production vs Local Differences
 
 - **Production:** Kafka, RabbitMQ, Azure Service Bus, SNS/SQS, etc. Full broker durability, partitioning, consumer groups.
-- **Local / fallback (`FALLBACK_KAFKA=true`):** in-memory event bus or local file-based queue. No partitioning or durability. Messages lost on process restart. Acceptable for development only.
+- **Local / fallback (`FALLBACK_KAFKA=db`):** DB outbox table (`outbox_message`). Persistent across restarts, inspectable. `FALLBACK_KAFKA=inmemory` = pure in-process queue (ephemeral). Acceptable for development only.
 - Fallback mode must never be active in production. Enforce via startup validation.
 
 ## Java Example

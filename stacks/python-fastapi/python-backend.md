@@ -22,7 +22,7 @@ Abstractions
 - Cache: `CacheProvider` exposing async `get/put/invalidate` with pluggable backends (aioredis vs in-memory LRU).
 
 Fallback handling (local vs production)
-- Enable fallbacks explicitly via env (e.g., `FALLBACK_KAFKA=true`). Use `FALLBACK_*` conventions across stacks.
+- Enable fallbacks explicitly via env (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`). Use `FALLBACK_*` conventions across stacks.
 - Local fallbacks:
   - Messaging → in-memory asyncio.Queue or file-backed queue (durability tradeoffs documented).
   - Cache → in-process TTL cache (e.g., cachetools TTLCache) with clear non-distributed semantics.

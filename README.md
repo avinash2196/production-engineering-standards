@@ -14,7 +14,7 @@ Top-level structure (high level)
 - `standards/` — mandatory engineering controls: security, observability, testing, compliance, performance.
 - `stacks/` — opinionated language stacks and project templates (Java Spring Boot and Python FastAPI).
 - `agents/` — Copilot-style agent specs and prompts (scaffolders, reviewers, compliance agents).
-- `workflows/` — step-by-step developer and operational workflows (create service, add endpoint, prepare for production).
+- `playbooks/` — step-by-step developer and operational workflows (create service, add endpoint, prepare for production).
 - `templates/` — ADRs, infra, monitoring, and repo-level templates.
 - `examples/` — minimal runnable examples and fallback demos.
 - `tooling/` — repo validators and generators.
@@ -28,7 +28,7 @@ How agents work
 - Agents may generate files and suggested patches; human review is required for commits. Agents are forbidden from committing secrets or running external network commands without explicit approval.
 
 Fallback behavior
-- Fallbacks are explicit, toggled by environment variables (e.g., `FALLBACK_KAFKA=true`).
+- Fallbacks are explicit, toggled by environment variables (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`).
 - Fallbacks must emit telemetry (`fallback.active{name="<dep>"}`) and structured warnings when active.
 - Behavior differences (durability, ordering, consistency) must be documented in the integration guide for each adapter.
 
@@ -111,6 +111,88 @@ VS Code agent files reference
 | Java rules | `.github/instructions/java-standards.instructions.md` | Auto-attached to any `.java` file |
 | Python rules | `.github/instructions/python-standards.instructions.md` | Auto-attached to any `.py` file |
 | New service checklist | `.github/instructions/new-service.instructions.md` | On-demand when creating services |
-| Scaffold prompt | `.github/prompts/scaffold-service.prompt.md` | `/scaffold-service` slash command |
-| Compliance prompt | `.github/prompts/compliance-review.prompt.md` | `/compliance-review` slash command |
+
+---
+
+Slash Commands (type `/` in GitHub Copilot Chat)
+-------------------------------------------------
+
+All 15 slash commands live in `.github/prompts/`. Copy that folder into any project to activate them there.
+Every command runs in **agent mode** — it reads standards files automatically and produces structured output.
+
+### Getting started
+
+```
+/scaffold-service
+```
+The recommended first command for any new project. It asks 10 questions in a single message, then builds a full execution plan before writing a single file.
+
+---
+
+### Service creation
+
+| Command | What it asks | What it produces |
+|---------|-------------|-----------------|
+| `/scaffold-service` | Service name, runtime (local Docker vs GCP Cloud Run), stack (Java/Python), messaging (Kafka vs Pub/Sub), cache (Redis vs Memorystore), storage (S3 vs GCS), secrets (Vault vs Secret Manager), database, API style, data classification | Numbered plan → creates every source file, test, Dockerfile, CI workflow, `.env.local`, and docs one by one with a live checklist |
+| `/generate-adr` | Decision topic, context, options considered, chosen option | Structured ADR saved to `docs/decisions/ADR-NNN-<title>.md` using the org template |
+| `/create-doc` | Doc type, audience, scope, existing inputs to reference, related docs to cross-link | New `.md` doc using the correct template from `templates/docs/` |
+
+### Code quality
+
+| Command | What it asks | What it produces |
+|---------|-------------|-----------------|
+| `/review-code` | Paste code or files, stack (java/python), compliance tier (standard/hipaa) | Line-level findings with severity (CRITICAL/HIGH/MEDIUM/LOW), standard violated, and fix |
+| `/refactor-code` | Paste code to refactor, stack, refactoring goal | Refactored code with layering fixed, capability interfaces introduced, fallbacks wired |
+| `/review-api-design` | Paste OpenAPI YAML/JSON, optionally previous version to diff | Naming, versioning, error format, HTTP verb findings + breaking-change diff |
+| `/generate-tests` | Paste source file(s), stack, test type (unit/integration/contract/all) | Full test file(s) using mocks or Testcontainers, following org testing standards |
+| `/generate-load-tests` | Service name, key endpoints + payloads, target RPS or concurrency, SLO targets | k6 or Gatling scripts establishing performance baselines |
+
+### Architecture & systems
+
+| Command | What it asks | What it produces |
+|---------|-------------|-----------------|
+| `/review-architecture` | Service name or paste architecture doc/ADR/source files | Findings on layer boundaries, abstraction usage, API design, dependency direction |
+| `/review-distributed-systems` | Service name or paste source + dependencies | Idempotency, retry/timeout, failure modes, consistency model, async/sync boundary findings |
+| `/analyse-codebase` | Repository path or paste key files, stack, analysis scope (full/architecture/security/observability) | Prioritised remediation report across architecture, fallbacks, observability, security, and test quality |
+| `/maintenance-check` | Repository path or paste dependency manifest (`pom.xml` / `pyproject.toml`), stack | Outdated/vulnerable deps, observability gaps, deprecated APIs, standards drift, licence compliance |
+
+### Compliance & security
+
+| Command | What it asks | What it produces |
+|---------|-------------|-----------------|
+| `/compliance-review` | Service name, data categories (PHI/PII/internal/public), design doc or config files | Structured findings report with severity ratings and remediation steps against org compliance checklist |
+| `/review-hipaa` | Service name, what PHI it handles, paste config or source files | HIPAA control audit: access control, audit logging, encryption, data minimisation, breach detection |
+| `/review-production-readiness` | Service name or paste source + config files, target environment | Production readiness checklist: observability, resilience, config hygiene, deployment artifacts, health endpoints, test coverage |
+
+---
+
+### Example workflow for a new service
+
+```
+1. /scaffold-service
+   → answers 10 questions
+   → agent prints plan (24 files)
+   → you confirm
+   → agent creates files one by one with live checklist
+
+2. /review-code
+   → paste the generated service class
+   → agent confirms standards compliance
+
+3. /compliance-review
+   → if handling PHI/PII — validates HIPAA controls
+
+4. /review-production-readiness
+   → before merging to main — final gate check
+```
+
+---
+
+### Using slash commands in another project
+
+1. Copy `.github/prompts/*.prompt.md` into your project's `.github/prompts/` folder.
+2. Copy `.github/copilot-instructions.md` into your project's `.github/` folder and update the `{STANDARDS_REPO}` path to point to this repo.
+3. Type `/` in Copilot Chat — all 15 commands appear immediately.
+
+No duplication of `core/` or `standards/` is needed — commands reference this repo via relative links.
 

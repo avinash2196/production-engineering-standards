@@ -20,7 +20,7 @@ Agent usage and tool policy
 - Overrides: Operators may provide runtime overrides via operator-level config (see `rule-precedence.md`). Operator overrides must be auditable.
 
 Fallbacks and local dev
-- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `FALLBACK_KAFKA=true`).
+- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`).
 - Local-only config files must be named `application.local.yml` or `settings.local.yaml` and excluded from production bundles.
 
 Config sources summary

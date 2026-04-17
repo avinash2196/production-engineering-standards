@@ -43,7 +43,7 @@ Full rules: `{STANDARDS_REPO}/core/architecture.md`
 | `SecretProvider` | Secrets (Vault/Key Vault) |
 | `ConfigProvider` | Runtime configuration |
 
-Full specs: `{STANDARDS_REPO}/core/abstractions/`
+Full specs: `{STANDARDS_REPO}/core/contracts/`
 
 ---
 
@@ -52,7 +52,7 @@ Full specs: `{STANDARDS_REPO}/core/abstractions/`
 Every service must run with zero infrastructure:
 
 ```bash
-FALLBACK_KAFKA=true FALLBACK_CACHE=inmemory FALLBACK_STORAGE=local FALLBACK_SECRETS=env
+FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env
 ```
 
 Full guide: `{STANDARDS_REPO}/core/fallbacks/fallback-strategy.md`

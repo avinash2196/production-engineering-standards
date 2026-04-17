@@ -2,7 +2,7 @@
 description: "Use when creating a new service, microservice, API, or backend application. Covers project structure, capability interface wiring, fallback setup, testing scaffold, and Dockerfile generation for Java Spring Boot or Python FastAPI."
 ---
 
-Follow the scaffolding procedure in [workflows/create-new-service.md](../../workflows/create-new-service.md) and the full spec in [agents/scaffolding-agent/spec.md](../../agents/scaffolding-agent/spec.md).
+Follow the scaffolding procedure in [playbooks/create-new-service.md](../../playbooks/create-new-service.md) and the full spec in [agents/scaffolding-agent/spec.md](../../agents/scaffolding-agent/spec.md).
 
 ## What to Generate
 

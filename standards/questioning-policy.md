@@ -17,7 +17,7 @@ When to ask questions (agent MUST ask):
 
 When not to ask questions (agent SHOULD NOT ask):
 1. Trivial implementation choices covered by `engineering-style.md`.
-2. Non-sensitive, well-scoped defaults such as using `FALLBACK_KAFKA=true` for local development when explicitly requested.
+2. Non-sensitive, well-scoped defaults such as using `FALLBACK_KAFKA=db` (DB outbox) or `FALLBACK_CACHE=jsonfile` (JSON file cache) for local development when explicitly requested.
 
 Questioning behavior rules:
 - Questions must be specific, limited in number (≤3 per session), and scoped to make a single decision.

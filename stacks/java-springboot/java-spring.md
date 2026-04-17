@@ -22,7 +22,7 @@ Abstractions
 - Cache: `CacheProvider` exposing `get/put/invalidate` with TTL semantics; default to Redis in prod and in-memory LRU fallback in dev.
 
 Fallback handling (local vs production)
-- Explicit toggles: enable fallbacks only when env var like `FALLBACK_KAFKA=true`, `FALLBACK_CACHE=inmemory`, `FALLBACK_STORAGE=local`.
+- Explicit toggles: enable fallbacks only when env var like `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`, `FALLBACK_STORAGE=local`.
 - Production images must default toggles off; local dev compose files enable toggles.
 - Telemetry: when a fallback is active, emit a metric `fallback.active{name="kafka"}` and a structured warning log including the `X-Correlation-ID`.
 - Behavior differences must be documented (durability, ordering, consistency) and tested in `examples/fallback-demo`.

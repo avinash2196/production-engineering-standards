@@ -173,13 +173,13 @@ class InMemoryMessagePublisher(MessagePublisher):
 
 Activate via:
 ```bash
-export FALLBACK_KAFKA=true
+export FALLBACK_KAFKA=db
 ```
 
 ```python
 # dependency injection
 def get_publisher(settings: Settings) -> MessagePublisher:
-    if settings.fallback_kafka:
+    if settings.fallback_kafka == "db":
         return InMemoryMessagePublisher()
     return KafkaMessagePublisher(settings.kafka, get_metrics())
 ```
@@ -219,7 +219,7 @@ def kafka_container():
 
 ## References
 
-- [MessagePublisher.md](../../../core/abstractions/MessagePublisher.md)
-- [MessageSubscriber.md](../../../core/abstractions/MessageSubscriber.md)
+- [MessagePublisher.md](../../../core/contracts/MessagePublisher.md)
+- [MessageSubscriber.md](../../../core/contracts/MessageSubscriber.md)
 - [kafka-fallback.md](../../../core/fallbacks/kafka-fallback.md)
 - [messaging-abstraction standard](../../../standards/messaging-abstraction.md)

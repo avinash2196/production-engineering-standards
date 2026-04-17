@@ -64,14 +64,20 @@ The service code depends only on the interface. The concrete implementation is i
 public class KafkaMessagePublisher implements MessagePublisher { ... }
 
 @Component
-@Profile("fallback-kafka")
+@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")
+public class DbTableMessagePublisher implements MessagePublisher { ... }
+
+@Component
+@ConditionalOnProperty(name = "fallback.kafka", havingValue = "inmemory")
 public class InMemoryMessagePublisher implements MessagePublisher { ... }
 ```
 
 **Python (dependency injection):**
 ```python
 def get_message_publisher(settings: Settings) -> MessagePublisher:
-    if settings.FALLBACK_KAFKA:
+    if settings.FALLBACK_KAFKA == "db":
+        return DbTableMessagePublisher(settings.db_config)
+    if settings.FALLBACK_KAFKA == "inmemory":
         return InMemoryMessagePublisher()
     return KafkaMessagePublisher(settings.kafka_config)
 ```
@@ -80,8 +86,8 @@ def get_message_publisher(settings: Settings) -> MessagePublisher:
 
 | Toggle | Default | Production | Local Dev |
 |--------|---------|-----------|-----------|
-| `FALLBACK_KAFKA=true` | `false` | **Must be false** | `true` |
-| `FALLBACK_CACHE=inmemory` | unset | **Must be unset** | `inmemory` |
+| `FALLBACK_KAFKA=db` | unset | **Must be unset** | `db` or `inmemory` |
+| `FALLBACK_CACHE=jsonfile` | unset | **Must be unset** | `jsonfile` or `inmemory` |
 | `FALLBACK_STORAGE=local` | unset | **Must be unset** | `local` |
 | `FALLBACK_SECRETS=env` | unset | **Must be unset** | `env` |
 
@@ -94,7 +100,7 @@ Every service must validate at startup:
 
 ## Adding a New Capability
 
-1. Define the interface in `core/abstractions/<Name>.md` following the template of existing ones.
+1. Define the interface in `core/contracts/<Name>.md` following the template of existing ones.
 2. Provide Java and Python interface definitions with method signatures, semantics, and error types.
 3. Document production vs fallback differences.
 4. Define the fallback toggle.

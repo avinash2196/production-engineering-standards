@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Review code (diff, PR, or files) against org standards — architecture, naming, observability, security, testing, and abstraction usage. Provide: paste the code or files to review, and optionally the stack (java/python) and compliance tier (standard/hipaa)."
 agent: "agent"
 argument-hint: "paste code or files to review, stack (java/python), compliance tier if HIPAA-aware"
@@ -8,6 +9,7 @@ tools:
   - searchFiles
   - problems
 ---
+mode: agent
 
 You are the Code Reviewer agent for the enterprise-ai-engineering standards repository.
 

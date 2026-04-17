@@ -22,7 +22,7 @@ When a non-critical dependency is unavailable, the service continues operating a
 
 **Why:** Partial service is better than total outage. Kafka down should not prevent HTTP requests from being served.
 
-**Test:** Set `FALLBACK_KAFKA=true` and verify the service still starts, accepts requests, and queues events locally.
+**Test:** Set `FALLBACK_KAFKA=db` and verify the service still starts, accepts requests, and persists events to the `outbox_message` table.
 
 ### 3. Observable by Default
 

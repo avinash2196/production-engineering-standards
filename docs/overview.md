@@ -37,7 +37,7 @@ enterprise-ai-engineering/
 │   ├── scaffolding-agent/   # Generate new services from templates
 │   ├── compliance-review-agent/  # Audit against compliance checklists
 │   └── lifecycle-agent/     # Dependency updates, maintenance
-├── workflows/               # Operational procedures
+├── playbooks/               # Operational procedures
 │   ├── local-dev/           # Run locally with/without infra
 │   ├── compliance-review/   # Compliance audit procedure
 │   └── release/             # Release and deployment process
@@ -59,7 +59,7 @@ enterprise-ai-engineering/
 1. Read [core/principles.md](../core/principles.md) to understand the foundational values.
 2. Read [core/architecture.md](../core/architecture.md) for the layered architecture rules.
 3. Use your stack guide ([Java](../stacks/java-springboot/README.md) | [Python](../stacks/python-fastapi/README.md)) for implementation details.
-4. Follow [workflows/local-dev/](../workflows/local-dev/) to set up your development environment.
+4. Follow [playbooks/local-dev/](../playbooks/local-dev/) to set up your development environment.
 
 ### For LLM Agents
 
@@ -71,7 +71,7 @@ enterprise-ai-engineering/
 
 1. Use the review checklists embedded in each standard.
 2. Run the compliance-review-agent for automated audits.
-3. Follow [workflows/compliance-review/procedure.md](../workflows/compliance-review/procedure.md) for full reviews.
+3. Follow [playbooks/compliance-review/procedure.md](../playbooks/compliance-review/procedure.md) for full reviews.
 
 ## Key Concepts
 

@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Check if a service is ready to deploy to production — observability, resilience, config hygiene, deployment artifacts, health endpoints, and test coverage. Provide: service name or paste key source and config files, target environment."
 agent: "agent"
 argument-hint: "service name or paste source/config files, target environment (k8s/cloud/VM)"
@@ -8,6 +9,7 @@ tools:
   - searchFiles
   - problems
 ---
+mode: agent
 
 You are the Production Readiness Reviewer agent for the enterprise-ai-engineering standards repository.
 

@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Generate unit, integration, or contract tests for existing source code following org testing standards. Provide: paste the source file(s) to test, stack (java/python), and test type (unit/integration/contract/all)."
 agent: "agent"
 argument-hint: "paste source code to test, stack (java/python), test type (unit/integration/contract/all)"
@@ -10,6 +11,7 @@ tools:
   - editFiles
   - problems
 ---
+mode: agent
 
 You are the Test Engineer agent for the enterprise-ai-engineering standards repository.
 

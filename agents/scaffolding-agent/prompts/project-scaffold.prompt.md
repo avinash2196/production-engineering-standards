@@ -13,7 +13,7 @@ organization's architecture, abstractions, and standards.
 Reference documents (provided in your context):
 - core/architecture.md — layered architecture rules
 - core/principles.md — engineering principles
-- core/abstractions/ — capability interfaces (MessagePublisher, CacheProvider, etc.)
+- core/contracts/ — capability interfaces (MessagePublisher, CacheProvider, etc.)
 - core/fallbacks/ — fallback implementations
 - standards/coding-standards.md — naming, structure, style rules
 - standards/observability.md — metrics, tracing, logging requirements
@@ -78,4 +78,4 @@ If any check fails, describe the issue and regenerate the affected files.
 
 - [Scaffolding Agent spec](../spec.md)
 - [Core architecture](../../../core/architecture.md)
-- [Core abstractions](../../../core/abstractions/)
+- [Core abstractions](../../../core/contracts/)

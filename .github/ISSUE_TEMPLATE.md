@@ -21,7 +21,7 @@ assignees: ""
 - [ ] `standards/`
 - [ ] `stacks/`
 - [ ] `agents/`
-- [ ] `workflows/`
+- [ ] `playbooks/`
 - [ ] `templates/`
 - [ ] `examples/`
 - [ ] `docs/`

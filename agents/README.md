@@ -36,4 +36,4 @@ Agents are LLM-driven automation units that perform recurring engineering tasks 
 ## References
 
 - [Core principles](../core/principles.md)
-- [Workflow: compliance review](../workflows/compliance-review/procedure.md)
+- [Workflow: compliance review](../playbooks/compliance-review/procedure.md)

@@ -5,11 +5,11 @@ Purpose
 
 Mandatory Rules
 - Every external integration must document at least one fallback implementation (e.g., Kafka → file-queue/no-op, Redis → in-memory cache, cloud storage → local disk).
-- Fallbacks must be enabled explicitly with environment toggles (e.g., `FALLBACK_KAFKA=true`) and must not be the default in production images.
+- Fallbacks must be enabled explicitly with environment toggles (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`) and must not be the default in production images.
 - Services must emit telemetry and audit logs when a fallback is in use.
 
 Defaults
-- Default fallback toggles are disabled. Developer instructions in `workflows/local-dev/run-with-fallbacks.md` show how to enable them for local testing.
+- Default fallback toggles are disabled. Developer instructions in `playbooks/local-dev/run-with-fallbacks.md` show how to enable them for local testing.
 
 Anti-patterns
 - Implicitly using fallback implementations in production or silently degrading guarantees without logging and alerts.

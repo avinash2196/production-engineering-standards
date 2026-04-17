@@ -199,6 +199,6 @@ async def test_put_and_get(redis_container):
 
 ## References
 
-- [CacheProvider.md](../../../core/abstractions/CacheProvider.md)
+- [CacheProvider.md](../../../core/contracts/CacheProvider.md)
 - [redis-fallback.md](../../../core/fallbacks/redis-fallback.md)
 - [config-model.md](../../../core/config/config-model.md)

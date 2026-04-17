@@ -1,16 +1,49 @@
 # Domain Glossary Template
+<!--
+  HOW TO USE:
+  Copy to docs/domain-glossary.md (or <service>/docs/glossary.md).
+  Add one row per term. Keep definitions under 2 sentences.
+  See: playbooks/create-doc.md for full process.
+-->
 
-Purpose
-- Maintain a concise glossary of domain terms and canonical definitions used by the project. Useful for consistent API naming and DTOs.
+# Domain Glossary: [SERVICE / DOMAIN NAME]
 
-Placeholders
-- Term: <TERM_NAME>
-- Definition: <SHORT_DEFINITION>
-- Owner: <TEAM>
-- Usage examples: <where term appears in APIs or data models>
+**Owner:** [Team name]  
+**Last updated:** YYYY-MM-DD
 
-Fallback-specific notes
-- Indicate if a term has special handling under fallbacks (e.g., `auditEvent` stored locally during fallback mode).
+This glossary defines canonical terms used in code, APIs, and documentation for [domain name].
+All DTOs, event names, and database column names must use these terms exactly.
 
-Config/Infra references
-- Link to config keys or infra components that influence the term's handling (e.g., retention.period, storage.bucket).
+## Terms
+
+| Term | Definition | Owner | Appears in |
+|------|-----------|-------|------------|
+| **[TermName]** | [One sentence definition. What it is, not how it's implemented.] | [Team] | [e.g. `POST /orders` request body, `OrderCreatedEvent`] |
+| **[TermName]** | [Definition] | [Team] | [API / event / DB column] |
+
+## Fallback-specific Terms
+
+<!--
+  Document terms that change meaning or have special handling in fallback mode.
+  Example: "AuditEvent stored locally as a JSON file row during FALLBACK_KAFKA=db mode."
+-->
+
+| Term | Normal behaviour | Fallback behaviour |
+|------|-----------------|--------------------|
+| [Term] | [Normal] | [Fallback] |
+
+## Deprecated Terms
+
+<!--
+  Terms that have been renamed or removed. Keep here so older code/docs can be cross-referenced.
+-->
+
+| Old term | Replaced by | Removed in |
+|----------|------------|------------|
+| [OldTerm] | [NewTerm] | [Date or version] |
+
+## References
+
+- [Link to OpenAPI spec or event schema registry]
+- [Link to database schema or ERD]
+

@@ -66,7 +66,7 @@ If the refactoring involves replacing direct SDK usage with capability abstracti
 4. Create the fallback adapter with env toggle
 5. Run tests at each sub-step
 
-Reference: `standards/fallback-strategy.md`, relevant abstraction in `core/abstractions/`
+Reference: `standards/fallback-strategy.md`, relevant abstraction in `core/contracts/`
 
 ### 6. Verify Completeness
 

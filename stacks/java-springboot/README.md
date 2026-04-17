@@ -50,7 +50,7 @@ cd my-new-service
 ./mvnw clean verify
 
 # Run locally with fallbacks (no infra needed)
-FALLBACK_KAFKA=true FALLBACK_CACHE=inmemory FALLBACK_STORAGE=local \
+FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local \
   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
@@ -70,6 +70,6 @@ Fallback activation is controlled via environment variables and Spring `@Profile
 ## References
 
 - [java-spring.md](java-spring.md) — Full stack conventions
-- [Core abstractions](../../core/abstractions/)
+- [Core abstractions](../../core/contracts/)
 - [Fallback strategy](../../standards/fallback-strategy.md)
 - [Observability standard](../../standards/observability.md)

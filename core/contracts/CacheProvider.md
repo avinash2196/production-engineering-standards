@@ -35,7 +35,7 @@ Define the capability interface for caching data with explicit TTL, eviction, co
 ## Production vs Local Differences
 
 - **Production:** Redis, Memcached, or managed cache service. Clustered, replicated, with connection pooling.
-- **Local / fallback (`FALLBACK_CACHE=inmemory`):** in-memory `ConcurrentHashMap` (Java) or `dict` with TTL wrapper (Python). Single-instance only. No persistence. Acceptable for development.
+- **Local / fallback (`FALLBACK_CACHE=jsonfile`):** JSON file cache at `./data/fallback-cache/cache.json`. Persists across restarts, human-readable. `FALLBACK_CACHE=inmemory` = in-process map (ephemeral). Acceptable for development.
 - Fallback must never be active in production. Enforce via startup validation.
 
 ## Java Example

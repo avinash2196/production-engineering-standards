@@ -18,9 +18,9 @@ Step-by-step procedure for adding a fallback adapter to an existing external dep
 | Dependency | e.g., Kafka, Redis, S3, Vault |
 | Existing adapter | e.g., `KafkaMessagePublisher` |
 | Abstraction interface | e.g., `MessagePublisher` |
-| Fallback toggle | e.g., `FALLBACK_KAFKA=true` |
+| Fallback toggle | e.g., `FALLBACK_KAFKA=db` |
 
-If no abstraction interface exists yet, create one first (see `workflows/refactor-module.md` step 5).
+If no abstraction interface exists yet, create one first (see `playbooks/refactor-module.md` step 5).
 
 ### 2. Define Fallback Behavior
 
@@ -47,8 +47,8 @@ Create the fallback adapter implementing the same capability interface:
 
 **Java example structure:**
 ```java
-@ConditionalOnProperty(name = "FALLBACK_KAFKA", havingValue = "true")
-public class InMemoryMessagePublisher implements MessagePublisher {
+@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")
+public class DbTableMessagePublisher implements MessagePublisher {
     private final BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
     // ...
 }
@@ -67,7 +67,7 @@ class InMemoryMessagePublisher(MessagePublisher):
 
 Configure the adapter selection based on the environment toggle:
 
-- Toggle name: `FALLBACK_<DEPENDENCY>` (e.g., `FALLBACK_KAFKA=true`, `FALLBACK_CACHE=inmemory`)
+- Toggle name: `FALLBACK_<DEPENDENCY>` (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`)
 - Default: **disabled** (production adapter is the default)
 - Toggle must be explicit — never auto-detect environment and silently switch
 - Java: use `@ConditionalOnProperty` or `@Profile`
@@ -89,12 +89,12 @@ When fallback is active:
 
 ### 7. Update Local Dev Docs
 
-Update `workflows/local-dev/run-with-fallbacks.md` and `.env.example`:
+Update `playbooks/local-dev/run-with-fallbacks.md` and `.env.example`:
 
 ```bash
 # .env.example
-FALLBACK_KAFKA=true        # Use in-memory queue instead of Kafka
-FALLBACK_CACHE=inmemory    # Use in-process cache instead of Redis
+FALLBACK_KAFKA=db          # Use DB outbox table instead of Kafka (or inmemory for ephemeral)
+FALLBACK_CACHE=jsonfile    # Use JSON file cache instead of Redis (or inmemory for ephemeral)
 FALLBACK_STORAGE=local     # Use local filesystem instead of S3
 FALLBACK_SECRETS=env       # Use environment variables instead of Vault
 ```
@@ -103,7 +103,7 @@ FALLBACK_SECRETS=env       # Use environment variables instead of Vault
 
 ```bash
 # Enable fallback
-export FALLBACK_KAFKA=true
+export FALLBACK_KAFKA=db
 
 # Start service
 ./gradlew bootRun  # or uvicorn main:app

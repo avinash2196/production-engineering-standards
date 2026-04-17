@@ -192,7 +192,7 @@ class KafkaIntegrationTest {
 
 ## References
 
-- [MessagePublisher.md](../../../core/abstractions/MessagePublisher.md)
-- [MessageSubscriber.md](../../../core/abstractions/MessageSubscriber.md)
+- [MessagePublisher.md](../../../core/contracts/MessagePublisher.md)
+- [MessageSubscriber.md](../../../core/contracts/MessageSubscriber.md)
 - [kafka-fallback.md](../../../core/fallbacks/kafka-fallback.md)
 - [messaging-abstraction standard](../../../standards/messaging-abstraction.md)

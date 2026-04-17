@@ -77,4 +77,4 @@ Please provide the above details so I can finalize the audit.
 ## References
 
 - [Compliance Review Agent spec](../spec.md)
-- [Compliance review procedure](../../../workflows/compliance-review/procedure.md)
+- [Compliance review procedure](../../../playbooks/compliance-review/procedure.md)

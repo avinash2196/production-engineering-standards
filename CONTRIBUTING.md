@@ -17,7 +17,7 @@ Guidelines for contributing to the enterprise-ai-engineering repository.
 | Cross-cutting standards | `standards/` | Coding standards, DTO guidelines |
 | Stack-specific guides | `stacks/` | Java Spring Boot integration guide |
 | Agent specifications | `agents/` | Scaffolding agent spec + prompts |
-| Workflow procedures | `workflows/` | Release process, local dev setup |
+| Workflow procedures | `playbooks/` | Release process, local dev setup |
 | Reusable templates | `templates/` | ADR template, design doc template |
 | Working examples | `examples/` | Minimal microservice demos |
 | Meta-documentation | `docs/` | Glossary, overview |

@@ -53,7 +53,7 @@ source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
 # Run locally with fallbacks (no infra needed)
-FALLBACK_KAFKA=true FALLBACK_CACHE=inmemory FALLBACK_STORAGE=local \
+FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local \
   uvicorn src.my_service.main:app --reload --port 8000
 ```
 
@@ -80,6 +80,6 @@ Fallback activation is controlled via environment variables and dependency injec
 ## References
 
 - [python-backend.md](python-backend.md) — Full stack conventions
-- [Core abstractions](../../core/abstractions/)
+- [Core abstractions](../../core/contracts/)
 - [Fallback strategy](../../standards/fallback-strategy.md)
 - [Observability standard](../../standards/observability.md)

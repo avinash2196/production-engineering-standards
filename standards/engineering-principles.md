@@ -8,7 +8,7 @@ This document captures the non-negotiable engineering principles for systems tha
 
 2. Explicit Fallbacks
 - For every external dependency (messaging, cache, storage, secrets) provide at least one documented fallback implementation usable in local/dev mode.
-- Fallbacks are enabled explicitly by environment variables (e.g., `FALLBACK_KAFKA=true`) and must never be implicitly used in production.
+- Fallbacks are enabled explicitly by environment variables (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`) and must never be implicitly used in production.
 
 3. Capability Abstractions
 - Depend on abstractions (MessagePublisher, CacheProvider, ObjectStorageProvider, SecretProvider, ConfigProvider). Implementations are pluggable.

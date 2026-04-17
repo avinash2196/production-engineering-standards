@@ -41,7 +41,7 @@ pool = await asyncpg.create_pool(
 ### Caching
 
 - **Cache at the service layer**, not the repository layer.
-- Use `CacheProvider` abstraction (see `core/abstractions/CacheProvider.md`).
+- Use `CacheProvider` abstraction (see `core/contracts/CacheProvider.md`).
 - Default TTLs: entity lookup = 5 min, list/search = 1 min, config = 10 min.
 - **Cache invalidation:** Prefer TTL expiry over event-driven invalidation unless strict consistency is required.
 - **Cache-aside pattern:** Check cache → miss → load from DB → write to cache → return.
@@ -128,6 +128,6 @@ LIMIT 20;
 
 ## References
 
-- [CacheProvider.md](../../core/abstractions/CacheProvider.md)
+- [CacheProvider.md](../../core/contracts/CacheProvider.md)
 - [observability.md](../observability.md)
 - [coding-standards.md](../coding-standards.md)

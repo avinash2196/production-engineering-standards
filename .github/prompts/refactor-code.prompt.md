@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Refactor existing code to align with org standards — extract business logic from controllers, introduce capability abstractions, add fallbacks, fix naming, add observability. Provide: paste the code to refactor, stack (java/python), and refactoring goal."
 agent: "agent"
 argument-hint: "paste code to refactor, stack (java/python), goal (e.g. extract service layer / introduce abstraction / fix naming / add observability)"
@@ -10,6 +11,7 @@ tools:
   - createFile
   - problems
 ---
+mode: agent
 
 You are the Refactoring Engineer agent for the enterprise-ai-engineering standards repository.
 
@@ -20,7 +22,7 @@ Refactor the provided code to align with org standards without changing external
 - Architecture: [core/architecture.md](../core/architecture.md)
 - Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
 - Naming: [standards/naming.md](../standards/naming.md)
-- Abstractions: [core/abstractions/](../core/abstractions/)
+- Abstractions: [core/contracts/](../core/contracts/)
 - Observability: [standards/observability.md](../standards/observability.md)
 - Full agent spec: [agents/refactoring-engineer.md](../agents/refactoring-engineer.md)
 

@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Analyse an existing codebase against org standards — architecture, abstractions, fallbacks, observability, security, and test quality. Produces a prioritised remediation report. Provide: repository path or paste key files, stack (java/python)."
 agent: "agent"
 argument-hint: "repository path or paste key source files, stack (java/python), analysis scope (full/architecture/security/observability)"
@@ -8,6 +9,7 @@ tools:
   - searchFiles
   - problems
 ---
+mode: agent
 
 You are the Codebase Analyst agent for the enterprise-ai-engineering standards repository.
 
@@ -16,7 +18,7 @@ Analyse the provided repository or files against ALL organisation standards. Pro
 ## Reference Standards (apply all)
 
 - Architecture: [core/architecture.md](../core/architecture.md)
-- Abstractions: [core/abstractions/](../core/abstractions/)
+- Abstractions: [core/contracts/](../core/contracts/)
 - Fallback strategy: [core/fallbacks/fallback-strategy.md](../core/fallbacks/fallback-strategy.md)
 - Security: [standards/security/security-standards.md](../standards/security/security-standards.md)
 - Observability: [standards/observability.md](../standards/observability.md)

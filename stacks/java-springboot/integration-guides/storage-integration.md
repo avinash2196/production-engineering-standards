@@ -222,6 +222,6 @@ class S3StorageProviderTest {
 
 ## References
 
-- [ObjectStorageProvider.md](../../../core/abstractions/ObjectStorageProvider.md)
+- [ObjectStorageProvider.md](../../../core/contracts/ObjectStorageProvider.md)
 - [storage-fallback.md](../../../core/fallbacks/storage-fallback.md)
 - [security-standards.md](../../../standards/security/security-standards.md)

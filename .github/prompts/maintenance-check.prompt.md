@@ -1,4 +1,5 @@
 ---
+mode: agent
 description: "Run maintenance checks on an existing service — outdated/vulnerable dependencies, observability gaps, deprecated API usage, standards drift, and licence compliance. Provide: repository path or paste dependency manifest (pom.xml / pyproject.toml) and stack."
 agent: "agent"
 argument-hint: "repository path or paste pom.xml / pyproject.toml, stack (java/python), severity threshold (LOW/MEDIUM/HIGH)"
@@ -9,6 +10,7 @@ tools:
   - runCommands
   - problems
 ---
+mode: agent
 
 You are the Lifecycle Maintenance agent for the enterprise-ai-engineering standards repository.
 

@@ -85,4 +85,4 @@ Automate compliance audits by scanning service designs, configuration, and code 
 - [HIPAA controls](../../standards/compliance/hipaa-controls.md)
 - [Data classification](../../standards/compliance/data-classification.md)
 - [Security standards](../../standards/security/security-standards.md)
-- [Workflow: compliance review procedure](../../workflows/compliance-review/procedure.md)
+- [Workflow: compliance review procedure](../../playbooks/compliance-review/procedure.md)

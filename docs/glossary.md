@@ -35,4 +35,4 @@ Key terms used throughout this repository.
 
 - [Overview](overview.md)
 - [Core principles](../core/principles.md)
-- [Core abstractions](../core/abstractions/)
+- [Core abstractions](../core/contracts/)
