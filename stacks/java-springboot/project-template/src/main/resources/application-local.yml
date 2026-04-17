@@ -1,0 +1,36 @@
+# Local development profile — activate with: --spring.profiles.active=local
+# Enables all fallbacks and relaxes security for local development.
+# Do NOT commit real credentials here.
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/service_db
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # Reset schema on restart in local dev
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/local
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0   # Full sampling in local
+
+logging:
+  level:
+    com.myorg: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+
+fallback:
+  kafka: true
+  cache: inmemory
+  storage: local
+  secrets: env

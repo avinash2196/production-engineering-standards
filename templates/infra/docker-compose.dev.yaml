@@ -1,0 +1,5 @@
+version: '3.8'
+services:
+  placeholder:
+    image: alpine
+    command: ["/bin/sh", "-c", "while true; do sleep 1000; done"]

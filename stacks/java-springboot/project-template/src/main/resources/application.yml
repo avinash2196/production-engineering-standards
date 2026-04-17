@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: ${SERVICE_NAME:service-name}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/service_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}   # use SecretProvider in production
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://auth.myorg.com}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: db,redis
+        liveness:
+          include: ping
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE:0.1}
+
+logging:
+  structured:
+    format:
+      console: ecs   # Structured JSON for log aggregation
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+# Fallback toggles — set via environment variables, never hardcoded
+fallback:
+  kafka: ${FALLBACK_KAFKA:false}
+  cache: ${FALLBACK_CACHE:redis}       # redis | inmemory
+  storage: ${FALLBACK_STORAGE:s3}     # s3 | local
+  secrets: ${FALLBACK_SECRETS:vault}  # vault | env

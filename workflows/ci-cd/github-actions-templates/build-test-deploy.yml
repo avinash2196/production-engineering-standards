@@ -1,0 +1,9 @@
+name: Build, Test, Deploy
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Placeholder
+        run: echo "build/test/deploy steps go here"

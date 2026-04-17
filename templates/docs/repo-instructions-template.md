@@ -1,0 +1,38 @@
+# Repository Instructions Template
+
+Purpose
+- Provide a clear, minimal onboarding and usage guide for this repository and its agents. Link to responsible agents and explain safe tool usage and override policies.
+
+Placeholders
+- Service name: <SERVICE_NAME>
+- Owner: <TEAM/OWNER>
+- Contact: <EMAIL>
+- Stack: Java|Python
+
+Quick links
+- Agents: `agents/` (compliance-reviewer, backend-service-builder, code-reviewer)
+- Standards: `standards/`
+- Stacks: `stacks/`
+
+Agent usage and tool policy
+- Use `backend-service-builder` to scaffold new services and `code-reviewer` for PR checks.
+- Agents may read and write template files and generate scaffolding. They MUST NOT commit secrets or run external network commands without explicit human consent.
+- Overrides: Operators may provide runtime overrides via operator-level config (see `rule-precedence.md`). Operator overrides must be auditable.
+
+Fallbacks and local dev
+- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `FALLBACK_KAFKA=true`).
+- Local-only config files must be named `application.local.yml` or `settings.local.yaml` and excluded from production bundles.
+
+Config sources summary
+- Operator/runtime overrides → Dynamic config service (ConfigProvider) → Environment variables → Local files (dev only) → Build-time defaults.
+
+Infra dependencies
+- List expected infra (for example): Kafka, Redis, PostgreSQL, Object Storage, Secret Manager.
+- For local dev use `templates/infra/docker-compose.dev.yaml` and enable fallbacks as needed.
+
+Repository commands
+- Validate structure: `tooling/scripts/validate-repo-structure.ps1`
+- Generate project: `tooling/scripts/generate-template.py --stack java --name <SERVICE_NAME>`
+
+Manual overrides
+- To change a generated scaffold, open a PR and reference the agent output in the description. For emergency operator overrides, document the change in `config/overrides.md` and increment the override audit log.
