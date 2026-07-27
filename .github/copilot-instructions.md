@@ -3,17 +3,19 @@
 This repository is the **single source of truth** for engineering standards.
 Apply all rules here when generating, reviewing, or scaffolding code for this project.
 
-## Architecture — Always Enforce
+## Default Architecture
 
-5-layer model. Dependencies flow **downward only**. Never skip layers.
+Use the following layered structure as the default for backend services. A project may use a simpler structure when its documented architecture decision explains why additional layers would add no value.
 
-| Layer | Responsibility | Forbidden |
-|-------|---------------|-----------|
-| **Controller** | HTTP routing, DTO binding, input validation | Business logic, domain imports |
-| **Service** | Orchestrates domain + capability interfaces | Direct infrastructure imports (Kafka, Redis, S3) |
-| **Domain** | Entities, value objects, domain events | Any framework annotation (Spring, FastAPI, SQLAlchemy) |
-| **Repository** | Data access — one per aggregate root | Business logic |
-| **Infrastructure** | Capability implementations + fallbacks | Domain logic |
+Dependencies should point toward domain and application abstractions. Infrastructure implementations must not become dependencies of domain logic.
+
+| Area | Responsibility | Must Avoid |
+|---|---|---|
+| **API/Controller** | Transport handling, DTO binding, validation, response mapping | Business rules and direct data access |
+| **Application Service** | Use-case orchestration, transactions, authorization coordination | Direct vendor SDK usage |
+| **Domain** | Business rules, entities, value objects, domain events | Transport and infrastructure concerns |
+| **Ports/Contracts** | Repository and external-capability abstractions | Vendor-specific implementation details |
+| **Infrastructure Adapters** | Database, messaging, cache, storage, and secret-provider implementations | Business policy |
 
 Full rules: [standards/architecture.md](../standards/architecture.md)
 
@@ -27,16 +29,19 @@ Inject **interfaces**, never concrete infrastructure classes, into the service l
 - `SecretProvider` → [spec](../contracts/SecretProvider.md)
 - `ConfigProvider` → [spec](../contracts/ConfigProvider.md)
 
-## Fallback Toggles — Required
 
-Every service must run with zero infrastructure via these env vars:
+## Local Adapter Configuration
 
-| Var | Default | Fallback |
-|-----|---------|----------|
-| `FALLBACK_KAFKA` | `db` | DB outbox table — persistent. `inmemory` = in-process queue (ephemeral) |
-| `FALLBACK_CACHE` | `jsonfile` | JSON file cache — persistent. `inmemory` = in-process map (ephemeral) |
-| `FALLBACK_STORAGE` | `s3` | `local` filesystem |
-| `FALLBACK_SECRETS` | `vault` | `env` variables |
+Services that depend on external infrastructure should provide local adapters when the adapter adds meaningful development or testing value.
+
+Local adapters are not production failover mechanisms. Production degradation behavior must be designed separately based on correctness, durability, security, and business impact.
+
+| Variable | Production/default value | Local adapter values |
+|---|---|---|
+| `MESSAGING_ADAPTER` | `kafka` | `db`, `inmemory` |
+| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` |
+| `STORAGE_ADAPTER` | `s3` | `local` |
+| `SECRET_ADAPTER` | `vault` | `env` |
 
 Details: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 
@@ -44,9 +49,11 @@ Details: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 
 1. Domain objects have **zero** framework dependencies.
 2. Secrets are always retrieved via `SecretProvider` — never hardcoded or via plain env vars.
-3. Every service emits structured logs, Prometheus metrics, and OTEL traces from day one.
-4. No N+1 queries — every collection fetch uses a join/batch.
-5. All external calls have a timeout and a documented fallback.
+3. Every service must expose sufficient logs and health information for its operating environment. 
+4. Metrics and distributed tracing should be added according to runtime, support model, and service criticality.
+5. Collection-fetching paths must be reviewed for N+1 query behavior. 
+6. Use joins, entity graphs, batching, or purpose-built queries based on pagination and cardinality requirements.
+7. All remote calls must define timeouts. Their failure behavior must be documented as retry, circuit-break, degrade, queue, return stale data, fail closed, or fail fast.
 
 Full principles: [standards/engineering-principles.md](../standards/engineering-principles.md)
 
