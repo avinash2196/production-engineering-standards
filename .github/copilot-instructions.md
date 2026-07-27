@@ -15,17 +15,17 @@ Apply all rules here when generating, reviewing, or scaffolding code for this pr
 | **Repository** | Data access — one per aggregate root | Business logic |
 | **Infrastructure** | Capability implementations + fallbacks | Domain logic |
 
-Full rules: [standards/architecture.md](standards/architecture.md)
+Full rules: [standards/architecture.md](../standards/architecture.md)
 
 ## Capability Interfaces — Always Use
 
 Inject **interfaces**, never concrete infrastructure classes, into the service layer:
 
-- `MessagePublisher` / `MessageSubscriber` → [spec](contracts/MessagePublisher.md)
-- `CacheProvider` → [spec](contracts/CacheProvider.md)
-- `ObjectStorageProvider` → [spec](contracts/ObjectStorageProvider.md)
-- `SecretProvider` → [spec](contracts/SecretProvider.md)
-- `ConfigProvider` → [spec](contracts/ConfigProvider.md)
+- `MessagePublisher` / `MessageSubscriber` → [spec](../contracts/MessagePublisher.md)
+- `CacheProvider` → [spec](../contracts/CacheProvider.md)
+- `ObjectStorageProvider` → [spec](../contracts/ObjectStorageProvider.md)
+- `SecretProvider` → [spec](../contracts/SecretProvider.md)
+- `ConfigProvider` → [spec](../contracts/ConfigProvider.md)
 
 ## Fallback Toggles — Required
 
@@ -38,7 +38,7 @@ Every service must run with zero infrastructure via these env vars:
 | `FALLBACK_STORAGE` | `s3` | `local` filesystem |
 | `FALLBACK_SECRETS` | `vault` | `env` variables |
 
-Details: [standards/fallback-strategy.md](standards/fallback-strategy.md)
+Details: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
 
 ## Non-Negotiable Rules
 
@@ -48,25 +48,25 @@ Details: [standards/fallback-strategy.md](standards/fallback-strategy.md)
 4. No N+1 queries — every collection fetch uses a join/batch.
 5. All external calls have a timeout and a documented fallback.
 
-Full principles: [standards/engineering-principles.md](standards/engineering-principles.md)
+Full principles: [standards/engineering-principles.md](../standards/engineering-principles.md)
 
 ## Standards — Key References
 
-| Concern | Document |
-|---------|----------|
-| Naming, method/class size | [standards/coding-standards.md](standards/coding-standards.md) |
-| Request/response DTOs | [standards/dto-guidelines.md](standards/dto-guidelines.md) |
-| Security, TLS, secrets | [standards/security/security-standards.md](standards/security/security-standards.md) |
-| Metrics, logs, traces | [standards/observability.md](standards/observability.md) |
-| Unit + integration tests | [standards/testing/unit-testing.md](standards/testing/unit-testing.md) |
-| Performance limits | [standards/performance/performance.md](standards/performance/performance.md) |
-| HIPAA controls | [standards/compliance/hipaa-controls.md](standards/compliance/hipaa-controls.md) |
-| Agent planning + doc creation | [standards/agent-execution.md](standards/agent-execution.md) |
+| Concern | Document                                                                             |
+|---------|--------------------------------------------------------------------------------------|
+| Naming, method/class size | [standards/coding-standards.md](../standards/coding-standards.md)                    |
+| Request/response DTOs | [standards/dto-guidelines.md](../standards/dto-guidelines.md)                           |
+| Security, TLS, secrets | [standards/security/security-standards.md](../standards/security/security-standards.md) |
+| Metrics, logs, traces | [standards/observability.md](../standards/observability.md)                             |
+| Unit + integration tests | [standards/testing/unit-testing.md](../standards/testing/unit-testing.md)               |
+| Performance limits | [standards/performance/performance.md](../standards/performance/performance.md)         |
+| HIPAA controls | [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)     |
+| Agent planning + doc creation | [standards/agent-execution.md](../standards/agent-execution.md)                         |
 
 ## Stack Quick Reference
 
-- **Java 21 + Spring Boot 3.x** → [stacks/java-springboot/java-spring.md](stacks/java-springboot/java-spring.md)
-- **Python 3.12+ + FastAPI** → [stacks/python-fastapi/python-backend.md](stacks/python-fastapi/python-backend.md)
+- **Java 21 + Spring Boot 3.x** → [stacks/java-springboot/java-spring.md](../stacks/java-springboot/java-spring.md)
+- **Python 3.12+ + FastAPI** → [stacks/python-fastapi/python-backend.md](../stacks/python-fastapi/python-backend.md)
 
 ## Agent Execution — Always Follow
 
@@ -77,8 +77,8 @@ Before starting any task that touches ≥ 4 files, creates/deletes directories, 
 3. Check off each step as it completes — never batch checkoffs at end
 4. When creating any `.md` file, ask the five Doc Creation Protocol questions first
 
-Full rules: [standards/agent-execution.md](standards/agent-execution.md)  
-Doc creation workflow: [playbooks/create-doc.md](playbooks/create-doc.md)
+Full rules: [standards/agent-execution.md](../standards/agent-execution.md)  
+Doc creation workflow: [playbooks/create-doc.md](../playbooks/create-doc.md)
 
 ## Available Slash Commands
 
