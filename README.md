@@ -10,21 +10,30 @@ System philosophy
 - Capability abstractions: depend on small, well-documented interfaces (MessagePublisher, CacheProvider, ObjectStorageProvider, SecretProvider) so implementations are pluggable and testable.
 
 Top-level structure (high level)
-- `core/` — architecture, abstraction contracts, configuration and fallback strategy.
+- `contracts/` — capability abstractions for messaging, caching, storage, secrets, and configuration.
 - `standards/` — mandatory engineering controls: security, observability, testing, compliance, performance.
 - `stacks/` — opinionated language stacks and project templates (Java Spring Boot and Python FastAPI).
 - `agents/` — Copilot-style agent specs and prompts (scaffolders, reviewers, compliance agents).
 - `playbooks/` — step-by-step developer and operational workflows (create service, add endpoint, prepare for production).
 - `templates/` — ADRs, infra, monitoring, and repo-level templates.
-- `examples/` — minimal runnable examples and fallback demos.
+- `examples/` — reference architectures and fallback behavior examples. Runnable examples are explicitly identified.
 - `tooling/` — repo validators and generators.
 
+## How Standards Are Applied
+
+This repository separates engineering governance into three levels:
+
+1. **Guidance** — Copilot instructions influence code generation and review.
+2. **Repeatability** — reusable prompt files and reviewer specifications apply the same review process across tasks.
+3. **Enforcement** — tests, repository validators, static analysis, and CI block verifiable violations.
+
+A documented rule is not described as enforced unless an executable check exists for it.
 Java + Python usage
 - Java (Spring Boot): follow layered layout `controller → service → domain → repository`; use `@ConfigurationProperties` bound to `ConfigProvider`, `@ControllerAdvice` for errors, and Testcontainers for integration tests (or local fallbacks in CI).
 - Python (FastAPI): use Pydantic models for DTOs, dependency injection via `Depends` for providers, async-safe handlers, and Testcontainers or local fallback adapters for integration tests.
 
 How agents work
-- Agents are first-class: they read `standards/` and `core/` and produce scaffolds, PR suggestions, or review reports. Key agents include `backend-service-builder`, `code-reviewer`, and `compliance-reviewer`.
+- Agents use `standards/`, `contracts/`, stack guidance, and project-specific context to produce plans, scaffolds, and review reports. Key agents include `backend-service-builder`, `code-reviewer`, and `compliance-reviewer`.
 - Agents may generate files and suggested patches; human review is required for commits. Agents are forbidden from committing secrets or running external network commands without explicit approval.
 
 Fallback behavior
@@ -52,9 +61,19 @@ Using in other projects with VS Code Copilot
 
 Every project that should follow these standards can wire them into VS Code Copilot in three steps, with no duplication of content.
 
+## How Standards Are Applied
+
+This repository separates engineering governance into three levels:
+
+1. **Guidance** — Copilot instructions influence code generation and review.
+2. **Repeatability** — reusable prompt files and reviewer specifications apply the same review process across tasks.
+3. **Enforcement** — tests, repository validators, static analysis, and CI block verifiable violations.
+
+A documented rule is not described as enforced unless an executable check exists for it.
+
 ### How it works
 
-VS Code Copilot auto-loads `.github/copilot-instructions.md` from the workspace root on every chat. By placing a lightweight bootstrap file in each project's `.github/` folder that references this standards repo, Copilot will enforce all org rules, layer constraints, naming standards, fallback requirements, and compliance checklists automatically — without copying any content.
+VS Code Copilot auto-loads `.github/copilot-instructions.md` from the workspace root on every chat. By placing a lightweight bootstrap file in each project's `.github/` folder that references this standards repo, Copilot instructions guide generated and reviewed code toward the documented standards. Tests, validators, static analysis, and CI enforce the subset of standards that can be checked automatically..
 
 ### Step 1 — Copy the bootstrap template
 
