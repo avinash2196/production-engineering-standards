@@ -36,14 +36,14 @@ Services that depend on external infrastructure should provide local adapters wh
 
 Local adapters are not production failover mechanisms. Production degradation behavior must be designed separately based on correctness, durability, security, and business impact.
 
-| Variable | Production/default value | Local adapter values |
-|---|---|---|
-| `MESSAGING_ADAPTER` | `kafka` | `db`, `inmemory` |
-| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` |
-| `STORAGE_ADAPTER` | `s3` | `local` |
-| `SECRET_ADAPTER` | `vault` | `env` |
+| Variable | Production/default value | Local adapter values | GCP             | 
+|---|---|---|-----------------|
+| `MESSAGING_ADAPTER` | `kafka` | `db`, `inmemory` | `pubsub`        |
+| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` | `redis`         |
+| `STORAGE_ADAPTER` | `s3` | `local` | `gcs`           |
+| `SECRET_ADAPTER` | `vault` | `env` | `secretmanager` |
 
-Details: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
+Details: [standards/local-adapter-strategy.md](../standards/local-adapter-strategy.md)
 
 ## Non-Negotiable Rules
 
@@ -59,16 +59,17 @@ Full principles: [standards/engineering-principles.md](../standards/engineering-
 
 ## Standards — Key References
 
-| Concern | Document                                                                             |
-|---------|--------------------------------------------------------------------------------------|
-| Naming, method/class size | [standards/coding-standards.md](../standards/coding-standards.md)                    |
-| Request/response DTOs | [standards/dto-guidelines.md](../standards/dto-guidelines.md)                           |
-| Security, TLS, secrets | [standards/security/security-standards.md](../standards/security/security-standards.md) |
-| Metrics, logs, traces | [standards/observability.md](../standards/observability.md)                             |
-| Unit + integration tests | [standards/testing/unit-testing.md](../standards/testing/unit-testing.md)               |
-| Performance limits | [standards/performance/performance.md](../standards/performance/performance.md)         |
-| HIPAA controls | [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)     |
+| Concern                       | Document                                                                                |
+|-------------------------------|-----------------------------------------------------------------------------------------|
+| Naming, method/class size     | [standards/coding-standards.md](../standards/coding-standards.md)                       |
+| Request/response DTOs         | [standards/dto-guidelines.md](../standards/dto-guidelines.md)                           |
+| Security, TLS, secrets        | [standards/security/security-standards.md](../standards/security/security-standards.md) |
+| Metrics, logs, traces         | [standards/observability.md](../standards/observability.md)                             |
+| Unit + integration tests      | [standards/testing/unit-testing.md](../standards/testing/unit-testing.md)               |
+| Performance limits            | [standards/performance/performance.md](../standards/performance/performance.md)         |
+| HIPAA controls                | [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)     |
 | Agent planning + doc creation | [standards/agent-execution.md](../standards/agent-execution.md)                         |
+| Production Readiness          | [standards/fallback-strategy.md](../standards/fallback-strategy.md)                     | 
 
 ## Stack Quick Reference
 

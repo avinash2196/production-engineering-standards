@@ -1,6 +1,30 @@
+from enum import StrEnum
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class MessagingAdapter(StrEnum):
+    KAFKA = "kafka"
+    DB = "db"
+    IN_MEMORY = "inmemory"
+
+
+class CacheAdapter(StrEnum):
+    REDIS = "redis"
+    JSON_FILE = "jsonfile"
+    IN_MEMORY = "inmemory"
+
+
+class StorageAdapter(StrEnum):
+    S3 = "s3"
+    LOCAL = "local"
+
+
+class SecretAdapter(StrEnum):
+    VAULT = "vault"
+    ENV = "env"
 
 
 class Settings(BaseSettings):
@@ -10,33 +34,50 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Service identity
     service_name: str = "service-name"
     environment: str = "local"
 
-    # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/service_db"
+    messaging_adapter: MessagingAdapter = MessagingAdapter.KAFKA
+    cache_adapter: CacheAdapter = CacheAdapter.REDIS
+    storage_adapter: StorageAdapter = StorageAdapter.S3
+    secret_adapter: SecretAdapter = SecretAdapter.VAULT
 
-    # Fallback toggles — match FALLBACK_* env var names
-    fallback_kafka: bool = False
-    fallback_cache: str = "redis"       # "redis" | "inmemory"
-    fallback_storage: str = "s3"        # "s3" | "local"
-    fallback_secrets: str = "vault"     # "vault" | "env"
+    @model_validator(mode="after")
+    def reject_local_adapters_in_production(self) -> "Settings":
+        if self.environment.lower() == "production":
+            invalid = {
+                "messaging_adapter": {
+                    MessagingAdapter.DB,
+                    MessagingAdapter.IN_MEMORY,
+                },
+                "cache_adapter": {
+                    CacheAdapter.JSON_FILE,
+                    CacheAdapter.IN_MEMORY,
+                },
+                "storage_adapter": {StorageAdapter.LOCAL},
+                "secret_adapter": {SecretAdapter.ENV},
+            }
 
-    # Kafka
-    kafka_bootstrap_servers: str = "localhost:9092"
-    kafka_consumer_group: str = service_name
+            selected = {
+                "messaging_adapter": self.messaging_adapter,
+                "cache_adapter": self.cache_adapter,
+                "storage_adapter": self.storage_adapter,
+                "secret_adapter": self.secret_adapter,
+            }
 
-    # Redis
-    redis_url: str = "redis://localhost:6379/0"
+            violations = [
+                name
+                for name, value in selected.items()
+                if value in invalid[name]
+            ]
 
-    # Object storage (S3 / MinIO)
-    s3_bucket: str = "service-bucket"
-    s3_endpoint_url: str = ""           # Override for MinIO: http://localhost:9000
-    s3_region: str = "us-east-1"
+            if violations:
+                raise ValueError(
+                    "Local-only adapters are not allowed in production: "
+                    + ", ".join(violations)
+                )
 
-    # OIDC / JWT
-    jwt_issuer_uri: str = "https://auth.myorg.com"
+        return self
 
 
 @lru_cache

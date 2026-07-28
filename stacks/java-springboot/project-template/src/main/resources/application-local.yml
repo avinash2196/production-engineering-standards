@@ -29,8 +29,8 @@ logging:
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
 
-fallback:
-  kafka: true
-  cache: inmemory
+adapters:
+  messaging: db
+  cache: jsonfile
   storage: local
   secrets: env

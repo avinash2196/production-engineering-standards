@@ -40,7 +40,7 @@ pytest -m integration              # Python integration tests (requires Docker)
 pwsh tooling/scripts/validate-repo-structure.ps1
 
 # Generate a new service scaffold
-python tooling/scripts/generate-template.py --stack [java|python] --name <service-name>
+python tooling/scripts/validate-repository.py --stack [java|python] --name <service-name>
 ```
 
 ## CI Commands (automated, no human approval)

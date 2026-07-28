@@ -74,9 +74,9 @@ server:
   port: ${PORT:8080}
   shutdown: graceful
 
-# Fallback toggles — set via environment variables, never hardcoded
-fallback:
-  kafka: ${FALLBACK_KAFKA:false}
-  cache: ${FALLBACK_CACHE:redis}       # redis | inmemory
-  storage: ${FALLBACK_STORAGE:s3}     # s3 | local
-  secrets: ${FALLBACK_SECRETS:vault}  # vault | env
+# Adapter toggles — set via environment variables, never hardcoded
+adapters:
+  messaging: ${MESSAGING_ADAPTER:kafka}
+  cache: ${CACHE_ADAPTER:redis}
+  storage: ${STORAGE_ADAPTER:s3}
+  secrets: ${SECRET_ADAPTER:vault}

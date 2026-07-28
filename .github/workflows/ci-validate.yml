@@ -1,9 +1,27 @@
-name: CI Validate
-on: [push, pull_request]
+name: Validate Engineering Standards Repository
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
 jobs:
   validate:
+    name: Repository validation
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Validate repository structure
-        run: echo "Add validation steps"
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate repository
+        run: python tooling/scripts/validate_repository.py
