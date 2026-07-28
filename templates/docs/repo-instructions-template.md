@@ -20,7 +20,7 @@ Agent usage and tool policy
 - Overrides: Operators may provide runtime overrides via operator-level config (see `rule-precedence.md`). Operator overrides must be auditable.
 
 Fallbacks and local dev
-- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`).
+- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
 - Local-only config files must be named `application.local.yml` or `settings.local.yaml` and excluded from production bundles.
 
 Config sources summary
@@ -32,7 +32,7 @@ Infra dependencies
 
 Repository commands
 - Validate structure: `tooling/scripts/validate-repo-structure.ps1`
-- Generate project: `tooling/scripts/generate-template.py --stack java --name <SERVICE_NAME>`
+- Create the Plan with `/create-plan`, then the milestone Implementation Plan with `/create-implementation-plan`; use `/implement-approved-plan` only after review.
 
 Manual overrides
 - To change a generated scaffold, open a PR and reference the agent output in the description. For emergency operator overrides, document the change in `config/overrides.md` and increment the override audit log.

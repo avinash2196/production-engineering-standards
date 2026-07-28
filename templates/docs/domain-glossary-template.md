@@ -25,7 +25,7 @@ All DTOs, event names, and database column names must use these terms exactly.
 
 <!--
   Document terms that change meaning or have special handling in fallback mode.
-  Example: "AuditEvent stored locally as a JSON file row during FALLBACK_KAFKA=db mode."
+  Example: "AuditEvent stored locally as a JSON file row during MESSAGING_ADAPTER=db mode."
 -->
 
 | Term | Normal behaviour | Fallback behaviour |

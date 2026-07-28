@@ -2,91 +2,88 @@
 
 ## Purpose
 
-Define the capability interface for publishing messages to topics/queues with explicit delivery semantics, idempotency, retry, and observability.
+Define the application-owned contract for publishing messages without coupling business code to Kafka, Pub/Sub, or a local implementation.
 
-## Interface Contract
+## Contract
 
-- `publish(topic, message, options)` — publishes a message to the specified topic.
-- `publishBatch(topic, messages, options)` — publishes multiple messages atomically where supported by the underlying broker.
-- Message structure: `{ body, attributes, idempotencyKey, traceId, correlationId, timestamp }`.
-- `options` may include: `partitionKey`, `delaySeconds`, `headers`, `timeout`.
+A publisher should support the semantics selected by the approved plan, commonly:
 
-## Required Semantics
+```text
+publish(topic, payload, key?, headers?)
+```
 
-- **Delivery guarantee:** at-least-once. The publisher must retry on transient failures until the broker confirms receipt or max retries is exhausted.
-- **Idempotency key:** every published message must carry an `idempotencyKey` (UUID or deterministic hash). The broker or consumer uses this for deduplication.
-- **Ordering:** if ordering is required, the caller must provide a stable `partitionKey`. Document per-topic whether ordering matters.
-- **Retry policy:** exponential backoff with jitter. Default: 3 retries, initial delay 200ms, max delay 5s. Configurable via `ConfigProvider`.
-- **Timeout:** publish calls must have a timeout (default 10s). Exceeded timeout counts as a failure.
+Document:
 
-## Error Handling
+- schema and compatibility policy;
+- message key and ordering scope;
+- idempotency/correlation identifiers;
+- acknowledgement/durability expectation;
+- timeout and retryable failures;
+- behavior after retry exhaustion;
+- transaction/outbox relationship.
 
-- Transient errors (network, throttle) → retry according to policy.
-- Permanent errors (serialization, topic not found) → fail immediately, log as ERROR with `traceId` and `correlationId`, emit metric.
-- After max retries exhausted → throw a typed exception (e.g., `PublishFailedException`) and emit `<service>_publisher_errors_total{type="exhausted"}`.
-- Never silently drop a message. The caller must know the publish failed.
+Do not promise atomic batch publication unless the selected platform and implementation provide it.
+
+## Failure Rules
+
+- Never silently report success after a confirmed publish failure.
+- Bound retries and use them only when the operation is safe to repeat.
+- Translate vendor exceptions into stable application/infrastructure errors.
+- When data loss is unacceptable, use an approved durable outbox/queue or fail the business operation according to its contract.
+
+## Production and Local Implementations
+
+| Selection | Use | Important guarantees |
+|---|---|---|
+| `kafka` / `pubsub` | production broker | platform-specific durability, partitioning, consumer behavior |
+| `db` | local database outbox/table queue | restart persistence and SQL inspectability; no broker groups/rebalancing |
+| `inmemory` | isolated tests | process-local and lost on restart |
+
+Local-only selections are rejected in production.
+
+## Composition Examples
+
+```java
+@Bean
+@ConditionalOnProperty(name = "adapters.messaging", havingValue = "db")
+MessagePublisher databasePublisher(OutboxRepository repository) {
+    return new DatabaseOutboxMessagePublisher(repository);
+}
+```
+
+```python
+if settings.messaging_adapter is MessagingAdapter.DB:
+    return DatabaseOutboxMessagePublisher(
+        SqlAlchemyOutboxStore(settings.database_url)
+    )
+```
+
+## Test-First Requirements
+
+Before implementation, add tests for selected behavior such as:
+
+- serialization and headers;
+- provider selection and production guards;
+- timeout/error translation;
+- outbox persistence and rollback boundaries;
+- duplicate/idempotency behavior;
+- broker integration for the selected production adapter.
 
 ## Observability
 
-- Emit metrics: `<service>_publisher_messages_sent_total`, `<service>_publisher_send_duration_seconds`, `<service>_publisher_errors_total`, `<service>_publisher_retries_total`.
-- Create a span for each publish call. Inject trace context into message headers so the subscriber can continue the trace.
-- Include `correlationId` in all log lines during publish.
-
-## Production vs Local Differences
-
-- **Production:** Kafka, RabbitMQ, Azure Service Bus, SNS/SQS, etc. Full broker durability, partitioning, consumer groups.
-- **Local / fallback (`FALLBACK_KAFKA=db`):** DB outbox table (`outbox_message`). Persistent across restarts, inspectable. `FALLBACK_KAFKA=inmemory` = pure in-process queue (ephemeral). Acceptable for development only.
-- Fallback mode must never be active in production. Enforce via startup validation.
-
-## Java Example
-
-```java
-public interface MessagePublisher {
-    void publish(String topic, Message message, PublishOptions options);
-    void publishBatch(String topic, List<Message> messages, PublishOptions options);
-}
-
-@Component
-@Profile("!fallback-kafka")
-public class KafkaMessagePublisher implements MessagePublisher {
-    // production Kafka implementation with retry, idempotency, tracing
-}
-
-@Component
-@Profile("fallback-kafka")
-public class InMemoryMessagePublisher implements MessagePublisher {
-    // local-only in-memory implementation
-}
-```
-
-## Python Example
-
-```python
-class MessagePublisher(Protocol):
-    def publish(self, topic: str, message: Message, options: PublishOptions | None = None) -> None: ...
-    def publish_batch(self, topic: str, messages: list[Message], options: PublishOptions | None = None) -> None: ...
-```
-
-## Relationship to MessageSubscriber
-
-- `MessagePublisher` and `MessageSubscriber` share the same message contract (topic, body, attributes, `idempotencyKey`, `traceId`).
-- See [MessageSubscriber.md](MessageSubscriber.md) for the consume side.
-- See [standards/messaging-abstraction.md](../../standards/messaging-abstraction.md) for combined abstraction rules.
-
-## LLM Instructions
-
-- When scaffolding a publisher, always include an `idempotencyKey` on every message.
-- Generate retry logic with exponential backoff and jitter.
-- Inject trace context into message headers.
-- Ask the user which broker is used before choosing the production implementation.
-- Wire fallback via Spring profile or Python dependency injection.
+Record useful publish success, failure, retry, and duration metrics. Propagate trace/correlation context without logging sensitive payloads. Emit a clear warning when a local adapter activates.
 
 ## Review Checklist
 
-- [ ] Every published message includes `idempotencyKey`.
-- [ ] Retry policy configured with backoff and jitter.
-- [ ] Timeout set on publish calls.
-- [ ] Trace context injected into message headers.
-- [ ] Metrics emitted for sent, errors, and retries.
-- [ ] Fallback implementation exists for local development.
-- [ ] Fallback cannot activate in production.
+- [ ] Contract semantics match the approved plan
+- [ ] Business code does not import the broker SDK
+- [ ] Timeout and exhausted-failure behavior are explicit
+- [ ] Idempotency and ordering requirements are documented
+- [ ] Local adapter limitations and production guards are tested
+- [ ] Relevant publish/outbox tests were written before code
+
+## References
+
+- [MessageSubscriber](MessageSubscriber.md)
+- [Messaging abstraction](../standards/messaging-abstraction.md)
+- [Messaging local adapters](../standards/fallbacks/kafka-fallback.md)

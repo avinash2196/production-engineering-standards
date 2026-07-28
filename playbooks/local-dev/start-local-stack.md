@@ -4,7 +4,7 @@ Instructions to start local infrastructure using `docker-compose.dev.yml` for de
 
 ## Overview
 
-While [run-with-fallbacks.md](run-with-fallbacks.md) lets you develop with zero infrastructure, sometimes you need real Kafka, Redis, PostgreSQL, or S3-compatible storage for integration testing or feature development. This guide covers spinning up a minimal local stack via Docker Compose.
+While [run-with-fallbacks.md](run-with-fallbacks.md) lets you develop without every managed dependency, sometimes you need real Kafka, Redis, PostgreSQL, or S3-compatible storage for integration testing or feature development. This guide covers spinning up a minimal local stack via Docker Compose.
 
 ## Prerequisites
 
@@ -164,7 +164,7 @@ You can mix real infra and fallbacks:
 ```bash
 # Real Kafka + Redis, fallback storage
 docker compose -f docker-compose.dev.yml up -d kafka redis
-FALLBACK_STORAGE=local FALLBACK_SECRETS=env ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+STORAGE_ADAPTER=local SECRET_ADAPTER=env ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 ## Troubleshooting

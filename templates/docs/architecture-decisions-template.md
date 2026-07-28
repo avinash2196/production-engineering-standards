@@ -61,10 +61,10 @@
 
 <!--
   Key technical notes, migration steps, or constraints the implementer needs.
-  Reference related config keys, fallback toggles, or infra changes.
+  Reference related config keys, adapter selectors or degradation controls, or infra changes.
 -->
 
-- Config keys affected: [e.g. `FALLBACK_KAFKA`, `feature.cache.ttl-seconds`]
+- Config keys affected: [e.g. `MESSAGING_ADAPTER`, `feature.cache.ttl-seconds`]
 - Infra changes required: [e.g. new RDS instance, new Kafka topic]
 - Migration steps: [none | see migration/NNN-...sql]
 - Rollback plan: [how to revert if this causes issues]

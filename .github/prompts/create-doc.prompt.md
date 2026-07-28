@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: Create a new documentation file (.md) — asks five scoping questions then generates the correct structure using existing templates.
 tools:
   - codebase
@@ -37,7 +36,7 @@ Read `playbooks/create-doc.md` for the full instructions. Then:
 If the document will have more than 5 sections or requires reading multiple files, write a plan file:
 
 ```
-.copilot/plans/YYYY-MM-DD-create-<doc-slug>.md
+docs/.ai/Plan.md
 ```
 
 Format:

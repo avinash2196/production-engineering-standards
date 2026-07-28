@@ -2,98 +2,65 @@
 
 ## Purpose
 
-Define the capability interface for resolving secrets (API keys, database credentials, encryption keys, tokens) with explicit rotation, caching, and access-control contracts. Services depend on this abstraction, never directly on Vault, AWS Secrets Manager, Azure Key Vault, or environment variables.
+Define controlled secret access without spreading Vault, Secret Manager, or direct environment-variable reads through business code.
 
-## Interface Contract
+## Selection
 
-- `getSecret(name)` → returns the current value of the named secret. Throws `SecretNotFoundException` if not found.
-- `getSecret(name, version)` → returns a specific version of the secret (for rotation scenarios).
-- `getSecretAsBytes(name)` → returns binary secret (encryption keys, certificates).
-- Secrets are string-typed by default. The caller is responsible for parsing (e.g., JSON connection strings).
+Secret providers are selected explicitly:
 
-## Required Semantics
+| Selection | Environment | Behavior |
+|---|---|---|
+| `vault` / `secretmanager` | production/staging as approved | managed access policy, audit, and rotation capabilities |
+| `env` | local development/tests | no managed rotation, centralized policy, or provider audit trail |
 
-- **Resolution order:** the provider resolves secrets from the most secure source available. In production, this is always a managed secret store (Vault, Key Vault, Secrets Manager). In local development with `FALLBACK_SECRETS=env`, environment variables are used as a last resort.
-- **Caching:** secrets should be cached in memory with a short TTL (default: 5 minutes) to avoid excessive calls to the secret store. The cache must be invalidatable.
-- **Rotation support:** the provider must support secret rotation without service restart. On next access after cache expiry, the new value is fetched transparently.
-- **Access auditing:** in production, the secret store should log which service accessed which secret and when. This is typically handled by the store itself (Vault audit log, Key Vault diagnostics).
-- **Lazy loading:** secrets are resolved on first access, not at startup. This avoids blocking startup on secret store availability (except for critical bootstrap secrets like DB credentials).
+Do not dynamically choose the "most secure available" source. Explicit selection avoids silent security degradation. Production startup rejects `env`.
 
-## Error Handling
+## Contract Decisions
 
-- `SecretNotFoundException` → secret name not found in the store. Fail fast; this is a configuration error.
-- Secret store unavailable → if a cached value exists, return it (stale-while-revalidate). If no cached value, throw `SecretStoreUnavailableException`.
-- Log all errors at ERROR level with the secret name (never the value) and `traceId`.
-- Emit `<service>_secrets_errors_total{type="not_found|unavailable"}`.
+- secret name and expected format;
+- current versus versioned access;
+- bootstrap timing;
+- cache TTL, if any;
+- rotation behavior;
+- unavailable-provider behavior;
+- audit and least-privilege requirements.
 
-## Observability
+Security-sensitive secret resolution normally fails closed. Returning stale cached credentials is allowed only when the approved security design defines validity and revocation behavior.
 
-- Metrics: `<service>_secrets_access_total`, `<service>_secrets_cache_hits_total`, `<service>_secrets_cache_misses_total`, `<service>_secrets_errors_total`, `<service>_secrets_rotation_total`.
-- **Never log or emit a secret value.** Log only the secret name and access outcome.
-- Create spans for secret resolution on cache miss (calls to the secret store).
+## Rules
 
-## Production vs Local Differences
+- Never log, return, or include secret values in metrics/errors.
+- Keep direct environment reads inside the local `EnvSecretProvider` or typed bootstrap configuration.
+- Do not add mandatory caching or rotation behavior unless the provider and requirement support it.
+- Use workload identity/service identity rather than embedded provider credentials.
 
-- **Production:** HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager. Encrypted storage, access policies, audit logging, rotation automation.
-- **Local / fallback (`FALLBACK_SECRETS=env`):** secrets read from environment variables. No rotation, no caching, no audit trail. Acceptable for development only.
-- Fallback must never be active in production. Enforce via startup validation.
-
-## Java Example
+## Composition
 
 ```java
-public interface SecretProvider {
-    String getSecret(String name);
-    String getSecret(String name, String version);
-    byte[] getSecretAsBytes(String name);
-}
-
-@Component
-@Profile("!fallback-secrets")
-public class VaultSecretProvider implements SecretProvider {
-    // HashiCorp Vault implementation with caching, rotation, audit
-}
-
-@Component
-@Profile("fallback-secrets")
-public class EnvSecretProvider implements SecretProvider {
-    @Override
-    public String getSecret(String name) {
-        return System.getenv(name);
-    }
-    // no caching, no rotation, no versioning
+@Bean
+@ConditionalOnProperty(name = "adapters.secrets", havingValue = "env")
+SecretProvider envSecretProvider() {
+    return new EnvSecretProvider(System.getenv());
 }
 ```
-
-## Python Example
 
 ```python
-class SecretProvider(Protocol):
-    def get_secret(self, name: str) -> str: ...
-    def get_secret_version(self, name: str, version: str) -> str: ...
-    def get_secret_as_bytes(self, name: str) -> bytes: ...
+if settings.secret_adapter is SecretAdapter.ENV:
+    return EnvSecretProvider()
 ```
 
-## Anti-Patterns
+## Test-First Requirements
 
-- **Secrets in source code or config files:** all secrets must come from `SecretProvider`.
-- **Logging secret values:** never log, print, or include secret values in error messages or metrics.
-- **No rotation plan:** every secret must have a documented rotation schedule.
-- **Startup dependency on all secrets:** use lazy loading except for critical bootstrap secrets.
-- **Disabling fallback check in production:** `FALLBACK_SECRETS=env` in production is a critical security violation.
-
-## LLM Instructions
-
-- When a service needs a secret, inject `SecretProvider` and call `getSecret(name)`. Never read environment variables directly in production code.
-- Never generate code that logs or exposes a secret value.
-- Ask the user which secret store is used before choosing the production implementation.
-- Wire fallback via Spring profile or Python dependency injection.
+- name mapping and missing-secret behavior;
+- no secret value in logs/errors;
+- selection and production rejection;
+- managed-provider error translation;
+- rotation/cache behavior only when part of approved scope.
 
 ## Review Checklist
 
-- [ ] All secrets resolved via `SecretProvider`, not direct env/file access in production code.
-- [ ] Secret values never logged, printed, or included in error responses.
-- [ ] Caching with short TTL implemented (default 5 min).
-- [ ] Rotation supported without service restart.
-- [ ] Metrics emitted for access, cache hits/misses, and errors.
-- [ ] Fallback implementation exists for local development.
-- [ ] Fallback cannot activate in production.
+- [ ] Provider selection is explicit
+- [ ] `env` is rejected in production
+- [ ] Secret values cannot leak through logs/errors
+- [ ] Access/rotation requirements are grounded in the plan
+- [ ] Local and managed provider tests cover selected behavior

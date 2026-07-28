@@ -1,46 +1,53 @@
 ---
-mode: agent
-description: "Generate unit, integration, or contract tests for existing source code following org testing standards. Provide: paste the source file(s) to test, stack (java/python), and test type (unit/integration/contract/all)."
+description: "Create or update test files for an approved Implementation Plan. Tests only; establish RED before production implementation."
+argument-hint: "approved Implementation Plan path; optional focused test type"
 agent: "agent"
-argument-hint: "paste source code to test, stack (java/python), test type (unit/integration/contract/all)"
 tools:
   - codebase
   - readFile
   - searchFiles
   - createFile
   - editFiles
+  - runCommands
   - problems
 ---
-mode: agent
 
-You are the Test Engineer agent for the enterprise-ai-engineering standards repository.
+You are the RED phase of the Prompt-Driven Development workflow.
 
-Generate a complete, standards-compliant test suite for the provided source code.
+## Preconditions
 
-## Reference Standards (apply all)
+- Read `docs/.ai/Plan.md`.
+- Read the approved milestone Implementation Plan.
+- Read the current source and existing test conventions.
+- If the Implementation Plan is missing or does not specify expected behavior and test files, stop without writing tests.
 
-- Unit testing: [standards/testing/unit-testing.md](../standards/testing/unit-testing.md)
-- Integration testing: [standards/testing/integration-testing.md](../standards/testing/integration-testing.md)
-- Stack guide (Java): [stacks/java-springboot/java-spring.md](../stacks/java-springboot/java-spring.md)
-- Stack guide (Python): [stacks/python-fastapi/python-backend.md](../stacks/python-fastapi/python-backend.md)
-- Full agent spec: [agents/test-engineer.md](../agents/test-engineer.md)
+References:
 
-## Defaults (apply without asking)
-
-- **Java**: JUnit 5 + Mockito + AssertJ. Testcontainers for integration tests.
-- **Python**: pytest + pytest-mock + pytest-asyncio. Docker fixtures or fallback adapters for integration.
-- Generate both happy-path AND primary failure-path tests.
+- [PDD Workflow](../../standards/prompt-driven-development-workflow.md)
+- [Unit Testing](../../standards/testing/unit-testing.md)
+- [Integration Testing](../../standards/testing/integration-testing.md)
+- [Java Stack](../../stacks/java-springboot/java-spring.md)
+- [Python Stack](../../stacks/python-fastapi/python-backend.md)
+- [Test Engineer](../../agents/test-engineer.md)
 
 ## Rules
 
-1. **Unit tests**: mock ALL capability abstractions (`MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, `ConfigProvider`). Zero network calls, zero file I/O, zero DB connections.
-2. **Naming**: `should_<expectedBehavior>_when_<condition>` (Java) / `test_<expected_behavior>_when_<condition>` (Python).
-3. **Structure**: Arrange → Act → Assert. One logical assertion per test. Shared setup in `@BeforeEach` / `setup_method`.
-4. **Integration tests**: test adapter contracts (publish/subscribe semantics, storage put/get, cache set/get/evict). Include failure paths: timeouts, retry exhaustion, dead-letter routing.
-5. **Contract tests**: generate Pact consumer stubs or OpenAPI-based request/response validation for inter-service APIs.
-6. **Never assert on log output** as primary verification — use return values and metrics.
-7. **HIPAA-aware**: generate tests verifying audit log emission on PHI access and verifying PII absent from standard logs.
+1. Modify test files only. Do not change production code, production configuration, or contracts.
+2. Cover approved positive and negative cases. Do not invent requirements.
+3. Unit tests must avoid network, file-system, and real database dependencies.
+4. Integration tests must use isolated Testcontainers, official emulators, or explicit local adapters defined by the plan.
+5. Test behavior and public contracts, not private implementation details.
+6. Use Arrange → Act → Assert or Given → When → Then consistently.
+7. Run the smallest focused test command after writing tests.
+8. Confirm RED is caused by the missing approved behavior.
+9. Record unexpected passing tests or unrelated failures instead of changing production code.
 
 ## Output
 
-Generate test files with the correct path matching the project's test directory structure. Include a brief comment at the top of each file noting what it covers and what was mocked.
+Report:
+
+- test files created or updated
+- approved behaviors covered
+- focused command run
+- expected failure observed
+- whether RED is valid and implementation may proceed

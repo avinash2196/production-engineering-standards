@@ -24,10 +24,10 @@ pip install -r requirements.txt    # Python
 docker compose -f templates/infra/docker-compose.dev.yaml up -d
 
 # Start service with fallbacks (no Docker needed)
-FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env \
+MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
   ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 # or
-FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env \
+MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
   uvicorn src.<service>.main:app --reload --port 8000
 
 # Run tests
@@ -84,13 +84,13 @@ Fallbacks are **development-only**. Never set these in production.
 
 ```bash
 # Enable all fallbacks (dev/test only)
-export FALLBACK_KAFKA=db
-export FALLBACK_CACHE=jsonfile
-export FALLBACK_STORAGE=local
-export FALLBACK_SECRETS=env
+export MESSAGING_ADAPTER=db
+export CACHE_ADAPTER=jsonfile
+export STORAGE_ADAPTER=local
+export SECRET_ADAPTER=env
 
 # Disable before building release artifacts
-unset FALLBACK_KAFKA FALLBACK_CACHE FALLBACK_STORAGE FALLBACK_SECRETS
+unset MESSAGING_ADAPTER CACHE_ADAPTER STORAGE_ADAPTER SECRET_ADAPTER
 ```
 
 ## Forbidden Commands

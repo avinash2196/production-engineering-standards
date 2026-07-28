@@ -1,83 +1,95 @@
-# Workflow: Fix Bug Safely
+# Workflow: Fix a Bug Safely
 
 ## Purpose
 
-Step-by-step procedure for diagnosing and fixing a bug without introducing regressions, ensuring the fix is test-verified and observable.
+Diagnose and fix a defect with a reproducible test, minimal implementation, and separate refactoring.
 
-## Prerequisites
+## 1. Reproduce and Bound the Defect
 
-- Bug report with reproduction steps or observed symptoms
-- Access to service code and logs/metrics
+Collect evidence:
 
-## Steps
+- observed and expected behavior
+- reproducible input or event
+- affected environment and adapter selection
+- correlation ID, logs, metrics, or trace when available
+- affected contract and regression risk
 
-### 1. Reproduce the Issue
+Do not change code while the failure is still ambiguous.
 
-Before fixing anything:
+## 2. Update the Plan
 
-- Reproduce locally using fallback mode if possible (`FALLBACK_*` toggles)
-- If not reproducible locally, identify from logs/metrics:
-  - Correlation ID of the failing request
-  - Error logs with stack trace
-  - Metrics anomalies (error rate spike, latency increase)
-- Document the reproduction steps
+Add a bug-fix milestone to `docs/.ai/Plan.md` describing:
 
-### 2. Write a Failing Test
+- user/business impact
+- reproduction
+- expected behavior
+- scope and exclusions
+- success criteria
 
-**Before writing the fix**, create a test that:
+Obtain approval.
 
-- Exercises the exact code path that produces the bug
-- Fails with the current code (proves the bug exists)
-- Will pass once the fix is applied
-- For unit bugs: write a unit test with appropriate mocks
-- For integration bugs: write an integration test with testcontainers or fallback adapters
+## 3. Create the Implementation Plan
 
-This is non-negotiable. The test is proof the bug was real and proof the fix works.
+Create a milestone-specific Implementation Plan with:
 
-### 3. Diagnose Root Cause
+- root-cause hypothesis supported by current code
+- exact failing test to add
+- expected RED assertion
+- minimal source change
+- transaction/concurrency/idempotency impact
+- observability update only when needed to detect recurrence
+- refactoring explicitly separated
 
-- Trace the code path from controller → service → domain → repository
-- Check: is this a logic error, data issue, configuration problem, or race condition?
-- Check: are abstractions being used correctly? (correct provider, correct semantics)
-- Check: is the issue environment-specific? (fallback vs production adapter behavior difference)
-- Document the root cause — not just what's wrong, but why it happened
+Obtain approval.
 
-### 4. Implement the Fix
+## 4. RED — Add the Regression Test
 
-- Fix only the bug. Do not refactor or add features in the same change.
-- If the fix requires changing an abstraction contract, assess impact on other consumers.
-- If the fix reveals a missing fallback behavior, add the fallback adapter update as a separate change.
-- Keep the fix minimal and focused.
+Create the smallest test that reproduces the defect:
 
-### 5. Verify the Fix
+- unit test for policy/logic defects
+- controller/contract test for validation or API defects
+- integration test for persistence, transaction, adapter, or concurrency defects
 
-- [ ] The failing test from Step 2 now passes
-- [ ] All existing tests still pass (no regressions)
-- [ ] If the bug was in a hot path, verify no performance degradation
+Run it and confirm it fails for the reported defect. A broken fixture or unrelated environment failure is not valid RED.
 
-### 6. Add Observability for the Failure Mode
+## 5. Diagnose Root Cause
 
-If the bug represents a failure mode that was not previously observable:
+Trace the real path and document why the defect occurred. Distinguish:
 
-- Add or improve structured logging at the failure point
-- Add a metric that would detect this failure in the future
-- Ensure the correlation ID is present in error logs
+- incorrect business logic
+- missing validation
+- transaction/rollback issue
+- duplicate or ordering issue
+- configuration or adapter-selection issue
+- race condition
+- provider-specific behavior
 
-### 7. Review
+Do not fix only the symptom when the approved scope covers the root cause.
 
-Invoke **code-reviewer** agent patterns. Verify:
+## 6. GREEN — Implement the Minimal Fix
 
-- [ ] Fix is minimal (no unrelated changes)
-- [ ] New test proves the bug existed and is now fixed
-- [ ] No regressions in existing tests
-- [ ] Root cause documented (in commit message or ticket)
-- [ ] Observability improved for this failure mode
+- change only files named in the Implementation Plan
+- preserve unrelated behavior
+- avoid cleanup or new features
+- run the regression test and relevant suite
 
-### 8. Commit
+## 7. REFACTOR
 
-Conventional commit: `fix(<service>): <concise description of what was wrong>`
+Only after GREEN:
 
-Include in commit body:
-- Root cause (one sentence)
-- What the fix changes
-- Reference to bug ticket if applicable
+- improve names or extraction needed to make the fix maintainable
+- keep behavior unchanged
+- rerun tests after every meaningful change
+
+## 8. Operational Follow-Up
+
+When the defect was not observable, add the smallest appropriate log, metric, trace attribute, or alerting signal. Do not log secrets or sensitive payloads.
+
+## Completion Criteria
+
+- [ ] Reproduction and expected behavior are documented
+- [ ] Regression test was observed RED
+- [ ] Minimal fix made it GREEN
+- [ ] Relevant regression suite is GREEN
+- [ ] Refactoring was separate and preserved behavior
+- [ ] Root cause and residual risk are recorded

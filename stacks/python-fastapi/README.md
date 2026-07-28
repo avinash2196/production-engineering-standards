@@ -1,85 +1,84 @@
 # Python FastAPI Stack
 
-Opinionated starter templates and integration guides for Python 3.12+ FastAPI services.
+Guidance, an executable base template, and integration notes for Python 3.12+ FastAPI services.
 
-## Stack Requirements
+## Delivery Workflow
 
-| Component | Version |
-|-----------|---------|
-| Python | 3.12+ |
-| FastAPI | 0.110+ |
-| Package manager | `pip` + `requirements.txt` (Poetry acceptable) |
-| Container base | `python:3.12-slim` |
-| Async runtime | `uvicorn` with `uvloop` |
+Do not copy the template and immediately generate production behavior. Follow:
 
-## Project Structure
+> Plan -> Implementation Plan -> RED Test -> GREEN Code -> Refactor
 
+The approved implementation plan selects the required endpoints, persistence, production adapters, local adapters, and verification commands. The base template intentionally does not include every production integration.
+
+## Base Template
+
+`project-template/` includes:
+
+- typed Pydantic settings and adapter enums;
+- production startup rejection for local-only adapters;
+- database-backed and in-memory messaging local adapters;
+- JSON-file and in-memory cache local adapters;
+- local filesystem storage and environment secret adapters;
+- behavior-focused tests for selection, persistence, TTL, and production guards.
+
+Production Kafka, Pub/Sub, Redis, S3, GCS, Vault, or Secret Manager adapters are added only when selected by an approved implementation plan. Requesting a missing adapter produces an actionable error rather than silently choosing a local substitute.
+
+## Suggested Structure
+
+```text
+app/
+  api/                 transport, validation, response mapping
+  service/             application/use-case orchestration
+  domain/              business rules and value objects where justified
+  repository/          persistence boundaries and implementations
+  infrastructure/
+    local/              explicit local-only adapters and composition
+    messaging/          selected production messaging adapter
+    cache/              selected production cache adapter
+    storage/            selected production storage adapter
+    secrets/            selected production secret adapter
+  config/              typed settings and startup guards
+  main.py
 ```
-src/{service_name}/
-├── api/                 # FastAPI routers — thin, delegates to service
-├── service/             # Business logic — orchestrates domain + infra
-├── domain/              # Pydantic models, value objects, domain events
-├── repository/          # Data access (SQLAlchemy, asyncpg)
-├── infrastructure/      # Capability interface implementations
-│   ├── messaging/       # KafkaMessagePublisher, InMemoryMessagePublisher
-│   ├── cache/           # RedisCacheProvider, InMemoryCacheProvider
-│   ├── storage/         # S3ObjectStorageProvider, LocalFileStorageProvider
-│   ├── config/          # Config provider wiring
-│   └── secrets/         # VaultSecretProvider, EnvSecretProvider
-├── config/              # Settings (pydantic-settings), env files
-└── main.py              # FastAPI app with lifespan
+
+A simple CRUD service may combine areas when dependencies remain controlled and the decision is documented.
+
+## Run Template Tests
+
+After installing the minimal dependencies declared in `pyproject.toml`:
+
+```bash
+PYTHONPATH=project-template \
+  python -m unittest discover \
+  -s project-template/tests \
+  -p 'test_*.py'
 ```
 
-See [python-backend.md](python-backend.md) for full architecture, abstractions, and coding conventions.
+## Local Adapter Selection
+
+```bash
+ENVIRONMENT=local \
+MESSAGING_ADAPTER=db \
+CACHE_ADAPTER=jsonfile \
+STORAGE_ADAPTER=local \
+SECRET_ADAPTER=env \
+uvicorn app.main:app --reload --port 8000
+```
+
+The database messaging adapter is preferred when restart durability and SQL inspection are useful. It does not reproduce broker partitions, consumer groups, rebalancing, replay, or production throughput. JSON-file cache similarly does not reproduce Redis atomicity or distributed coordination.
 
 ## Guides
 
-| Guide | Description |
-|-------|-------------|
-| [Kafka Integration](integration-guides/kafka-integration.md) | Async producer/consumer with `MessagePublisher` / `MessageSubscriber` |
-| [Redis Integration](integration-guides/redis-integration.md) | Caching with `CacheProvider` via `redis.asyncio` |
-| [Storage Integration](integration-guides/storage-integration.md) | Object storage with `ObjectStorageProvider` via `aiobotocore` |
-
-## Quick Start
-
-```bash
-# Clone the template
-cp -r project-templates/python-fastapi my-new-service
-cd my-new-service
-
-# Setup
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-pip install -r requirements.txt
-
-# Run locally with fallbacks (no infra needed)
-FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local \
-  uvicorn src.my_service.main:app --reload --port 8000
-```
-
-## Capability Interface Mapping
-
-| Abstraction | Production Implementation | Fallback Implementation |
-|-------------|--------------------------|-------------------------|
-| `MessagePublisher` | `KafkaMessagePublisher` (aiokafka) | `InMemoryMessagePublisher` |
-| `MessageSubscriber` | `KafkaMessageSubscriber` (aiokafka) | `InMemoryMessageSubscriber` |
-| `CacheProvider` | `RedisCacheProvider` (redis.asyncio) | `InMemoryCacheProvider` |
-| `ObjectStorageProvider` | `S3ObjectStorageProvider` (aiobotocore) | `LocalFileStorageProvider` |
-| `SecretProvider` | `VaultSecretProvider` (hvac) | `EnvSecretProvider` |
-| `ConfigProvider` | `CompositeConfigProvider` | same (env + file fallback) |
-
-Fallback activation is controlled via environment variables and dependency injection.
-
-## Key Conventions
-
-- **Async first:** All I/O operations use `async`/`await`.
-- **Pydantic everywhere:** Request/response DTOs, config, domain models.
-- **Dependency injection:** Use FastAPI `Depends()` for capability interfaces.
-- **No global state:** All dependencies flow through the DI container.
+| Guide | Focus |
+|---|---|
+| [Messaging Integration](integration-guides/kafka-integration.md) | Kafka/Pub/Sub contracts, database outbox, idempotency, consumer behavior |
+| [Cache Integration](integration-guides/redis-integration.md) | Redis policy, JSON-file/in-memory local adapters, TTL and correctness |
+| [Storage Integration](integration-guides/storage-integration.md) | S3/GCS, local filesystem, path safety and durability semantics |
 
 ## References
 
-- [python-backend.md](python-backend.md) — Full stack conventions
-- [Contracts](../../contracts/)
-- [Fallback strategy](../../standards/fallback-strategy.md)
-- [Observability standard](../../standards/observability.md)
+- [Python backend guidance](python-backend.md)
+- [Prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md)
+- [Capability boundary pattern](../../contracts/CapabilityPattern.md)
+- [Local adapter strategy](../../standards/local-adapter-strategy.md)
+- [Production dependency failure strategy](../../standards/fallback-strategy.md)

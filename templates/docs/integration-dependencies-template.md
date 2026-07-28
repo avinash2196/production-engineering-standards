@@ -16,10 +16,10 @@
 | Dependency | Purpose | Required version | Protocol | Fallback |
 |------------|---------|-----------------|----------|----------|
 | PostgreSQL | Primary data store | 15.x | TCP/5432 | None — hard dependency |
-| Kafka | Domain event publishing | 3.x | TCP/9092 | `FALLBACK_KAFKA=db` — DB outbox table |
-| Redis | Response cache | 7.x | TCP/6379 | `FALLBACK_CACHE=jsonfile` — local JSON file |
-| S3 / Cloud Storage | Document storage | AWS S3 API | HTTPS | `FALLBACK_STORAGE=local` — local filesystem |
-| Vault | Secrets | 1.14+ | HTTPS/8200 | `FALLBACK_SECRETS=env` — env variables |
+| Kafka | Domain event publishing | 3.x | TCP/9092 | `MESSAGING_ADAPTER=db` — DB outbox table |
+| Redis | Response cache | 7.x | TCP/6379 | `CACHE_ADAPTER=jsonfile` — local JSON file |
+| S3 / Cloud Storage | Document storage | AWS S3 API | HTTPS | `STORAGE_ADAPTER=local` — local filesystem |
+| Vault | Secrets | 1.14+ | HTTPS/8200 | `SECRET_ADAPTER=env` — env variables |
 | [Downstream service] | [Purpose] | [Version] | HTTP/gRPC | [no fallback / degrade gracefully] |
 
 ## Startup Validation
@@ -58,7 +58,7 @@
 docker compose -f templates/infra/docker-compose.dev.yaml up -d
 
 # Start with fallbacks only (zero Docker needed)
-FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env \
+MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
   ./mvnw spring-boot:run   # or: uvicorn src.service.main:app --reload
 ```
 

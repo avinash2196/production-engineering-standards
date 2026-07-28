@@ -95,7 +95,7 @@ getSecret("db-password")
 
 ```java
 @Component
-@Profile("!fallback-secrets")
+@ConditionalOnProperty(name = "adapters.secrets", havingValue = "vault", matchIfMissing = true)
 public class VaultSecretProvider implements SecretProvider {
     private final VaultClient client;
     private final Cache<String, CachedSecret> cache;

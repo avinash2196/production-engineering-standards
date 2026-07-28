@@ -1,154 +1,136 @@
-# Workflow: Create New Service
+# Workflow: Create a New Service
 
 ## Purpose
 
-Step-by-step procedure for scaffolding a new backend service from scratch, ensuring it meets all enterprise-ai-engineering standards from day one.
+Create a Java Spring Boot or Python FastAPI service through reviewed milestones rather than generating a large codebase from one prompt.
 
-## Prerequisites
+## Required Lifecycle
 
-- Stack decision made (Java Spring Boot or Python FastAPI)
-- Service name and domain scope defined
-- External dependencies identified (Kafka, Redis, S3, database, etc.)
-- Compliance tier known (standard or HIPAA-aware)
+> **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
-## Steps
+Reference: [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md)
 
-### 1. Scaffold the service — `/scaffold-service`
+## 1. Review Requirements
 
-Type `/scaffold-service` in GitHub Copilot Chat. The agent will ask 10 questions in a single message:
+Identify only the decisions needed for the requested service:
 
-| Question | Example answer |
-|----------|---------------|
-| Service name | `order-service` |
-| Runtime target | `a) Local / on-prem` or `b) GCP` |
-| Stack | `a) Java 21 + Spring Boot` or `b) Python 3.12 + FastAPI` |
-| Messaging | `b) Kafka` (local) or `c) Pub/Sub` (GCP) or `a) none` |
-| Cache | `b) Redis` (local) or `c) Memorystore` (GCP) or `a) none` |
-| Object storage | `b) S3/MinIO` (local) or `c) GCS` (GCP) or `a) none` |
-| Secrets | `a) Vault` (local) or `b) Secret Manager` (GCP) |
-| Database | `a) PostgreSQL` or `b) Cloud SQL` or `c) none` |
-| API style | `a) REST` or `b) event-driven` or `c) both` |
-| Data classification | `a) public` / `b) internal` / `c) PII` / `d) PHI` |
+- service purpose and use cases
+- API, event, or scheduled-work contracts
+- stack and runtime target
+- persistence requirements
+- external messaging, cache, storage, or secret-provider capabilities actually needed
+- validation and business rules
+- transaction, idempotency, ordering, and consistency requirements
+- data classification and explicitly required controls
+- availability and operational expectations
 
-After you answer, the agent prints a numbered plan (up to 24 files) and waits for your confirmation before writing anything. It then creates every file one by one, marking each step complete as it goes.
+Do not add Kafka, Redis, object storage, a domain layer, or local adapters simply because the repository supports them.
 
-**What the scaffold produces automatically:**
-- Layered package structure (controller → service → domain → repository)
-- Capability abstraction interfaces wired for each selected dependency
-- Production adapters + fallback adapters with env toggles
-- Configuration classes using `ConfigProvider`
-- Health, liveness, and readiness endpoints
-- Dockerfile (multi-stage, non-root) + docker-compose.dev.yaml (local) or cloudbuild.yaml (GCP)
-- `.env.local` with all `FALLBACK_*` toggles pre-set
-- CI workflow: lint → test → build image → scan (Trivy)
-- `docs/project-context.md` and `docs/integration-dependencies.md` pre-filled
+## 2. Create and Review the Plan
 
-### 2. Add or verify observability
+Run `/create-plan` or create:
 
-The scaffold includes observability, but verify:
-
-- Structured JSON logging with `correlationId`, `traceId`, `spanId`
-- Prometheus metrics endpoint (`/actuator/prometheus` or `/metrics`)
-- OpenTelemetry tracing configured via `OTEL_EXPORTER_OTLP_ENDPOINT`
-- Correlation ID middleware/filter present
-
-If anything is missing, run `/refactor-code` on the affected file.  
-Reference: [standards/observability.md](../standards/observability.md)
-
-### 3. Generate or review tests — `/generate-tests`
-
-The scaffold includes test stubs. To generate or fill out a full test suite:
-
-```
-/generate-tests
+```text
+docs/.ai/Plan.md
 ```
 
-Paste the service class file when prompted. The agent produces:
-- Unit tests for the service layer with mocked capability abstractions
-- Integration test stubs using Testcontainers (or fallback adapters for CI)
-- Verifies tests pass with all `FALLBACK_*` toggles enabled
+Use the [Plan Template](../templates/docs/plan-template.md). Define scope, milestones, dependencies, risks, exclusions, and success criteria. Do not write tests or implementation.
 
-### 4. Review architecture — `/review-architecture`
+Obtain human approval before continuing.
 
-```
-/review-architecture
-```
+## 3. Plan One Milestone
 
-Paste key source files or the service folder. The agent verifies:
+For the next approved milestone, run `/create-implementation-plan` and create:
 
-- [ ] Layered architecture correct (no cross-layer imports)
-- [ ] No business logic in controllers
-- [ ] Abstraction boundaries clean
-- [ ] Domain model meaningful (not anemic)
-
-### 5. Review production readiness (baseline) — `/review-production-readiness`
-
-```
-/review-production-readiness
+```text
+docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
-At scaffold stage, expected results:
+The Implementation Plan must identify:
 
-- Config externalization: ✅
-- Observability: ✅
-- Tests: ✅ (basic)
-- Security: ⚠️ (auth not yet configured — expected at this stage)
-- Resilience: ⚠️ (retries/timeouts may need tuning — expected at this stage)
+- current repository state
+- exact files
+- positive and negative tests
+- expected RED failure
+- minimal production changes for GREEN
+- transaction, idempotency, adapter, degradation, security, and observability decisions where applicable
+- permitted refactoring
+- out-of-scope work and commands
 
-### 6. Compliance check (if PHI/PII) — `/review-hipaa` or `/compliance-review`
+Obtain human approval before changing tests or source.
 
-If the service handles PHI, run:
+## 4. Implement the Milestone
 
+Run `/implement-approved-plan`.
+
+### RED
+
+- create or update only approved tests
+- run the focused command
+- confirm failure is caused by missing approved behavior
+
+### GREEN
+
+- implement the smallest approved production change
+- run focused tests, then relevant regression tests
+
+### REFACTOR
+
+- improve structure without changing behavior
+- keep tests GREEN after each meaningful change
+
+Update the Implementation Plan with evidence and changed files.
+
+## 5. Recommended Milestone Order
+
+A service may use this sequence when appropriate:
+
+1. requirements and API/event contract
+2. project skeleton and typed configuration
+3. transport/contract tests and minimal transport implementation
+4. domain/application tests and minimal business implementation
+5. persistence tests and implementation
+6. external adapter contract tests and implementation
+7. security and authorization
+8. observability and operational behavior
+9. production readiness and final review
+
+Do not combine all milestones into one unreviewable implementation.
+
+## 6. Adapter Decisions
+
+Use [Local Adapter Strategy](../standards/local-adapter-strategy.md) for development/CI substitutes and [Production Dependency Failure and Degradation](../standards/fallback-strategy.md) for live failure behavior.
+
+Standard selectors:
+
+```text
+MESSAGING_ADAPTER=kafka|pubsub|db|inmemory
+CACHE_ADAPTER=redis|jsonfile|inmemory
+STORAGE_ADAPTER=s3|gcs|local
+SECRET_ADAPTER=vault|secretmanager|env
 ```
-/review-hipaa
-```
 
-If it handles PII or has internal compliance requirements:
+Only document values implemented by the service. Local-only values must fail startup in production.
 
-```
-/compliance-review
-```
+## 7. Final Review
 
-The agent verifies:
-- Encryption controls in place
-- Audit logging on PHI access
-- Minimum necessary principle in API responses
+Run applicable checks:
 
-### 7. Local verification
+- focused and full relevant tests
+- formatter/linter/static analysis
+- API/event contract validation
+- repository or project validators
+- security and dependency scans
+- architecture, distributed-systems, and production-readiness reviews
 
-```bash
-# Start local stack with fallbacks
-docker-compose -f docker-compose.dev.yaml up -d
-
-# Set fallback toggles
-export FALLBACK_KAFKA=db
-export FALLBACK_CACHE=jsonfile
-export FALLBACK_STORAGE=local
-export FALLBACK_SECRETS=env
-
-# Run the service
-./gradlew bootRun  # Java
-# or
-uvicorn main:app   # Python
-
-# Run tests
-./gradlew test     # Java
-# or
-pytest             # Python
-```
-
-### 8. Commit and document
-
-- Write `README.md` with service purpose, setup instructions, and architecture overview
-- Create initial ADR (Architecture Decision Record) for key design choices
-- Commit with conventional commit message: `feat: scaffold order-service`
+A generated scaffold is not production-ready until the applicable [Definition of Done](../standards/definition-of-done.md) is satisfied.
 
 ## Completion Criteria
 
-- [ ] Project structure follows layered architecture
-- [ ] All external dependencies wrapped in capability abstractions
-- [ ] Fallback adapters present with explicit env toggles
-- [ ] Observability configured (logging, metrics, tracing)
-- [ ] Unit and integration test stubs pass
-- [ ] Service runs locally with fallback mode
-- [ ] README and initial ADR committed
+- [ ] Requirements are grounded and not invented
+- [ ] Plan and every milestone Implementation Plan were reviewed
+- [ ] Tests preceded production code
+- [ ] RED, GREEN, and refactor evidence is recorded
+- [ ] Dependencies and architecture match actual complexity
+- [ ] Local adapter and production degradation decisions are separate
+- [ ] Final validation passes or gaps are explicitly documented

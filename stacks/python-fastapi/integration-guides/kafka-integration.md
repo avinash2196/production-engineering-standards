@@ -1,225 +1,121 @@
-# Kafka Integration (Python FastAPI)
+# Messaging Integration — Python FastAPI
 
 ## Purpose
 
-Step-by-step guide for wiring Apache Kafka into a FastAPI service through the `MessagePublisher` and `MessageSubscriber` capability interfaces using `aiokafka`, including async producer/consumer configuration, serialization, error handling, observability, and fallback setup.
+Wire Kafka or Pub/Sub behind the `MessagePublisher`/`MessageSubscriber` contracts while preserving an explicit database-backed or in-memory local adapter for approved development and test scenarios.
 
-## Dependencies
+A database outbox is preferred locally when restart durability and SQL inspectability matter. It does not reproduce Kafka partitions, consumer groups, rebalancing, replay, or equivalent throughput.
 
-```txt
-# requirements.txt
-aiokafka>=0.10.0
-pydantic>=2.0
-prometheus-client>=0.20.0
-opentelemetry-api>=1.24.0
-opentelemetry-instrumentation-kafka>=0.45b0
-```
+## Required Workflow
 
-## Producer Configuration
+1. Plan message semantics: topic, schema, key, ordering, idempotency, retry, and ownership.
+2. Approve an implementation plan with exact files, migrations, tests, and rollout behavior.
+3. Add failing tests for publisher selection, serialization, idempotency metadata, and production guards.
+4. Implement the contract and selected adapter.
+5. Run unit and broker/outbox integration tests.
+6. Refactor only after green.
 
-```python
-# config/kafka.py
-from pydantic_settings import BaseSettings
-
-class KafkaSettings(BaseSettings):
-    bootstrap_servers: str = "localhost:9092"
-    acks: str = "all"
-    retries: int = 3
-    linger_ms: int = 5
-    max_in_flight: int = 5
-    idempotent: bool = True
-
-    class Config:
-        env_prefix = "KAFKA_"
-```
-
-## MessagePublisher Implementation
+## Typed Configuration
 
 ```python
-# infrastructure/messaging/kafka_publisher.py
-import json
-from aiokafka import AIOKafkaProducer
-from opentelemetry import trace
-from core.abstractions import MessagePublisher, Message, PublishOptions
+from enum import StrEnum
 
-tracer = trace.get_tracer(__name__)
 
-class KafkaMessagePublisher(MessagePublisher):
-    def __init__(self, settings: KafkaSettings, metrics: MetricsCollector):
-        self._producer: AIOKafkaProducer | None = None
-        self._settings = settings
-        self._metrics = metrics
+class MessagingAdapter(StrEnum):
+    KAFKA = "kafka"
+    PUBSUB = "pubsub"
+    DB = "db"
+    IN_MEMORY = "inmemory"
+```
 
-    async def start(self):
-        self._producer = AIOKafkaProducer(
-            bootstrap_servers=self._settings.bootstrap_servers,
-            acks=self._settings.acks,
-            enable_idempotence=self._settings.idempotent,
-            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+Production startup must reject `DB` and `IN_MEMORY`; it must allow `KAFKA` or `PUBSUB`.
+
+## Contract
+
+```python
+from typing import Any, Protocol
+
+
+class MessagePublisher(Protocol):
+    async def publish(
+        self,
+        topic: str,
+        message: Any,
+        key: str | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> None: ...
+```
+
+## Kafka Adapter
+
+Keep `aiokafka` types in `infrastructure/messaging/`. Configure acknowledgements, bounded retries, idempotence, delivery timeout, and lifecycle start/stop. Include correlation and idempotency metadata without logging sensitive payloads.
+
+```python
+class KafkaMessagePublisher:
+    def __init__(self, producer: AIOKafkaProducer) -> None:
+        self._producer = producer
+
+    async def publish(self, topic, message, key=None, headers=None) -> None:
+        await self._producer.send_and_wait(
+            topic,
+            key=key.encode() if key else None,
+            value=serialize(message),
+            headers=encode_headers(headers or {}),
         )
-        await self._producer.start()
-
-    async def stop(self):
-        if self._producer:
-            await self._producer.stop()
-
-    async def publish(self, topic: str, message: Message, options: PublishOptions | None = None) -> None:
-        with tracer.start_as_current_span("kafka-publish", attributes={"topic": topic}):
-            headers = [
-                ("idempotencyKey", message.idempotency_key.encode()),
-                ("correlationId", message.correlation_id.encode()),
-            ]
-            try:
-                await self._producer.send_and_wait(
-                    topic,
-                    key=options.partition_key.encode() if options and options.partition_key else None,
-                    value=message.body,
-                    headers=headers,
-                )
-                self._metrics.increment("publisher_messages_sent_total", tags={"topic": topic})
-            except Exception as e:
-                self._metrics.increment("publisher_errors_total", tags={"topic": topic})
-                raise PublishFailedError(topic, message.idempotency_key) from e
 ```
 
-## FastAPI Lifespan Integration
+## Database Outbox Local Adapter
 
-```python
-# main.py
-from contextlib import asynccontextmanager
+The local implementation stores a record in an inspectable table:
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    publisher = app.state.publisher
-    subscriber = app.state.subscriber
-    await publisher.start()
-    await subscriber.start()
-    yield
-    await subscriber.stop()
-    await publisher.stop()
-
-app = FastAPI(lifespan=lifespan)
+```text
+outbox_message(
+  message_id, topic, message_key, payload_json,
+  headers_json, status, created_at
+)
 ```
 
-## MessageSubscriber Implementation
+Use the same database transaction as the business update when the outbox is part of a real durability design. For a local-only publisher test, at minimum verify that messages survive publisher recreation and remain queryable.
 
 ```python
-# infrastructure/messaging/kafka_subscriber.py
-import asyncio
-from aiokafka import AIOKafkaConsumer
-from core.abstractions import MessageSubscriber
-
-class KafkaMessageSubscriber(MessageSubscriber):
-    def __init__(self, settings: KafkaSettings, handler_registry: dict, metrics: MetricsCollector):
-        self._settings = settings
-        self._handlers = handler_registry  # {topic: async callable}
-        self._consumer: AIOKafkaConsumer | None = None
-        self._metrics = metrics
-        self._task: asyncio.Task | None = None
-
-    async def start(self):
-        self._consumer = AIOKafkaConsumer(
-            *self._handlers.keys(),
-            bootstrap_servers=self._settings.bootstrap_servers,
-            group_id=self._settings.group_id,
-            auto_offset_reset="earliest",
-            enable_auto_commit=False,
+if settings.messaging_adapter is MessagingAdapter.DB:
+    return DatabaseOutboxMessagePublisher(
+        SqlAlchemyOutboxStore(
+            settings.database_url,
+            table_name=settings.outbox_table_name,
         )
-        await self._consumer.start()
-        self._task = asyncio.create_task(self._consume_loop())
-
-    async def _consume_loop(self):
-        async for msg in self._consumer:
-            headers = {k: v.decode() for k, v in msg.headers}
-            idempotency_key = headers.get("idempotencyKey", "")
-
-            if await self._dedup_store.exists(idempotency_key):
-                await self._consumer.commit()
-                continue
-
-            handler = self._handlers.get(msg.topic)
-            if handler:
-                try:
-                    await handler(msg.value, headers)
-                    await self._dedup_store.mark(idempotency_key, ttl=86400)
-                    await self._consumer.commit()
-                    self._metrics.increment("subscriber_messages_processed_total")
-                except Exception:
-                    self._metrics.increment("subscriber_errors_total")
-                    # message not committed — will be redelivered
-
-    async def stop(self):
-        if self._task:
-            self._task.cancel()
-        if self._consumer:
-            await self._consumer.stop()
+    )
 ```
 
-## Fallback Wiring
+`MESSAGING_ADAPTER=inmemory` is acceptable only for isolated tests that do not need restart durability or multi-process behavior.
 
-```python
-# infrastructure/messaging/inmemory_publisher.py
-from collections import defaultdict
-from core.abstractions import MessagePublisher
+## Consumer Requirements
 
-class InMemoryMessagePublisher(MessagePublisher):
-    """See standards/fallbacks/kafka-fallback.md for full implementation."""
-    def __init__(self):
-        self._queues: dict[str, list] = defaultdict(list)
+Document and test:
 
-    async def publish(self, topic, message, options=None):
-        self._queues[topic].append(message)
-```
+- idempotency/deduplication key;
+- commit/acknowledgement point;
+- retry and dead-letter behavior;
+- ordering scope;
+- poison-message handling;
+- shutdown and rebalance behavior;
+- telemetry for lag, success, retry, and failure.
 
-Activate via:
-```bash
-export FALLBACK_KAFKA=db
-```
+Do not mark a message processed before its required business transaction succeeds.
 
-```python
-# dependency injection
-def get_publisher(settings: Settings) -> MessagePublisher:
-    if settings.fallback_kafka == "db":
-        return InMemoryMessagePublisher()
-    return KafkaMessagePublisher(settings.kafka, get_metrics())
-```
+## Verification
 
-## Observability
-
-| Metric | Description |
-|--------|-------------|
-| `publisher_messages_sent_total` | Messages published by topic |
-| `publisher_errors_total` | Publish failures by topic |
-| `subscriber_messages_processed_total` | Messages consumed and handled |
-| `subscriber_errors_total` | Consumer processing failures |
-
-## Testing
-
-```python
-import pytest
-from unittest.mock import AsyncMock
-
-@pytest.mark.asyncio
-async def test_publish_sends_to_kafka(mock_producer):
-    publisher = KafkaMessagePublisher(settings, metrics)
-    publisher._producer = mock_producer
-    await publisher.publish("orders", Message(body={"id": "123"}, idempotency_key="k1"))
-    mock_producer.send_and_wait.assert_called_once()
-```
-
-For integration tests with a real broker, use `testcontainers-python`:
-```python
-from testcontainers.kafka import KafkaContainer
-
-@pytest.fixture(scope="module")
-def kafka_container():
-    with KafkaContainer() as kafka:
-        yield kafka
-```
+- unit tests for serialization, metadata, and error translation;
+- selection tests for `kafka`, `pubsub`, `db`, and `inmemory` as applicable;
+- production guard tests for local-only values;
+- Testcontainers/emulator test for the selected production broker;
+- database integration test for outbox schema and persistence;
+- duplicate delivery/idempotency test;
+- startup/shutdown lifecycle test.
 
 ## References
 
-- [MessagePublisher.md](../../../contracts/MessagePublisher.md)
-- [MessageSubscriber.md](../../../contracts/MessageSubscriber.md)
-- [kafka-fallback.md](../../../standards/fallbacks/kafka-fallback.md)
-- [messaging-abstraction standard](../../../standards/messaging-abstraction.md)
+- [MessagePublisher](../../../contracts/MessagePublisher.md)
+- [MessageSubscriber](../../../contracts/MessageSubscriber.md)
+- [Messaging local adapter detail](../../../standards/fallbacks/kafka-fallback.md)
+- [Production dependency failure strategy](../../../standards/fallback-strategy.md)

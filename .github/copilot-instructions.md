@@ -1,13 +1,27 @@
-# Enterprise AI Engineering — Workspace Instructions
+# Enterprise AI Engineering — Copilot Instructions
 
-This repository is the **single source of truth** for engineering standards.
-Apply all rules here when generating, reviewing, or scaffolding code for this project.
+Use these instructions when planning, implementing, testing, reviewing, or refactoring code in this repository.
+
+## Mandatory Delivery Workflow
+
+For any task that changes production behavior, contracts, shared standards, reliability, security, compliance, or four or more files, follow this sequence:
+
+> **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
+
+1. Create or update `docs/.ai/Plan.md` using the [Plan Template](../templates/docs/plan-template.md).
+2. Do not include complete production code in the Plan.
+3. After Plan approval, create a milestone-specific `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` using the [Implementation Plan Template](../templates/docs/implementation-plan-template.md).
+4. Do not edit production source until the Implementation Plan is approved.
+5. Write or update tests first and confirm RED for the expected missing behavior.
+6. Implement only enough production code to reach GREEN.
+7. Refactor separately while keeping all relevant tests GREEN.
+8. Complete final review and repository validation.
+
+Full workflow: [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md)
 
 ## Default Architecture
 
-Use the following layered structure as the default for backend services. A project may use a simpler structure when its documented architecture decision explains why additional layers would add no value.
-
-Dependencies should point toward domain and application abstractions. Infrastructure implementations must not become dependencies of domain logic.
+Use architecture appropriate to the service's business complexity. Preserve these dependency rules:
 
 | Area | Responsibility | Must Avoid |
 |---|---|---|
@@ -17,92 +31,110 @@ Dependencies should point toward domain and application abstractions. Infrastruc
 | **Ports/Contracts** | Repository and external-capability abstractions | Vendor-specific implementation details |
 | **Infrastructure Adapters** | Database, messaging, cache, storage, and secret-provider implementations | Business policy |
 
-Full rules: [standards/architecture.md](../standards/architecture.md)
+Simple CRUD services may use fewer structural layers when the dependency direction remains clear. Do not add folders merely to satisfy a diagram.
 
-## Capability Interfaces — Always Use
+Full rules: [Architecture Standard](../standards/architecture.md)
 
-Inject **interfaces**, never concrete infrastructure classes, into the service layer:
+## Capability Interfaces
 
-- `MessagePublisher` / `MessageSubscriber` → [spec](../contracts/MessagePublisher.md)
-- `CacheProvider` → [spec](../contracts/CacheProvider.md)
-- `ObjectStorageProvider` → [spec](../contracts/ObjectStorageProvider.md)
-- `SecretProvider` → [spec](../contracts/SecretProvider.md)
-- `ConfigProvider` → [spec](../contracts/ConfigProvider.md)
+Application and domain code depend on capability contracts rather than vendor SDKs:
 
+- [MessagePublisher](../contracts/MessagePublisher.md) and [MessageSubscriber](../contracts/MessageSubscriber.md)
+- [CacheProvider](../contracts/CacheProvider.md)
+- [ObjectStorageProvider](../contracts/ObjectStorageProvider.md)
+- [SecretProvider](../contracts/SecretProvider.md)
+- [ConfigProvider](../contracts/ConfigProvider.md)
+
+Introduce an abstraction when it protects a meaningful boundary, supports testing, or permits multiple implementations. Do not create speculative interfaces without a justified use case.
 
 ## Local Adapter Configuration
 
-Services that depend on external infrastructure should provide local adapters when the adapter adds meaningful development or testing value.
+Local adapters help developers and CI exercise behavior without every external platform. They are not automatic production failover mechanisms.
 
-Local adapters are not production failover mechanisms. Production degradation behavior must be designed separately based on correctness, durability, security, and business impact.
+| Variable | Production adapters | Local-only adapters |
+|---|---|---|
+| `MESSAGING_ADAPTER` | `kafka`, `pubsub` | `db`, `inmemory` |
+| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` |
+| `STORAGE_ADAPTER` | `s3`, `gcs` | `local` |
+| `SECRET_ADAPTER` | `vault`, `secretmanager` | `env` |
 
-| Variable | Production/default value | Local adapter values | GCP             | 
-|---|---|---|-----------------|
-| `MESSAGING_ADAPTER` | `kafka` | `db`, `inmemory` | `pubsub`        |
-| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` | `redis`         |
-| `STORAGE_ADAPTER` | `s3` | `local` | `gcs`           |
-| `SECRET_ADAPTER` | `vault` | `env` | `secretmanager` |
+Rules:
 
-Details: [standards/local-adapter-strategy.md](../standards/local-adapter-strategy.md)
+1. Adapter selection uses typed configuration.
+2. Local-only adapter activation emits a structured warning and metric.
+3. Reduced durability, ordering, consistency, concurrency, and security guarantees are documented.
+4. Production startup fails when a local-only adapter is selected.
+5. Testcontainers or official emulators may be preferable to a custom local adapter.
 
-## Non-Negotiable Rules
+Details: [Local Adapter Strategy](../standards/local-adapter-strategy.md)
 
-1. Domain objects have **zero** framework dependencies.
-2. Secrets are always retrieved via `SecretProvider` — never hardcoded or via plain env vars.
-3. Every service must expose sufficient logs and health information for its operating environment. 
-4. Metrics and distributed tracing should be added according to runtime, support model, and service criticality.
-5. Collection-fetching paths must be reviewed for N+1 query behavior. 
-6. Use joins, entity graphs, batching, or purpose-built queries based on pagination and cardinality requirements.
-7. All remote calls must define timeouts. Their failure behavior must be documented as retry, circuit-break, degrade, queue, return stale data, fail closed, or fail fast.
+## Production Dependency Failure Behavior
 
-Full principles: [standards/engineering-principles.md](../standards/engineering-principles.md)
+Every external dependency must have documented failure behavior. Select based on correctness and business impact:
 
-## Standards — Key References
+- fail fast
+- fail closed
+- retry with bounded backoff
+- circuit break
+- queue durably for later processing
+- serve stale data
+- bypass a non-critical capability
+- provide reduced functionality
 
-| Concern                       | Document                                                                                |
-|-------------------------------|-----------------------------------------------------------------------------------------|
-| Naming, method/class size     | [standards/coding-standards.md](../standards/coding-standards.md)                       |
-| Request/response DTOs         | [standards/dto-guidelines.md](../standards/dto-guidelines.md)                           |
-| Security, TLS, secrets        | [standards/security/security-standards.md](../standards/security/security-standards.md) |
-| Metrics, logs, traces         | [standards/observability.md](../standards/observability.md)                             |
-| Unit + integration tests      | [standards/testing/unit-testing.md](../standards/testing/unit-testing.md)               |
-| Performance limits            | [standards/performance/performance.md](../standards/performance/performance.md)         |
-| HIPAA controls                | [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)     |
-| Agent planning + doc creation | [standards/agent-execution.md](../standards/agent-execution.md)                         |
-| Production Readiness          | [standards/fallback-strategy.md](../standards/fallback-strategy.md)                     | 
+Do not silently replace a durable production dependency with an in-memory implementation. Security, authorization, secrets, and correctness controls normally fail closed.
 
-## Stack Quick Reference
+Details: [Production Dependency Failure and Degradation](../standards/fallback-strategy.md)
 
-- **Java 21 + Spring Boot 3.x** → [stacks/java-springboot/java-spring.md](../stacks/java-springboot/java-spring.md)
-- **Python 3.12+ + FastAPI** → [stacks/python-fastapi/python-backend.md](../stacks/python-fastapi/python-backend.md)
+## Engineering Rules
 
-## Agent Execution — Always Follow
+1. Domain logic must not depend on web, persistence, or vendor SDK frameworks unless a project-specific architecture decision explicitly adopts an active-record model.
+2. Secrets are accessed through the configured secret-provider boundary. Environment variables are permitted only for explicitly local development adapters.
+3. External calls define timeouts and documented failure behavior.
+4. Transaction and idempotency boundaries are explicit where duplicate or partial processing could occur.
+5. Collection-fetching paths are reviewed for N+1 behavior using cardinality and pagination context.
+6. Logs must be structured and avoid secrets, PHI, and unnecessary PII.
+7. Metrics and traces are added according to service criticality, runtime, and support needs.
+8. Numeric method or class-size thresholds are review signals, not automatic failures.
+9. Tests cover approved positive and negative behavior without inventing requirements.
+10. Human review remains required for commits and production readiness decisions.
 
-Before starting any task that touches ≥ 4 files, creates/deletes directories, or changes a shared standard:
+## Rule Classification
 
-1. Write a plan file at `.copilot/plans/YYYY-MM-DD-<task-slug>.md`
-2. Present the plan to the user before editing anything
-3. Check off each step as it completes — never batch checkoffs at end
-4. When creating any `.md` file, ask the five Doc Creation Protocol questions first
+When reporting a standards finding, classify it as:
 
-Full rules: [standards/agent-execution.md](../standards/agent-execution.md)  
-Doc creation workflow: [playbooks/create-doc.md](../playbooks/create-doc.md)
+- `AUTOMATED` — a test, validator, static check, or CI gate fails on violation
+- `REVIEWED` — engineering judgment is required
+- `ADVISORY` — a default recommendation with justified exceptions
 
-## Available Slash Commands
+Do not call a rule “enforced” unless an executable mechanism blocks the violation.
 
-Type `/` in Copilot Chat to access:
-- `/scaffold-service` — generate a complete new microservice
-- `/compliance-review` — audit a service against org standards
-- `/create-doc` — create any `.md` doc with guided questions + templates
-- `/generate-adr` — record an architecture decision
-- `/review-architecture` — assess layering, coupling, and capability interface usage
-- `/review-code` — detailed code review against org standards
-- `/review-api-design` — validate OpenAPI specs and detect breaking changes
-- `/generate-tests` — generate unit + integration tests
-- `/generate-load-tests` — generate k6 load test scripts
-- `/analyse-codebase` — map dependencies, hotspots, and technical debt
-- `/refactor-code` — safely restructure code with tests green
-- `/review-distributed-systems` — assess reliability, idempotency, fallback wiring
-- `/review-hipaa` — audit HIPAA control compliance
-- `/review-production-readiness` — full pre-deploy checklist
-- `/maintenance-check` — dependency audit, deprecation scan, dead code
+## Key References
+
+| Concern | Document |
+|---|---|
+| PDD lifecycle | [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md) |
+| Agent execution | [Agent Execution Standard](../standards/agent-execution.md) |
+| Coding standards | [Coding Standards](../standards/coding-standards.md) |
+| DTO and API boundaries | [DTO Guidelines](../standards/dto-guidelines.md) |
+| Security | [Security Standards](../standards/security/security-standards.md) |
+| Observability | [Observability](../standards/observability.md) |
+| Unit testing | [Unit Testing](../standards/testing/unit-testing.md) |
+| Integration testing | [Integration Testing](../standards/testing/integration-testing.md) |
+| Production readiness | [Production Readiness](../standards/production-readiness.md) |
+| Enforcement status | [Enforcement Matrix](../docs/enforcement-matrix.md) |
+
+## Stack Guidance
+
+- [Java 21 and Spring Boot 3.x](../stacks/java-springboot/java-spring.md)
+- [Python 3.12+ and FastAPI](../stacks/python-fastapi/python-backend.md)
+
+## Available Prompt Workflows
+
+- `/create-plan` — create or update `docs/.ai/Plan.md`; no implementation
+- `/create-implementation-plan` — create the exact milestone implementation plan; no source changes
+- `/implement-approved-plan` — run RED → GREEN → REFACTOR from an approved implementation plan
+- `/scaffold-service` — orchestrate service creation through all planning and test gates
+- `/generate-tests` — create tests only and verify RED when behavior is not implemented
+- `/refactor-code` — refactor only from a GREEN baseline
+- `/review-code`, `/review-architecture`, `/review-distributed-systems`, `/review-production-readiness` — evidence-based reviews
+- `/compliance-review`, `/review-hipaa` — engineering control reviews, not legal certification

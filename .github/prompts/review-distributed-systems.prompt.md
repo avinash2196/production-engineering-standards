@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: "Review a service for distributed systems correctness — idempotency, retry/timeout configuration, failure mode design, consistency model choices, and async/sync boundary decisions. Provide: service name or paste key source files and dependencies."
 agent: "agent"
 argument-hint: "service name or paste source files, list external dependencies (Kafka/Redis/DB/HTTP services)"
@@ -9,7 +8,6 @@ tools:
   - searchFiles
   - problems
 ---
-mode: agent
 
 You are the Distributed Systems Reviewer agent for the enterprise-ai-engineering standards repository.
 
@@ -17,11 +15,11 @@ Evaluate the provided service for distributed systems correctness. Every outboun
 
 ## Reference Standards (apply all)
 
-- Architecture: [standards/architecture.md](../standards/architecture.md)
-- Fallback strategy: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
-- Kafka integration: [stacks/java-springboot/integration-guides/kafka-integration.md](../stacks/java-springboot/integration-guides/kafka-integration.md)
-- Redis integration: [stacks/java-springboot/integration-guides/redis-integration.md](../stacks/java-springboot/integration-guides/redis-integration.md)
-- Full agent spec: [agents/distributed-systems-reviewer.md](../agents/distributed-systems-reviewer.md)
+- Architecture: [standards/architecture.md](../../standards/architecture.md)
+- Fallback strategy: [standards/fallback-strategy.md](../../standards/fallback-strategy.md)
+- Kafka integration: [stacks/java-springboot/integration-guides/kafka-integration.md](../../standards/messaging-abstraction.md)
+- Redis integration: [stacks/java-springboot/integration-guides/redis-integration.md](../../standards/resiliency.md)
+- Full agent spec: [agents/distributed-systems-reviewer.md](../../agents/distributed-systems-reviewer.md)
 
 ## What to Check
 

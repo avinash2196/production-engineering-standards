@@ -1,28 +1,54 @@
 # Definition of Done
 
-A checklist that must be satisfied before marking work complete for services built from these templates.
+A milestone is complete only when applicable items are satisfied and evidence is available.
 
-Functional
-- Feature implemented and verified against acceptance criteria.
-- Unit tests added for business logic; integration tests added for infra wiring.
+## Planning
 
-Operational
-- Health checks present and documented.
-- Metrics (latency, error, throughput) instrumented and exported.
-- Tracing enabled and spans verified for key flows.
+- [ ] Requirements and current state were reviewed
+- [ ] `docs/.ai/Plan.md` contains the approved milestone and scope
+- [ ] The milestone Implementation Plan names exact files, tests, RED expectation, GREEN changes, refactor boundary, exclusions, and commands
 
-Security & Compliance
-- No secrets in code or config files; secrets sourced from `SecretProvider`.
-- Audit logging implemented for sensitive operations; retention and access policy specified.
+## Test → Code → Refactor
 
-Reliability
-- Retries, timeouts, and idempotency considered for external calls.
-- Chaos/local-failure tests exercised or documented.
+- [ ] New or updated tests/checks were created before production implementation
+- [ ] RED was observed for the expected missing behavior
+- [ ] Minimal production changes made focused tests GREEN
+- [ ] Relevant regression tests are GREEN
+- [ ] Refactoring occurred only after GREEN and preserved behavior
 
-Documentation
-- ADR created if design choices are non-trivial.
-- README explains local dev with fallbacks and environment toggles.
+## Functional and Contract Behavior
 
-CI/CD
-- Linting and unit tests run in CI and pass.
-- Template generation and repo validators updated if necessary.
+- [ ] Approved acceptance criteria pass
+- [ ] Positive and negative behavior is covered
+- [ ] API/event/persistence contracts remain compatible or the approved breaking change is documented
+
+## Architecture and Reliability
+
+- [ ] Dependency direction and capability boundaries are appropriate to service complexity
+- [ ] Transaction, rollback, idempotency, ordering, retry, timeout, and degradation decisions are explicit where applicable
+- [ ] Local-only adapters are blocked in production
+
+## Security and Compliance
+
+- [ ] No secrets are committed
+- [ ] External input is validated
+- [ ] Sensitive data is excluded from ordinary logs
+- [ ] Applicable security/compliance controls are tested or reviewed
+
+## Operations
+
+- [ ] Health behavior is appropriate to the runtime
+- [ ] Logs, metrics, and traces support the operating model
+- [ ] Dependency degradation is observable
+- [ ] Deployment and rollback expectations are documented where required
+
+## Documentation and Enforcement
+
+- [ ] Plan and Implementation Plan contain final evidence and changed-file summary
+- [ ] Relevant ADRs, integration docs, and enforcement matrix are updated
+- [ ] Linters, static checks, repository validators, and CI pass
+- [ ] Deferred work and residual risk are explicit
+
+## Integrity Rule
+
+Do not mark an item complete when the command was not run or the evidence was not observed. State “not run,” “not applicable,” or “deferred” honestly.

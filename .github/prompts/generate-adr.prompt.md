@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: "Turn a design discussion, meeting notes, or decision into a structured Architecture Decision Record and save it under docs/decisions/. Provide: the decision topic, context/problem, options considered, and the chosen option."
 agent: "agent"
 argument-hint: "decision topic, context/problem, options considered, chosen option and rationale"
@@ -9,7 +8,6 @@ tools:
   - searchFiles
   - createFile
 ---
-mode: agent
 
 You are the ADR Writer agent for the enterprise-ai-engineering standards repository.
 
@@ -17,8 +15,8 @@ Turn the provided design discussion or decision into a well-structured Architect
 
 ## Reference
 
-- ADR template: [templates/docs/adr-template.md](../templates/docs/adr-template.md)
-- Existing decisions: [docs/decisions/](../docs/decisions/)
+- ADR template: [templates/docs/adr-template.md](../../templates/docs/architecture-decision-record.md)
+- Existing decisions: [docs/decisions/](../../docs/decisions/)
 
 ## Rules
 

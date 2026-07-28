@@ -1,96 +1,114 @@
 # Coding Standards
 
-Language-agnostic coding standards and style guidance for all enterprise services.
-
 ## Purpose
 
-Establish consistent, readable, and maintainable code across teams and stacks by defining rules that apply regardless of language.
+Provide consistent, readable defaults while avoiding brittle numeric rules that reward superficial compliance.
 
-## Mandatory Rules
+## Naming
 
-### Naming
+| Element | Java | Python | Example |
+|---|---|---|---|
+| Types | PascalCase | PascalCase | `OrderService` |
+| Methods/functions | camelCase | snake_case | `createOrder`, `create_order` |
+| Variables | camelCase | snake_case | `orderId`, `order_id` |
+| Constants | UPPER_SNAKE_CASE | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| Database columns | snake_case | snake_case | `created_at` |
+| REST resource paths | kebab-case nouns | kebab-case nouns | `/api/v1/order-items` |
+| Environment variables | UPPER_SNAKE_CASE | UPPER_SNAKE_CASE | `MESSAGING_ADAPTER` |
 
-| Element | Convention | Example |
-|---------|------------|---------|
-| Classes / types | PascalCase | `OrderService`, `PaymentResult` |
-| Methods / functions | camelCase (Java) / snake_case (Python) | `createOrder()`, `create_order()` |
-| Constants | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
-| Variables | camelCase (Java) / snake_case (Python) | `orderId`, `order_id` |
-| Database columns | snake_case | `created_at`, `user_id` |
-| REST endpoints | kebab-case nouns | `/api/v1/order-items` |
-| Environment variables | UPPER_SNAKE_CASE | `KAFKA_BOOTSTRAP_SERVERS` |
+Names must reflect domain intent. Avoid vague terms such as `data`, `info`, `manager`, or `helper` when a precise name exists.
 
-### Methods
+## Focused Methods
 
-- Maximum **30 lines** per method (excluding blank lines and braces). Extract helpers if longer.
-- Maximum **4 parameters**. Use an options/config object for more.
-- Return early for guard clauses — avoid deep nesting.
-- One level of abstraction per method.
+### Default
 
-### Classes
+A method should represent one coherent responsibility and one level of abstraction.
 
-- Maximum **300 lines** per class/module. Split by responsibility if larger.
-- **Single Responsibility Principle** — each class does one thing.
-- Prefer composition over inheritance.
-- No utility classes with only static methods — use module-level functions (Python) or focused services (Java).
+### Review Signals
 
-### Error Handling
+Review methods that:
 
-- Throw domain-specific exceptions, not generic `RuntimeException` or bare `Exception`.
-- Catch at the right level — usually the service layer or a global handler.
-- Never swallow exceptions silently — always log or re-throw.
-- Use typed error responses for APIs (see `dto-guidelines.md`).
+- exceed roughly 30–40 lines
+- contain multiple unrelated branches or side effects
+- mix transport, business, persistence, and provider logic
+- are difficult to test without extensive setup
 
-### Comments
+A threshold is not an automatic failure. Cohesive parsing, mapping, transaction orchestration, or performance-sensitive algorithms may be clearer when kept together.
 
-- Code should be self-documenting. Comments explain **why**, not **what**.
-- Delete commented-out code — use version control instead.
-- Public APIs require doc comments (Javadoc, docstrings) documenting purpose, params, return, and exceptions.
-- TODOs must include a ticket reference: `// TODO(PROJ-123): migrate to async`.
+## Focused Classes and Modules
 
-### Imports
+Review classes/modules that:
 
-- No wildcard imports (`import *`).
-- Group imports: standard library → third-party → internal.
-- Remove unused imports (enforced by linter).
+- exceed roughly 300 lines
+- own multiple unrelated reasons to change
+- inject many dependencies with no cohesive use case
+- combine API, business, persistence, and infrastructure concerns
 
-## Defaults
+Split only when the extracted responsibility has a meaningful name and boundary. Do not fragment cohesive behavior into tiny indirections.
 
-- Use the stack-specific formatter/linter configured in project templates:
-  - Java: `google-java-format` + `Checkstyle`
-  - Python: `ruff` (format + lint)
-- Format on save — no manual formatting discussions in reviews.
-- Line length: 120 characters (Java), 100 characters (Python).
+## Parameters
 
-## Anti-Patterns
+More than four parameters is a review signal, not an automatic violation. Use a value object or request object when parameters form a coherent concept. Do not hide unrelated dependencies inside a generic context object.
 
-| Anti-Pattern | Why it's wrong |
-|-------------|----------------|
-| Magic numbers | Use named constants. `if (retries > 3)` → `if (retries > MAX_RETRIES)` |
-| Boolean parameters | `createOrder(true, false)` is unreadable. Use enums or config objects. |
-| String typing | Use enums or value objects instead of raw strings for states, types, categories. |
-| Premature optimization | Optimize after profiling, not before. Readability first. |
-| God objects | Classes with 10+ dependencies indicate design problems. |
+## Control Flow
+
+- use guard clauses when they make preconditions clear
+- avoid deep nesting when named operations improve readability
+- do not extract trivial methods that obscure a straightforward algorithm
+- make concurrency, transaction, and retry behavior explicit
+
+## Error Handling
+
+- use domain/application-specific exceptions where callers need distinct handling
+- translate exceptions at transport boundaries
+- do not swallow failures
+- preserve root cause when wrapping
+- avoid retrying validation, authorization, or other non-transient failures
+
+## Comments and Documentation
+
+- comments explain **why**, trade-offs, or non-obvious constraints
+- remove commented-out code
+- TODOs include an issue/ticket reference when used in production code
+- public contracts document behavior, errors, and important guarantees
+
+## Imports and Dependencies
+
+- no wildcard imports
+- remove unused dependencies and imports
+- group imports according to stack tooling
+- avoid direct vendor SDK imports in application/domain code when a capability boundary is required
+
+## Formatting and Tooling
+
+Prefer the formatter and linter already configured by the project. Repository defaults:
+
+- Java: formatter + Checkstyle/SpotBugs or equivalent project tools
+- Python: Ruff formatting/linting and mypy where configured
+
+Do not create large formatting-only diffs during feature implementation.
 
 ## LLM Instructions
 
-- When generating code, follow the naming conventions for the target language.
-- Keep generated methods under 30 lines. If a method grows longer, split it.
-- Never generate commented-out code blocks or TODO comments without ticket references.
-- Use domain-specific exception types rather than generic exceptions.
+- Treat line, parameter, and class-size numbers as review signals.
+- Explain the concrete readability, cohesion, maintenance, or testability problem before proposing extraction.
+- Prefer domain-specific names and exceptions.
+- Do not add speculative abstractions or fragment cohesive logic to satisfy a metric.
+- Keep refactoring separate from behavior changes.
 
 ## Review Checklist
 
-- [ ] Naming follows conventions for the language.
-- [ ] No methods exceed 30 lines.
-- [ ] No classes exceed 300 lines.
-- [ ] No wildcard imports.
-- [ ] No magic numbers or string-typed enums.
-- [ ] Error handling uses domain exceptions.
-- [ ] Comments explain why, not what.
+- [ ] Names express domain intent
+- [ ] Methods and classes are cohesive
+- [ ] Numeric thresholds were used as signals, not automatic failures
+- [ ] Transport, business, persistence, and provider concerns are not mixed without rationale
+- [ ] Error handling preserves useful context
+- [ ] Comments explain non-obvious reasoning
+- [ ] No unrelated formatting or cleanup expanded the change
 
 ## References
 
-- [dto-guidelines.md](dto-guidelines.md)
-- [Java Spring Boot conventions](../stacks/java-springboot/java-spring.md)
-- [Python FastAPI conventions](../stacks/python-fastapi/python-backend.md)
+- [Architecture](architecture.md)
+- [DTO Guidelines](dto-guidelines.md)
+- [Java Stack](../stacks/java-springboot/java-spring.md)
+- [Python Stack](../stacks/python-fastapi/python-backend.md)

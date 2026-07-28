@@ -28,7 +28,7 @@ You are a production readiness review agent. You evaluate whether a service is r
 - [ ] All environment-specific values externalized (no hardcoded hosts, ports, credentials)
 - [ ] Secrets resolved via `SecretProvider`, not env vars in production
 - [ ] Config precedence follows: operator overrides → dynamic config → env → build defaults
-- [ ] All `FALLBACK_*` toggles are OFF and cannot be enabled in production images
+- [ ] All `*_ADAPTER` toggles are OFF and cannot be enabled in production images
 
 ### Observability
 - [ ] Structured JSON logging with `traceId`, `spanId`, `correlationId`, `service`, `environment`

@@ -1,217 +1,172 @@
-enterprise-ai-engineering
-=========================
+# Enterprise AI Engineering Standards
 
-Purpose
-- Canonical repository of standards, templates, agents, and workflows that teams and Copilot-style agents use to produce production-ready backend services (Java Spring Boot and Python FastAPI).
+A practical repository for turning persistent Copilot guidance into repeatable engineering workflows and executable quality gates for Java Spring Boot and Python FastAPI services.
 
-System philosophy
-- Configuration-first: runtime behavior is driven by typed configuration (operator overrides → dynamic config → env → local files → build defaults). All services must use the `ConfigProvider` pattern.
-- Explicit fallbacks: every external dependency must provide an explicit, environment-controlled fallback (e.g., Kafka → file-queue, Redis → in-memory). Fallbacks are only for local/dev and must not silently weaken production guarantees.
-- Capability abstractions: depend on small, well-documented interfaces (MessagePublisher, CacheProvider, ObjectStorageProvider, SecretProvider) so implementations are pluggable and testable.
+The repository is intentionally not a promise that AI-generated code is automatically production-ready. Copilot instructions guide decisions, prompts make reviews repeatable, and tests, validators, static analysis, and CI enforce the rules that can be checked automatically.
 
-Top-level structure (high level)
-- `contracts/` — capability abstractions for messaging, caching, storage, secrets, and configuration.
-- `standards/` — mandatory engineering controls: security, observability, testing, compliance, performance.
-- `stacks/` — opinionated language stacks and project templates (Java Spring Boot and Python FastAPI).
-- `agents/` — Copilot-style agent specs and prompts (scaffolders, reviewers, compliance agents).
-- `playbooks/` — step-by-step developer and operational workflows (create service, add endpoint, prepare for production).
-- `templates/` — ADRs, infra, monitoring, and repo-level templates.
-- `examples/` — reference architectures and fallback behavior examples. Runnable examples are explicitly identified.
-- `tooling/` — repo validators and generators.
+## Why This Repository Exists
 
-## How Standards Are Applied
+A single `copilot-instructions.md` file is useful for persistent context, but it is not enough for engineering governance. This repository separates:
 
-This repository separates engineering governance into three levels:
+1. **Stable standards** — architecture, testing, security, observability, local adapters, and production degradation.
+2. **Task workflows** — Plan, Implementation Plan, tests, implementation, refactoring, and review.
+3. **Executable enforcement** — repository tests, validators, stack-specific tests, and CI gates.
+4. **Human judgment** — architecture, trade-offs, operational safety, and exceptions that cannot be reduced to a brittle rule.
 
-1. **Guidance** — Copilot instructions influence code generation and review.
-2. **Repeatability** — reusable prompt files and reviewer specifications apply the same review process across tasks.
-3. **Enforcement** — tests, repository validators, static analysis, and CI block verifiable violations.
+## Required Development Lifecycle
 
-A documented rule is not described as enforced unless an executable check exists for it.
-Java + Python usage
-- Java (Spring Boot): follow layered layout `controller → service → domain → repository`; use `@ConfigurationProperties` bound to `ConfigProvider`, `@ControllerAdvice` for errors, and Testcontainers for integration tests (or local fallbacks in CI).
-- Python (FastAPI): use Pydantic models for DTOs, dependency injection via `Depends` for providers, async-safe handlers, and Testcontainers or local fallback adapters for integration tests.
+Qualifying implementation work follows:
 
-How agents work
-- Agents use `standards/`, `contracts/`, stack guidance, and project-specific context to produce plans, scaffolds, and review reports. Key agents include `backend-service-builder`, `code-reviewer`, and `compliance-reviewer`.
-- Agents may generate files and suggested patches; human review is required for commits. Agents are forbidden from committing secrets or running external network commands without explicit approval.
+> **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
-Fallback behavior
-- Fallbacks are explicit, toggled by environment variables (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`).
-- Fallbacks must emit telemetry (`fallback.active{name="<dep>"}`) and structured warnings when active.
-- Behavior differences (durability, ordering, consistency) must be documented in the integration guide for each adapter.
+The two planning artifacts have different responsibilities:
 
-Compliance
-- This repo provides engineering controls (encryption, audit logging, access control, data minimization) and dedicated compliance-review agent specs. These are engineering checklists — not legal certifications.
-- Services handling sensitive data must document data classification in `templates/docs/data-classification-template.md` and satisfy `standards/compliance-engineering.md` and `standards/hipaa-controls.md` where applicable.
+- `docs/.ai/Plan.md` defines **what** will be delivered, milestone order, scope, risks, and success criteria.
+- `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` defines **how** one approved milestone will be implemented: exact files, tests, expected RED behavior, minimal GREEN code, refactoring boundaries, and commands.
 
-Onboarding / how to use in a new repo
-1. Read `templates/docs/repo-instructions-template.md` and `standards/engineering-principles.md`.
-2. Run the scaffolder agent or generator: `python tooling/scripts/generate-template.py --stack <java|python> --name <SERVICE>` (or use `agents/backend-service-builder`).
-3. Implement or review `ConfigProvider` wiring, provide cloud adapters and explicit local fallbacks, and add tests.
-4. Run validators: `tooling/scripts/validate-repo-structure.ps1` and CI checks in `.github/workflows/`.
-5. Use `agents/code-reviewer` and `agents/compliance-reviewer` to validate before production rollout.
+Production code is not written during either planning phase. Tests or executable checks are created first, observed RED for the intended reason, followed by the smallest implementation required for GREEN. Refactoring is separate and must preserve GREEN.
 
-See `docs/overview.md` and `standards/` for full rules and checklists.
+See [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md).
 
----
+## Experience-Driven Adapter and Failure Strategy
 
-Using in other projects with VS Code Copilot
----------------------------------------------
+The repository preserves a practical distinction that is often lost in generic AI guidance.
 
-Every project that should follow these standards can wire them into VS Code Copilot in three steps, with no duplication of content.
+### Local adapters
+
+Local adapters make development and CI possible without every external service:
+
+| Capability | Production adapter examples | Local-only adapter examples |
+|---|---|---|
+| Messaging | Kafka, Pub/Sub | database-backed queue/outbox, in-memory queue |
+| Cache | Redis | inspectable JSON-file cache, in-memory cache |
+| Storage | S3, GCS | local filesystem |
+| Secrets | Vault, Secret Manager | environment-variable provider |
+
+Local adapters must be explicit, observable, testable, and blocked in production. Their reduced durability, ordering, consistency, concurrency, and security guarantees must be documented.
+
+### Production degradation
+
+Production dependency failure is a separate design decision. A service may fail fast, fail closed, retry, circuit-break, queue durably, serve stale data, bypass a non-critical capability, or operate with reduced functionality.
+
+The fallback itself is not the standard. The standard is that degraded behavior is **explicit, observable, testable, and unable to activate silently**.
+
+See:
+
+- [Local Adapter Strategy](standards/local-adapter-strategy.md)
+- [Production Dependency Failure and Degradation](standards/fallback-strategy.md)
 
 ## How Standards Are Applied
 
-This repository separates engineering governance into three levels:
+| Level | Purpose | Examples |
+|---|---|---|
+| **Guidance** | Influence planning, generation, and review | Copilot instructions, stack guidance |
+| **Repeatability** | Apply the same workflow and review structure | Prompt files, agent specifications, playbooks |
+| **Enforcement** | Fail an executable check on violation | Unit tests, integration tests, repository validator, CI |
+| **Human review** | Evaluate context-sensitive trade-offs | Architecture, resilience, security, operational readiness |
 
-1. **Guidance** — Copilot instructions influence code generation and review.
-2. **Repeatability** — reusable prompt files and reviewer specifications apply the same review process across tasks.
-3. **Enforcement** — tests, repository validators, static analysis, and CI block verifiable violations.
+A documented rule is described as enforced only when an executable mechanism blocks the violation. Current status is tracked in the [Enforcement Matrix](docs/enforcement-matrix.md).
 
-A documented rule is not described as enforced unless an executable check exists for it.
+## Repository Structure
 
-### How it works
-
-VS Code Copilot auto-loads `.github/copilot-instructions.md` from the workspace root on every chat. By placing a lightweight bootstrap file in each project's `.github/` folder that references this standards repo, Copilot instructions guide generated and reviewed code toward the documented standards. Tests, validators, static analysis, and CI enforce the subset of standards that can be checked automatically..
-
-### Step 1 — Copy the bootstrap template
-
-```
-cp enterprise-ai-engineering/templates/docs/project-copilot-instructions-bootstrap.md \
-   <your-project>/.github/copilot-instructions.md
-```
-
-Or manually copy `templates/docs/project-copilot-instructions-bootstrap.md` and place it at `.github/copilot-instructions.md` in the target project.
-
-### Step 2 — Update the standards repo path
-
-Open the file and replace `{STANDARDS_REPO}` with the relative or absolute path to your local clone of this repo. Example:
-
-```markdown
-> **Standards repo path:** `../../shared/enterprise-ai-engineering`
-```
-
-The path only needs to be readable on the developer's local machine — Copilot follows the markdown link references when responding in that workspace.
-
-### Step 3 — Optionally install slash commands
-
-Copy the prompt files to get `/scaffold-service` and `/compliance-review` slash commands in the target project:
-
-```
-cp enterprise-ai-engineering/.github/prompts/*.prompt.md \
-   <your-project>/.github/prompts/
+```text
+.github/
+  copilot-instructions.md       Workspace-level persistent guidance
+  instructions/                Stack and task-specific instructions
+  prompts/                     Reusable PDD and review workflows
+  workflows/                   Repository validation CI
+agents/                        Agent responsibilities and review behavior
+contracts/                     Capability boundaries
+standards/                     Engineering rules and decision guidance
+stacks/                        Java and Python stack guidance/templates
+playbooks/                     Step-by-step delivery and operational workflows
+templates/                     Plan, Implementation Plan, ADR, infra, and docs templates
+examples/                      Reference architectures and behavior walkthroughs
+tooling/                       Dependency-free validator and tests
+docs/                          Overview, decisions, and enforcement status
 ```
 
-### What Copilot will do automatically once wired
+## Using the Repository
 
-| Trigger | Copilot behavior |
-|---------|-----------------|
-| Any chat in the project | Enforces 5-layer architecture, capability interfaces, fallback toggles |
-| Editing a `.java` file | Applies Java naming, constructor injection, 30-line method, Testcontainers rules |
-| Editing a `.py` file | Applies Python `Depends()` DI, Pydantic v2, async, structlog rules |
-| `/scaffold-service` | Generates a complete new service with all standards baked in |
-| `/compliance-review` | Audits the current service against HIPAA and security checklists |
+### In this repository
 
-### What you do NOT need to do
+VS Code Copilot loads `.github/copilot-instructions.md` from the workspace. Prompt files under `.github/prompts/` provide workflows such as:
 
-- Do not copy `core/`, `standards/`, or `stacks/` into the target project.
-- Do not maintain duplicate standards — all updates happen in this repo and take effect in every wired project immediately.
-- Do not add language-specific `.instructions.md` files manually — copy them from `.github/instructions/` if you want per-file-type auto-attachment.
+- `/create-plan`
+- `/create-implementation-plan`
+- `/implement-approved-plan`
+- `/generate-tests`
+- `/refactor-code`
+- `/scaffold-service`
+- `/review-code`
+- `/review-architecture`
+- `/review-distributed-systems`
+- `/review-production-readiness`
 
----
+### In another project
 
-VS Code agent files reference
-------------------------------
+Choose one controlled distribution approach:
 
-| File | Location in this repo | Purpose |
-|------|----------------------|---------|
-| Master instructions | `.github/copilot-instructions.md` | Auto-loaded in every chat in this workspace |
-| Java rules | `.github/instructions/java-standards.instructions.md` | Auto-attached to any `.java` file |
-| Python rules | `.github/instructions/python-standards.instructions.md` | Auto-attached to any `.py` file |
-| New service checklist | `.github/instructions/new-service.instructions.md` | On-demand when creating services |
+1. Copy or synchronize the relevant instruction and prompt files into the target repository.
+2. Open the standards repository and target repository in the same VS Code workspace and configure referenced-instruction inclusion deliberately.
+3. Publish approved organization-level instructions where supported.
 
----
+Do not assume that a Markdown link to an arbitrary local clone automatically distributes or enforces standards for every developer and CI environment.
 
-Slash Commands (type `/` in GitHub Copilot Chat)
--------------------------------------------------
+Start with [`templates/docs/project-copilot-instructions-bootstrap.md`](templates/docs/project-copilot-instructions-bootstrap.md), then adapt paths and enabled prompts for the target repository.
 
-All 15 slash commands live in `.github/prompts/`. Copy that folder into any project to activate them there.
-Every command runs in **agent mode** — it reads standards files automatically and produces structured output.
+## Validation
 
-### Getting started
+Run the tests first:
 
-```
-/scaffold-service
-```
-The recommended first command for any new project. It asks 10 questions in a single message, then builds a full execution plan before writing a single file.
-
----
-
-### Service creation
-
-| Command | What it asks | What it produces |
-|---------|-------------|-----------------|
-| `/scaffold-service` | Service name, runtime (local Docker vs GCP Cloud Run), stack (Java/Python), messaging (Kafka vs Pub/Sub), cache (Redis vs Memorystore), storage (S3 vs GCS), secrets (Vault vs Secret Manager), database, API style, data classification | Numbered plan → creates every source file, test, Dockerfile, CI workflow, `.env.local`, and docs one by one with a live checklist |
-| `/generate-adr` | Decision topic, context, options considered, chosen option | Structured ADR saved to `docs/decisions/ADR-NNN-<title>.md` using the org template |
-| `/create-doc` | Doc type, audience, scope, existing inputs to reference, related docs to cross-link | New `.md` doc using the correct template from `templates/docs/` |
-
-### Code quality
-
-| Command | What it asks | What it produces |
-|---------|-------------|-----------------|
-| `/review-code` | Paste code or files, stack (java/python), compliance tier (standard/hipaa) | Line-level findings with severity (CRITICAL/HIGH/MEDIUM/LOW), standard violated, and fix |
-| `/refactor-code` | Paste code to refactor, stack, refactoring goal | Refactored code with layering fixed, capability interfaces introduced, fallbacks wired |
-| `/review-api-design` | Paste OpenAPI YAML/JSON, optionally previous version to diff | Naming, versioning, error format, HTTP verb findings + breaking-change diff |
-| `/generate-tests` | Paste source file(s), stack, test type (unit/integration/contract/all) | Full test file(s) using mocks or Testcontainers, following org testing standards |
-| `/generate-load-tests` | Service name, key endpoints + payloads, target RPS or concurrency, SLO targets | k6 or Gatling scripts establishing performance baselines |
-
-### Architecture & systems
-
-| Command | What it asks | What it produces |
-|---------|-------------|-----------------|
-| `/review-architecture` | Service name or paste architecture doc/ADR/source files | Findings on layer boundaries, abstraction usage, API design, dependency direction |
-| `/review-distributed-systems` | Service name or paste source + dependencies | Idempotency, retry/timeout, failure modes, consistency model, async/sync boundary findings |
-| `/analyse-codebase` | Repository path or paste key files, stack, analysis scope (full/architecture/security/observability) | Prioritised remediation report across architecture, fallbacks, observability, security, and test quality |
-| `/maintenance-check` | Repository path or paste dependency manifest (`pom.xml` / `pyproject.toml`), stack | Outdated/vulnerable deps, observability gaps, deprecated APIs, standards drift, licence compliance |
-
-### Compliance & security
-
-| Command | What it asks | What it produces |
-|---------|-------------|-----------------|
-| `/compliance-review` | Service name, data categories (PHI/PII/internal/public), design doc or config files | Structured findings report with severity ratings and remediation steps against org compliance checklist |
-| `/review-hipaa` | Service name, what PHI it handles, paste config or source files | HIPAA control audit: access control, audit logging, encryption, data minimisation, breach detection |
-| `/review-production-readiness` | Service name or paste source + config files, target environment | Production readiness checklist: observability, resilience, config hygiene, deployment artifacts, health endpoints, test coverage |
-
----
-
-### Example workflow for a new service
-
-```
-1. /scaffold-service
-   → answers 10 questions
-   → agent prints plan (24 files)
-   → you confirm
-   → agent creates files one by one with live checklist
-
-2. /review-code
-   → paste the generated service class
-   → agent confirms standards compliance
-
-3. /compliance-review
-   → if handling PHI/PII — validates HIPAA controls
-
-4. /review-production-readiness
-   → before merging to main — final gate check
+```bash
+python -m unittest discover -s tooling/tests -p 'test_*.py'
 ```
 
----
+Then run the repository validator:
 
-### Using slash commands in another project
+```bash
+python tooling/scripts/validate_repository.py
+```
 
-1. Copy `.github/prompts/*.prompt.md` into your project's `.github/prompts/` folder.
-2. Copy `.github/copilot-instructions.md` into your project's `.github/` folder and update the `{STANDARDS_REPO}` path to point to this repo.
-3. Type `/` in Copilot Chat — all 15 commands appear immediately.
+Run the executable Python template checks after installing its minimal test dependencies:
 
-No duplication of `core/` or `standards/` is needed — commands reference this repo via relative links.
+```bash
+PYTHONPATH=stacks/python-fastapi/project-template \
+  python -m unittest discover \
+  -s stacks/python-fastapi/project-template/tests \
+  -p 'test_*.py'
+```
 
+Windows wrapper:
+
+```powershell
+pwsh tooling/scripts/validate-repo-structure.ps1
+```
+
+CI runs the same sequence and currently enforces:
+
+- required repository structure
+- active Markdown link integrity
+- prompt frontmatter conventions
+- absence of known placeholder implementations
+- absence of deprecated active configuration terminology
+- Python local-adapter selection and production startup guards
+
+Project-level enforcement such as Java architecture tests, Python import-boundary checks, secret scanning, dependency scanning, and service tests belongs in each generated or adopting project.
+
+## Important Standards
+
+- [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md)
+- [Agent Execution](standards/agent-execution.md)
+- [Architecture](standards/architecture.md)
+- [Engineering Principles](standards/engineering-principles.md)
+- [Coding Standards](standards/coding-standards.md)
+- [Testing](standards/testing/unit-testing.md)
+- [Security](standards/security/security-standards.md)
+- [Observability](standards/observability.md)
+- [Production Readiness](standards/production-readiness.md)
+
+## Human Review
+
+Agents may create plans, tests, source changes, and review reports. They must not silently broaden scope, invent requirements, commit secrets, or claim commands passed when they were not run. Human review remains required before accepting implementation and production-readiness decisions.

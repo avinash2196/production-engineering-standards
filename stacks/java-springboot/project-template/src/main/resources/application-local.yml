@@ -1,5 +1,5 @@
 # Local development profile — activate with: --spring.profiles.active=local
-# Enables all fallbacks and relaxes security for local development.
+# Selects explicit local adapters and local-only security endpoints.
 # Do NOT commit real credentials here.
 
 spring:

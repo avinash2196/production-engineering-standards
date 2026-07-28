@@ -74,7 +74,7 @@ See: [dynamic-db-provider.md](providers/dynamic-db-provider.md)
 - Resolved exclusively via `SecretProvider`, never via `ConfigProvider` or environment variables in production.
 - Cached with short TTL (default 5 min). Rotation supported without restart.
 - Never logged, never in error messages, never in metrics.
-- In local development, `FALLBACK_SECRETS=env` allows env-var resolution.
+- In local development, `SECRET_ADAPTER=env` allows env-var resolution.
 
 See: [SecretProvider.md](../../contracts/SecretProvider.md), [vault-provider.md](providers/vault-provider.md)
 
@@ -95,7 +95,7 @@ Each environment has its own config layer:
 
 | Environment | Static Sources | Dynamic Sources | Secrets Source |
 |-------------|---------------|----------------|----------------|
-| Local dev | `.env.local`, `application-local.yml` | None (static defaults used) | `FALLBACK_SECRETS=env` |
+| Local dev | `.env.local`, `application-local.yml` | None (static defaults used) | `SECRET_ADAPTER=env` |
 | Staging | Env vars from deployment | Config service (staging) | Vault (staging) |
 | Production | Env vars from deployment | Config service (production) | Vault (production) |
 

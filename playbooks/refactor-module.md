@@ -1,94 +1,74 @@
-# Workflow: Refactor Module
+# Workflow: Refactor a Module
 
 ## Purpose
 
-Step-by-step procedure for safely restructuring a module or component to align with enterprise-ai-engineering standards, preserving all external behavior.
+Improve structure without changing external behavior and without using refactoring as a hidden feature-delivery path.
 
-## Prerequisites
+## 1. Define the Refactoring Goal
 
-- Identified module that violates standards (from codebase-analyst or code-reviewer findings)
-- Existing test suite (or willingness to create one first)
-- Clear refactoring goal (e.g., extract business logic from controller, introduce abstraction)
+State the concrete problem:
 
-## Steps
+- mixed responsibilities
+- duplicated behavior
+- unclear dependency direction
+- direct provider coupling
+- hard-to-test transaction or mapping logic
+- confusing names
 
-### 1. Assess Current State
+A line-count threshold alone is not sufficient justification.
 
-Invoke **codebase-analyst** agent (or review manually):
+## 2. Plan and Review
 
-- What standards does this module violate?
-- How tightly coupled is it to other modules?
-- What is the blast radius if something breaks?
-- What tests currently cover this module?
+For a qualifying refactor, update `docs/.ai/Plan.md` and create a milestone Implementation Plan containing:
 
-Document: current structure, violations, and target structure.
+- behavior/contracts that must remain unchanged
+- exact files
+- baseline tests
+- characterization tests needed before refactor
+- incremental refactor steps
+- rollback approach
+- success criteria
 
-### 2. Ensure Test Coverage
+Obtain approval.
 
-**Before any refactoring:**
+## 3. Establish GREEN Baseline
 
-- Run existing tests — they must pass as-is
-- If test coverage is insufficient for the refactoring scope, generate tests first using **test-engineer** agent patterns
-- Tests must cover: happy paths, primary error paths, and any edge cases visible in the current implementation
-- These tests become the safety net — they must not change during refactoring
+Run focused and relevant regression tests before editing. If protection is missing:
 
-### 3. Plan Incremental Steps
+1. create characterization tests
+2. confirm they pass against current behavior
+3. do not “improve” behavior in those tests
 
-Break the refactoring into small, independently reviewable steps. Each step must:
+A failing baseline blocks refactoring unless the failure is explicitly excluded and documented.
 
-- Be a single, focused change (extract class, move method, introduce interface)
-- Keep all tests passing after application
-- Not combine with feature changes or bug fixes
+## 4. Refactor Incrementally
 
-Example plan for "extract business logic from controller":
-1. Create service class with empty methods matching controller logic signatures
-2. Move logic from controller methods into service methods (copy, don't delete yet)
-3. Update controller to delegate to service
-4. Delete duplicated logic from controller
-5. Add service-layer tests for extracted logic
+Perform one coherent change at a time, for example:
 
-### 4. Execute Each Step
+- extract business policy from transport code
+- introduce a capability contract and wrap the existing provider implementation
+- separate persistence mapping from domain behavior
+- rename vague concepts
+- extract cohesive sub-operations
 
-For each planned step:
+Run focused tests after each step.
 
-1. Make the change
-2. Run all tests — must pass
-3. If tests fail, fix the refactoring (not the tests)
-4. Commit the step: `refactor(<module>): <what this step does>`
+## 5. Do Not Mix Behavior Changes
 
-### 5. Introduce Abstractions (if applicable)
+If a defect or feature is discovered, stop and create a separate Plan/Implementation Plan/RED cycle. Do not silently change API, event, persistence, configuration, security, or error behavior.
 
-If the refactoring involves replacing direct SDK usage with capability abstractions:
+## 6. Final Verification
 
-1. Define the interface (e.g., `CacheProvider`)
-2. Create an adapter wrapping the existing implementation
-3. Swap the direct reference to use the interface
-4. Create the fallback adapter with env toggle
-5. Run tests at each sub-step
+- run full relevant tests
+- run formatter/linter/static checks
+- review the diff for unrelated changes
+- record before/after commands and results
 
-Reference: `standards/fallback-strategy.md`, relevant abstraction in `contracts/`
+## Completion Criteria
 
-### 6. Verify Completeness
-
-After all steps:
-
-- [ ] All original tests pass without modification
-- [ ] New tests added for extracted/restructured components
-- [ ] No external behavior changed (API contracts, message schemas, DB schema)
-- [ ] Module now aligns with target standards
-- [ ] No orphaned code left behind
-
-### 7. Review
-
-Invoke **architecture-reviewer** agent on the refactored module:
-
-- [ ] Layered architecture correct
-- [ ] Dependency direction clean
-- [ ] Abstraction boundaries enforced
-- [ ] Naming follows domain conventions
-
-### 8. Final Commit
-
-If individual steps were committed, verify the full sequence. Summary commit message:
-
-`refactor(<module>): align with enterprise standards — extract service layer, introduce CacheProvider abstraction`
+- [ ] Concrete refactoring problem documented
+- [ ] Baseline was GREEN
+- [ ] Behavior and contracts preserved
+- [ ] Each step was small and test-verified
+- [ ] No feature or bug fix was mixed into the refactor
+- [ ] Final suite and checks are GREEN

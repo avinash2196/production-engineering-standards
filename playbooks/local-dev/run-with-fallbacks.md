@@ -1,143 +1,97 @@
-# Run With Fallbacks
+# Run with Local Adapters
 
-How to enable and test fallbacks locally so you can develop and run services without any external infrastructure.
+## Purpose
 
-## Overview
+Run a service locally without every production dependency while keeping adapter selection explicit and preventing accidental production use.
 
-Every capability interface (`MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`) has a fallback implementation that runs entirely in-process. This lets you:
+Local adapters are not production failover mechanisms.
 
-- Start a service with zero Docker containers.
-- Run the full test suite offline.
-- Develop on a plane, train, or restricted network.
+## Standard Selectors
 
-## Environment Variables
+| Variable | Local value | Behavior |
+|---|---|---|
+| `MESSAGING_ADAPTER` | `db` | Database-backed queue/outbox; persistent and inspectable |
+| `MESSAGING_ADAPTER` | `inmemory` | Process-local queue; no restart durability |
+| `CACHE_ADAPTER` | `jsonfile` | Inspectable file-backed cache |
+| `CACHE_ADAPTER` | `inmemory` | Process-local cache |
+| `STORAGE_ADAPTER` | `local` | Local filesystem |
+| `SECRET_ADAPTER` | `env` | Environment-variable secret provider |
 
-| Variable | Value | Effect |
-|----------|-------|--------|
-| `FALLBACK_KAFKA` | `db` | Replaces Kafka with DB outbox table (`outbox_message`). Set `inmemory` for pure in-process queue (no persistence). |
-| `FALLBACK_CACHE` | `jsonfile` | Replaces Redis with JSON file cache (`./data/fallback-cache/cache.json`). Set `inmemory` for in-process map (no persistence). |
-| `FALLBACK_STORAGE` | `local` | Replaces S3/Blob with local filesystem (`./data/fallback-storage/`) |
-| `FALLBACK_SECRETS` | `env` | Replaces Vault with environment variable lookup |
+A service may support fewer values. Check its integration documentation.
 
-## Quick Start
-
-### Java Spring Boot
+## Java Spring Boot
 
 ```bash
-# Option 1: Environment variables
-FALLBACK_KAFKA=db \
-FALLBACK_CACHE=jsonfile \
-FALLBACK_STORAGE=local \
-FALLBACK_SECRETS=env \
-  ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
-
-# Option 2: Use .env.local (loaded by Spring Boot DevTools)
-cp .env.local.example .env.local
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+MESSAGING_ADAPTER=db \
+CACHE_ADAPTER=jsonfile \
+STORAGE_ADAPTER=local \
+SECRET_ADAPTER=env \
+SPRING_PROFILES_ACTIVE=local \
+./mvnw spring-boot:run
 ```
 
-### Python FastAPI
+Configuration binds to:
+
+```yaml
+adapters:
+  messaging: db
+  cache: jsonfile
+  storage: local
+  secrets: env
+```
+
+Use `@ConfigurationProperties` and `@ConditionalOnProperty(name = "adapters.messaging", havingValue = "db")` or equivalent typed configuration. Do not rely on an unrelated profile or silent environment detection.
+
+## Python FastAPI
 
 ```bash
-# Option 1: Environment variables
-FALLBACK_KAFKA=db \
-FALLBACK_CACHE=jsonfile \
-FALLBACK_STORAGE=local \
-FALLBACK_SECRETS=env \
-  uvicorn src.my_service.main:app --reload --port 8000
-
-# Option 2: Use .env.local
-cp .env.local.example .env.local
-uvicorn src.my_service.main:app --reload --port 8000
+MESSAGING_ADAPTER=db \
+CACHE_ADAPTER=jsonfile \
+STORAGE_ADAPTER=local \
+SECRET_ADAPTER=env \
+ENVIRONMENT=local \
+uvicorn app.main:app --reload
 ```
 
-## `.env.local.example`
+Provider factories select from typed enum settings such as `settings.messaging_adapter`. Do not reference obsolete fallback fields.
+
+## Example `.env.local`
 
 ```env
-# Fallback toggles — set all to enable full local mode
-FALLBACK_KAFKA=db
-FALLBACK_CACHE=jsonfile
-FALLBACK_STORAGE=local
-FALLBACK_SECRETS=env
+ENVIRONMENT=local
+MESSAGING_ADAPTER=db
+CACHE_ADAPTER=jsonfile
+STORAGE_ADAPTER=local
+SECRET_ADAPTER=env
 
-# Application config
-APP_ENV=local
-LOG_LEVEL=DEBUG
-SERVER_PORT=8080
-
-# Local secrets (only used when FALLBACK_SECRETS=env)
-DB_PASSWORD=local-dev-password
-API_KEY=local-dev-key
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/service_db
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+REDIS_URL=redis://localhost:6379/0
+LOCAL_STORAGE_PATH=./data/local-storage
 ```
 
-## How Fallback Activation Works
+Use only non-sensitive local credentials. Do not copy local files into production images.
 
-### Java (ConditionalOnProperty)
+## Reduced Guarantees
 
-```java
-@Component
-@ConditionalOnMissingBean(condition = FallbackKafkaDbCondition.class)  // Active when Kafka is available
-public class KafkaMessagePublisher implements MessagePublisher { ... }
+| Adapter | Preserved | Not equivalent to production |
+|---|---|---|
+| Database message queue | persistence, inspection, simple retry | broker partitioning, fan-out, consumer groups, global ordering |
+| In-memory message queue | single-process publish/consume | durability and multi-instance coordination |
+| JSON-file cache | basic get/put/evict and inspection | distributed atomicity and concurrent writers |
+| In-memory cache | basic process-local caching | shared state and restart persistence |
+| Local filesystem | basic put/get/delete | managed durability, encryption, lifecycle, multi-instance behavior |
+| Environment secrets | key lookup | rotation, central audit, managed authorization |
 
-@Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")   // Active when FALLBACK_KAFKA=db
-public class DbTableMessagePublisher implements MessagePublisher { ... }
+## Verification
 
-@Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "inmemory")  // Secondary: FALLBACK_KAFKA=inmemory
-public class InMemoryMessagePublisher implements MessagePublisher { ... }
-```
-
-Spring Boot maps `FALLBACK_KAFKA=db` → `fallback.kafka=db` via relaxed binding. Use `@ConditionalOnProperty` rather than Spring profiles for named-value fallback selection.
-
-### Python (Dependency Injection)
-
-```python
-def get_publisher(settings: Settings = Depends(get_settings)) -> MessagePublisher:
-    if settings.fallback_kafka == "db":
-        return DbTableMessagePublisher(settings.db, get_metrics())
-    if settings.fallback_kafka == "inmemory":
-        return InMemoryMessagePublisher()
-    return KafkaMessagePublisher(settings.kafka, get_metrics())
-```
-
-## Limitations
-
-| Fallback | What works | What doesn't |
-|----------|-----------|---------------|
-| DB table queue (`FALLBACK_KAFKA=db`) | Publish/subscribe, persistence across restarts, inspectable rows, retry on FAILED | Multi-instance fan-out, ordered global delivery |
-| In-memory queue (`FALLBACK_KAFKA=inmemory`) | Publish/subscribe within one process | Multi-instance, persistence across restarts |
-| JSON file cache (`FALLBACK_CACHE=jsonfile`) | Get/put/evict with TTL, persists across restarts, human-readable | Shared cache across instances, pub/sub, concurrent multi-process writes |
-| In-memory cache (`FALLBACK_CACHE=inmemory`) | Get/put/evict with TTL within one process | Shared cache across instances, persistence across restarts |
-| Local filesystem | Upload/download/delete | Presigned URLs (returns `file://`), multi-instance |
-| Env secrets | Read secrets by key | Rotation, dynamic refresh, access audit |
-
-See individual fallback docs for full details:
-- [kafka-fallback.md](../../standards/fallbacks/kafka-fallback.md)
-- [redis-fallback.md](../../standards/fallbacks/redis-fallback.md)
-- [storage-fallback.md](../../standards/fallbacks/storage-fallback.md)
-- [secret-fallback.md](../../standards/fallbacks/secret-fallback.md)
-
-## Testing With Fallbacks
-
-```bash
-# Run full test suite with fallbacks (no infra needed)
-FALLBACK_KAFKA=db FALLBACK_CACHE=jsonfile FALLBACK_STORAGE=local FALLBACK_SECRETS=env \
-  ./mvnw test
-
-# Run integration tests with real infra (Testcontainers)
-./mvnw test -Dgroups=integration
-```
-
-## Verifying Fallback Behavior
-
-1. Start the service with all fallbacks enabled.
-2. Hit `GET /actuator/health` (Java) or `GET /health` (Python) — should return `UP`.
-3. Publish a message via a POST endpoint — should succeed (row inserted into `outbox_message` table).
-4. Read from cache — should return a miss (empty JSON file cache at `./data/fallback-cache/cache.json`).
-5. Upload a file — should appear in `./data/fallback-storage/`.
+1. Run adapter contract and selector tests.
+2. Start locally and confirm an explicit warning/metric identifies local adapters.
+3. Verify production configuration rejects all local-only values.
+4. Do not use local adapter behavior as proof of production broker/cache/storage semantics.
 
 ## References
 
-- [Fallback strategy](../../standards/fallback-strategy.md)
-- [Start local stack](start-local-stack.md) — for running with real infra locally
+- [Local Adapter Strategy](../../standards/local-adapter-strategy.md)
+- [Production Dependency Failure and Degradation](../../standards/fallback-strategy.md)
+- [Start Local Stack](start-local-stack.md)

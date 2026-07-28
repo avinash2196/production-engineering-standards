@@ -8,7 +8,7 @@ Placeholders
 - Formatters: e.g., `mvn fmt`, `black`, `ruff`
 
 Fallback definitions
-- Explicitly list which fallbacks are acceptable for local dev and their env toggles (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`).
+- Explicitly list which fallbacks are acceptable for local dev and their env toggles (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
 - Local storage paths and cleanup guidance.
 
 Config sources in local dev

@@ -1,149 +1,125 @@
 # Agent Execution Standard
 
-Rules for how agents plan, checkpoint, and safely complete multi-step tasks.
-
 ## Purpose
 
-Long-running agent tasks (scaffold, refactor, doc generation, fallback wiring) can touch dozens of files. Without a plan the work is opaque, hard to review mid-flight, and unrecoverable if the session is interrupted. This standard requires every heavy agent task to write a plan file first, implement against it, and checkpoint each step.
+This standard controls how AI agents plan, implement, test, and review multi-step engineering work. It exists to keep scope visible, separate design from code generation, and make every meaningful change reviewable.
 
-## When a Plan Is Required
+## Required Workflow
 
-A plan file **must** be written before any implementation starts when the task meets **any** of these conditions:
+For qualifying implementation work, agents must follow:
+
+> **Review context → Plan → Human review → Implementation Plan → Human review → RED tests → GREEN code → Refactor → Final review**
+
+Full lifecycle: [Prompt-Driven Development Workflow](prompt-driven-development-workflow.md)
+
+## When Plan and Implementation Plan Are Required
+
+Both artifacts are required when any condition applies:
 
 | Condition | Example |
-|-----------|---------|
-| Touches ≥ 4 files | Scaffold a new service |
-| Creates or deletes directories | New stack, new feature module |
-| Changes a shared standard | Updating fallback-strategy.md |
-| Adds or removes wiring | New slash command, new capability interface |
-| User says "do the whole thing" or "implement end-to-end" | Any open-ended request |
+|---|---|
+| Production behavior changes | New endpoint, changed validation, bug fix |
+| Four or more files are affected | Service scaffolding or cross-layer feature |
+| A directory, module, adapter, or shared standard is added | New capability contract |
+| An API, event, persistence, or integration contract changes | Schema or endpoint change |
+| Reliability, security, compliance, or transaction behavior changes | Retry policy, outbox, access control |
+| The user requests end-to-end implementation | “Implement the whole feature” |
 
-For tasks below these thresholds (e.g., fix a typo, add one field), write and implement directly — no plan needed.
+A typo or one-line documentation correction may proceed without both artifacts, but it must still be validated.
 
-## Plan File
+## Required Artifacts
 
-### Location
+### Plan
 
-```
-.copilot/plans/YYYY-MM-DD-<task-slug>.md
-```
+Location:
 
-Examples:
-- `.copilot/plans/2026-04-16-scaffold-order-service.md`
-- `.copilot/plans/2026-04-16-add-kafka-fallback.md`
-- `.copilot/plans/2026-04-16-update-redis-docs.md`
-
-Plans are **working files** — they do not need to be reviewed or merged like production code.
-
-### Required Sections
-
-```markdown
-# Plan: <task title>
-
-**Date:** YYYY-MM-DD
-**Requested by:** <user request summary, one sentence>
-**Scope:** <what is and is not included>
-
-## Context Gathered
-
-- Key files read: <list>
-- Decisions made: <list any non-obvious choices and why>
-- Open questions: <anything still uncertain — ask user before continuing>
-
-## Steps
-
-- [ ] Step 1: <specific, actionable description> — files affected: `path/to/file`
-- [ ] Step 2: ...
-- [ ] Step 3: ...
-...
-
-## Rollback Notes
-
-How to undo if something goes wrong: <e.g., "all changes are additive — delete `.copilot/plans/` and revert edited files">
+```text
+docs/.ai/Plan.md
 ```
 
-### Checkpoint Rules
+The Plan defines scope, requirements, milestones, dependencies, risks, exclusions, and success criteria. It must not contain complete production code.
 
-1. **Mark `[x]` immediately after completing each step** — not in batch at the end.
-2. **If a step fails**, stop, update the plan with the failure note, and report to the user before continuing.
-3. **Never mark a step complete before it is done.** Partial completion is noted as `[-] Step N (partial): <what was done>`.
-4. **After the final step**, add a `## Summary` section listing every file created/modified and any follow-up actions.
+Template: [Plan Template](../templates/docs/plan-template.md)
 
-## Doc Creation Protocol
+### Implementation Plan
 
-Applies whenever creating any `.md` file (README, runbook, ADR, standard, guide, template).
+Location:
 
-### Questions to Ask First (in one message, ≤ 5 questions)
-
-Before writing a single line of the document, ask the user:
-
-1. **Type** — What kind of document is this?
-   - Options: `README` · `ADR` · `runbook` · `standard` · `guide` · `template` · `changelog` · `other`
-2. **Audience** — Who will read it?
-   - Options: `developer` · `ops/SRE` · `tech lead` · `external contributor` · `agent/LLM` · `mixed`
-3. **Scope** — What does it cover and what does it explicitly exclude?
-   - Free text, one or two sentences.
-4. **Inputs available** — What context already exists?
-   - Examples: existing code, related docs, ADR number, Jira ticket, design notes.
-5. **Cross-links needed** — Are there other docs this should reference or that should reference it?
-   - Free text or "none".
-
-Skip questions that are obvious from context. Never ask more than 5.
-
-### After Gathering Answers
-
-1. Look up the matching template in `templates/docs/`.
-2. Check for an existing doc in the same area to avoid duplication. If one exists, prefer updating it.
-3. Follow naming conventions from `standards/naming.md`.
-4. After creating the file, run the cross-link check: search for all docs that should reference the new file and add links.
-
-### Mandatory Front Matter for Agent-Facing Docs
-
-Any `.md` file intended to guide agent behavior (standards, guides, LLM instructions sections) must include:
-
-```markdown
-## LLM Instructions
-
-- <directive 1>
-- <directive 2>
-
-## Review Checklist
-
-- [ ] <check 1>
-- [ ] <check 2>
+```text
+docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
-## Agent Behaviour Rules
+The Implementation Plan defines exact files, tests, expected RED behavior, production changes, refactoring boundaries, commands, exclusions, and success criteria.
 
-When operating under this standard, agents must:
+Template: [Implementation Plan Template](../templates/docs/implementation-plan-template.md)
 
-- **Plan before touching files.** Write the plan file, present it to the user ("Here is my plan — proceeding unless you say stop"), wait 10 seconds (or until a message is received), then start.
-- **Read before writing.** Always read a file before editing it. Never overwrite content you haven't seen.
-- **Scope-lock.** Do not expand scope beyond the plan without updating the plan and noting the addition.
-- **One concern per step.** Each plan step changes one file or one logical unit. Don't bundle unrelated edits.
-- **Surface blockers immediately.** If a step cannot be completed (file missing, ambiguous requirement), stop and ask. Do not guess.
+## Approval Gates
+
+1. Do not create an Implementation Plan until the Plan is approved.
+2. Do not edit production code until the milestone Implementation Plan is approved.
+3. Do not write production code before the new or updated tests demonstrate RED.
+4. Do not refactor until the minimal implementation is GREEN.
+
+When a user explicitly requests an end-to-end repository update and provides all required decisions, the request may serve as approval to proceed through the documented phases. The agent must still create and follow both artifacts.
+
+## Execution Rules
+
+- **Read before writing.** Read every existing file before modifying it.
+- **Scope-lock.** Update both planning artifacts before expanding scope.
+- **Tests first.** Test files or executable checks are changed before production implementation.
+- **Prove RED.** The failure must be caused by missing behavior, not invalid setup.
+- **Minimal GREEN.** Avoid speculative abstractions or unrelated improvements.
+- **Refactor separately.** Preserve behavior and rerun tests after each meaningful cleanup.
+- **One logical concern per step.** Group files only when they form one coherent change.
+- **Surface blockers.** Record missing information or unsupported assumptions rather than inventing details.
+- **Preserve evidence.** Record commands and summarized outcomes, not private reasoning.
+
+## Documentation Changes
+
+Before creating a new document:
+
+1. Search for an existing document covering the same concern.
+2. Prefer updating an existing document over creating a duplicate.
+3. Use the closest template under `templates/docs/`.
+4. Add inbound and outbound links where they improve navigation.
+5. Agent-facing standards must contain `## LLM Instructions` and `## Review Checklist`.
+
+Do not force redundant clarification questions when type, audience, scope, inputs, and cross-links are already clear from the request and repository context.
+
+## Completion Record
+
+At the end of qualifying work, update the Implementation Plan with:
+
+- files created and modified
+- RED command and summarized failure
+- GREEN commands and summarized results
+- refactoring performed
+- deferred or out-of-scope work
 
 ## LLM Instructions
 
-- When a task qualifies for a plan (see table above), write the plan file at `.copilot/plans/` before any edits.
-- Present the plan to the user with: "Plan written to `.copilot/plans/<filename>`. Proceeding with implementation — reply to stop or redirect."
-- Check off each step in the plan as you complete it.
-- When creating any `.md` file, ask the five Doc Creation Protocol questions first, then use matching template from `templates/docs/`.
-- Never create a doc that duplicates an existing one — search first.
+- Create and follow both Plan and Implementation Plan for qualifying work.
+- Never write implementation code in either planning artifact.
+- Modify tests before production code and verify RED before GREEN.
+- Refactor only after tests pass and keep behavior unchanged.
+- Do not silently broaden scope or invent missing requirements.
+- Use repository validators for documentation, prompt, and tooling changes.
 
 ## Review Checklist
 
-- [ ] Plan file exists at `.copilot/plans/` for all qualifying tasks
-- [ ] All plan steps are checked off or have a failure note
-- [ ] Summary section added after final step
-- [ ] Doc creation questions were asked before writing
-- [ ] Correct template used from `templates/docs/`
-- [ ] Cross-links added in both directions (new doc → related, related → new doc)
-- [ ] New agent-facing docs contain `## LLM Instructions` and `## Review Checklist` sections
+- [ ] Current state and relevant files were reviewed
+- [ ] Plan exists and matches requested scope
+- [ ] Implementation Plan exists and names exact tests and files
+- [ ] Approval gates were respected
+- [ ] RED was verified for the intended reason
+- [ ] Minimal implementation reached GREEN
+- [ ] Refactoring preserved GREEN
+- [ ] Final validation and changed-file summary were recorded
+- [ ] New agent-facing documents contain required instruction sections
 
 ## References
 
-- [standards/naming.md](naming.md)
-- [standards/coding-standards.md](coding-standards.md)
-- [templates/docs/](../templates/docs/)
-- [playbooks/create-doc.md](../playbooks/create-doc.md)
+- [Prompt-Driven Development Workflow](prompt-driven-development-workflow.md)
+- [Definition of Done](definition-of-done.md)
+- [Plan Template](../templates/docs/plan-template.md)
+- [Implementation Plan Template](../templates/docs/implementation-plan-template.md)

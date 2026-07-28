@@ -68,18 +68,18 @@
 | `DATABASE_URL` | Env / Vault | All | JDBC/asyncpg connection string |
 | `KAFKA_BOOTSTRAP_SERVERS` | Env | All | Comma-separated host:port |
 | `REDIS_URL` | Env / Vault | All | `redis://host:port` |
-| `FALLBACK_KAFKA` | Env | Dev only | `db` for DB outbox, `inmemory` for ephemeral |
-| `FALLBACK_CACHE` | Env | Dev only | `jsonfile` for JSON file, `inmemory` for ephemeral |
+| `MESSAGING_ADAPTER` | Env | Dev only | `db` for DB outbox, `inmemory` for ephemeral |
+| `CACHE_ADAPTER` | Env | Dev only | `jsonfile` for JSON file, `inmemory` for ephemeral |
 | [Add more rows] | | | |
 
 ## Fallback Configuration
 
 | Dependency | Fallback toggle | Fallback behaviour | Data loss risk |
 |------------|----------------|--------------------|----------------|
-| Kafka | `FALLBACK_KAFKA=db` | Writes to `outbox_message` DB table | None — persisted |
-| Redis | `FALLBACK_CACHE=jsonfile` | Reads/writes `./data/fallback-cache/cache.json` | None — persisted |
-| S3 | `FALLBACK_STORAGE=local` | Reads/writes `./data/fallback-storage/` | None — local disk |
-| Vault | `FALLBACK_SECRETS=env` | Reads env variables | Secrets in env — dev only |
+| Kafka | `MESSAGING_ADAPTER=db` | Writes to `outbox_message` DB table | None — persisted |
+| Redis | `CACHE_ADAPTER=jsonfile` | Reads/writes `./data/fallback-cache/cache.json` | None — persisted |
+| S3 | `STORAGE_ADAPTER=local` | Reads/writes `./data/fallback-storage/` | None — local disk |
+| Vault | `SECRET_ADAPTER=env` | Reads env variables | Secrets in env — dev only |
 
 ## Key Stakeholders
 

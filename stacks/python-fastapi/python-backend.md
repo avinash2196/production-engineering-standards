@@ -1,58 +1,78 @@
-# Python FastAPI Backend Guidance
+# Python and FastAPI Engineering Guidance
 
-Purpose
-- Provide production-oriented patterns for FastAPI services emphasizing configuration-first design, capability abstractions, async-safe handlers, and explicit local fallbacks.
+## Purpose
 
-Structure
-- Layers: `controller` (API routers) -> `service` -> `domain` -> `repository`.
-- Recommended folders:
-  - `app/api` (routers, DTOs/schemas)
-  - `app/services` (business services)
-  - `app/domain` (entities, value objects)
-  - `app/repository` (data access)
-  - `app/adapters` (messaging, storage, cache adapters)
-  - `app/config` (settings and `ConfigProvider` wrappers)
-  - `tests/` (unit and integration tests)
-- Naming: Pydantic models use `PascalCase` classes suffixed `Request`/`Response`; adapters named `...Adapter`.
+Provide practical Python 3.12+/FastAPI defaults for plan-driven delivery, test-first behavior changes, typed configuration, controlled external dependencies, and explicit local-adapter safety.
 
-Abstractions
-- Messaging: define `MessagePublisher` and `MessageSubscriber` interfaces (async-friendly). Each message includes `idempotency_key` and `trace_id` in attributes.
-- Storage: `ObjectStorageProvider` with async-friendly `put/get/delete/list` and optional `presign`.
-- Config: central `ConfigProvider` that composes sources (dynamic DB/service, env, local file) and returns typed Pydantic settings.
-- Cache: `CacheProvider` exposing async `get/put/invalidate` with pluggable backends (aioredis vs in-memory LRU).
+## Required Workflow
 
-Fallback handling (local vs production)
-- Enable fallbacks explicitly via env (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`). Use `FALLBACK_*` conventions across stacks.
-- Local fallbacks:
-  - Messaging → in-memory asyncio.Queue or file-backed queue (durability tradeoffs documented).
-  - Cache → in-process TTL cache (e.g., cachetools TTLCache) with clear non-distributed semantics.
-  - Storage → local filesystem under `./local-storage` with configurable root.
-  - Secrets → env-only provider when `FALLBACK_SECRETS=env` and log a security warning.
-- Telemetry: record a metric `fallback.active` and emit a structured log when a fallback is in use.
+For non-trivial work:
 
-FastAPI patterns
-- Validation: use Pydantic models for request and response schemas; enforce type-safe parsing at the edge.
-- Dependency injection: use `fastapi.Depends` to provide `ConfigProvider`, `MessagePublisher`, `CacheProvider` to handlers.
-- Async handling: prefer `async def` for IO-bound endpoints and background tasks via `BackgroundTasks` or external messaging for expensive work.
+1. review requirements and current repository state;
+2. approve `docs/.ai/Plan.md`;
+3. approve a milestone-specific Implementation Plan with exact files/tests;
+4. add the focused test and confirm RED;
+5. implement the smallest change for GREEN;
+6. refactor while tests remain green;
+7. run the full applicable Definition of Done.
 
-Testing
-- Unit tests: use `pytest` and `pytest-mock`; mock adapters implementing capability interfaces.
-- Integration: prefer Testcontainers (Python testcontainers library) for DB/broker in CI; otherwise rely on local fallback adapters for deterministic CI.
+## Architecture
 
-Anti-patterns
-- Mixing blocking IO inside `async def` handlers without offloading (e.g., synchronous DB drivers without async wrappers).
-- Placing business logic inside router functions or returning domain objects directly as response models.
+Use the simplest structure that protects decisions:
 
-LLM instructions
-- When generating a FastAPI service scaffold, produce:
-  - Pydantic settings classes wired to a `ConfigProvider` adapter implementing env→dynamic→file precedence
-  - Async capability interfaces and both production + fallback adapters
-  - Dependency providers for adapters wired into `Depends`
-  - Health endpoints, metrics exposition (Prometheus), and OpenTelemetry tracing setup
-- Ask the user only when: they require strict ordering guarantees for messaging, PHI/PII handling, or synchronous-only processing semantics.
+- `api/` handles routing, request/response validation, auth context, and mapping;
+- `service/` or `application/` coordinates use cases and transaction boundaries;
+- `domain/` owns business rules/value objects when meaningful invariants exist;
+- repository/capability protocols protect boundaries when they add testing, portability, or policy value;
+- `infrastructure/` contains SQLAlchemy and vendor/local adapter details;
+- `config/` owns typed settings, composition, and production guards.
 
-Review checklist
-- [ ] Pydantic DTOs separate from domain objects and used at the API edge.
-- [ ] Dependency injection via `Depends` used for adapters.
-- [ ] Async endpoints use non-blocking IO and are tested under load if possible.
-- [ ] Fallback toggles explicit and documented.
+A small CRUD service may combine areas when dependencies remain controlled. Do not create protocols and packages solely to satisfy a diagram.
+
+## Python/FastAPI Practices
+
+- Use Pydantic v2 for transport and settings models; prefer plain classes/dataclasses for domain behavior when framework independence helps.
+- Use `async def` when awaiting asynchronous I/O. Keep CPU-only helpers synchronous unless composition requires otherwise.
+- Do not call blocking clients in the event loop; use async drivers, worker threads, or background/queue processing according to the plan.
+- Inject dependencies at API/application boundaries; do not construct vendor clients inside handlers.
+- Use specific application/domain exceptions with centralized FastAPI exception mapping.
+- Add type annotations at public and important internal boundaries. Apply the project's configured type checker rather than claiming one universal strictness level.
+- Treat function/class size and nesting as review signals; refactor based on mixed responsibilities or hard-to-test behavior.
+
+## Adapter Selection
+
+Typed values include:
+
+- messaging: `kafka`, `pubsub`, `db`, `inmemory`
+- cache: `redis`, `jsonfile`, `inmemory`
+- storage: `s3`, `gcs`, `local`
+- secrets: `vault`, `secretmanager`, `env`
+
+Local-only adapters must be explicit, emit an activation warning/metric where runtime telemetry is wired, document reduced guarantees, and be rejected in production.
+
+Prefer a database-backed message adapter over an in-memory queue when restart durability and SQL inspection matter. Prefer a JSON-file cache over an in-memory cache when inspectability/restart persistence matter. Neither reproduces production broker or Redis semantics.
+
+## Resilience
+
+Define timeouts and named failure behavior for remote dependencies. Choose bounded retry, circuit breaking, durable queueing, stale data, bypass, fail closed, or fail fast based on correctness and business impact. Do not automatically generate a fallback for every dependency.
+
+## Observability
+
+Use structured logging, stable correlation/business identifiers, and health signals appropriate to support needs. Add metrics and tracing at important service/external boundaries. Never log secrets or sensitive payloads.
+
+## Testing
+
+- Use `pytest`/`pytest-asyncio` or standard-library `unittest` according to project needs.
+- Unit-test application/domain decisions without network access.
+- Use Testcontainers/emulators for selected production boundaries.
+- Use temporary directories/files/databases for local adapter tests.
+- Test transaction rollback, idempotency, TTL, path safety, selection, and production guards when applicable.
+- Preserve RED/GREEN evidence and keep refactoring behavior-neutral.
+
+## References
+
+- [Prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md)
+- [Architecture](../../standards/architecture.md)
+- [Local adapter strategy](../../standards/local-adapter-strategy.md)
+- [Production dependency failure strategy](../../standards/fallback-strategy.md)
+- [Python stack README](README.md)

@@ -1,48 +1,45 @@
 ---
-description: "Use when creating a new service, microservice, API, or backend application. Covers project structure, capability interface wiring, fallback setup, testing scaffold, and Dockerfile generation for Java Spring Boot or Python FastAPI."
+description: "Apply the PDD lifecycle when creating a new Java Spring Boot or Python FastAPI service."
+applyTo: "**/*"
 ---
 
-Follow the scaffolding procedure in [playbooks/create-new-service.md](../../playbooks/create-new-service.md) and the full spec in [agents/scaffolding-agent/spec.md](../../agents/scaffolding-agent/spec.md).
+# New Service Instructions
 
-## What to Generate
+Do not create a complete service directly from a short request.
 
-For every new service, produce **all** of the following — no partial scaffolds:
+## Required Sequence
 
-1. **Project structure** matching the layered layout for the chosen stack:
-   - Java: [stacks/java-springboot/project-template/](../../stacks/java-springboot/project-template/)
-   - Python: [stacks/python-fastapi/project-template/](../../stacks/python-fastapi/project-template/)
+1. Review requirements and current repository context.
+2. Create `docs/.ai/Plan.md`; no tests or implementation.
+3. Obtain human approval.
+4. Create `docs/.ai/NNN_Implementation_Plan_<Milestone>.md`; define exact tests and code changes, but do not implement.
+5. Obtain human approval.
+6. Write milestone tests first and confirm valid RED.
+7. Implement the smallest production change to reach GREEN.
+8. Refactor separately and keep tests GREEN.
+9. Complete final review and validation.
 
-2. **Source files** for each layer (Controller/API, Service, Domain, Repository, Infrastructure).
+Reference: [Prompt-Driven Development Workflow](../../standards/prompt-driven-development-workflow.md)
 
-3. **Capability interface wiring** — only for the capabilities the user requests:
-   - Messaging → `MessagePublisher` + `MessageSubscriber`
-   - Cache → `CacheProvider`
-   - Object storage → `ObjectStorageProvider`
-   - Secrets → `SecretProvider`
-   - Each must include a **production implementation AND a fallback implementation**.
+## Service Decisions
 
-4. **Configuration**:
-   - Java: `application.yml` + `application-local.yml` (all fallbacks enabled)
-   - Python: `app/config/settings.py` with `FALLBACK_*` toggles
+Use only capabilities required by the service. Do not automatically add messaging, cache, storage, or local adapters.
 
-5. **Tests**:
-   - At least one unit test per service class (mock capability interfaces)
-   - At least one integration test per infrastructure adapter (Testcontainers)
+When needed, adapter selection uses:
 
-6. **`docker-compose.dev.yml`** with PostgreSQL, Redis, Kafka (KRaft), MinIO.
+- `MESSAGING_ADAPTER`: production `kafka`/`pubsub`; local `db`/`inmemory`
+- `CACHE_ADAPTER`: production `redis`; local `jsonfile`/`inmemory`
+- `STORAGE_ADAPTER`: production `s3`/`gcs`; local `local`
+- `SECRET_ADAPTER`: production `vault`/`secretmanager`; local `env`
 
-7. **`.env.local`** with all fallback toggles enabled.
+Local-only adapters must fail startup in production and document reduced guarantees.
 
-8. **`Dockerfile`** — multi-stage, non-root user.
+## Review Checklist
 
-9. **`README.md`** with quick-start and fallback run commands.
-
-## Checklist Before Finishing
-
-- [ ] Domain classes have zero framework imports
-- [ ] Services inject interfaces, not concrete infrastructure classes
-- [ ] All `FALLBACK_*` vars are connected to DI wiring
-- [ ] Health/liveness/readiness endpoints present
-- [ ] Structured logging with correlation ID configured
-- [ ] Prometheus metrics endpoint exposed
-- [ ] At least one unit test and one integration test generated
+- [ ] Plan approved before Implementation Plan
+- [ ] Implementation Plan approved before source changes
+- [ ] Tests created and observed RED first
+- [ ] Minimal GREEN implementation
+- [ ] Refactor after GREEN only
+- [ ] Dependencies and abstractions are justified
+- [ ] Local adapter and production degradation decisions are separate

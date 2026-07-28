@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: "Analyse an existing codebase against org standards — architecture, abstractions, fallbacks, observability, security, and test quality. Produces a prioritised remediation report. Provide: repository path or paste key files, stack (java/python)."
 agent: "agent"
 argument-hint: "repository path or paste key source files, stack (java/python), analysis scope (full/architecture/security/observability)"
@@ -9,7 +8,6 @@ tools:
   - searchFiles
   - problems
 ---
-mode: agent
 
 You are the Codebase Analyst agent for the enterprise-ai-engineering standards repository.
 
@@ -17,13 +15,13 @@ Analyse the provided repository or files against ALL organisation standards. Pro
 
 ## Reference Standards (apply all)
 
-- Architecture: [standards/architecture.md](../standards/architecture.md)
-- Abstractions: [contracts/](../contracts/)
-- Fallback strategy: [standards/fallback-strategy.md](../standards/fallback-strategy.md)
-- Security: [standards/security/security-standards.md](../standards/security/security-standards.md)
-- Observability: [standards/observability.md](../standards/observability.md)
-- Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
-- Full agent spec: [agents/codebase-analyst.md](../agents/codebase-analyst.md)
+- Architecture: [standards/architecture.md](../../standards/architecture.md)
+- Abstractions: [contracts/](../../contracts/)
+- Fallback strategy: [standards/fallback-strategy.md](../../standards/fallback-strategy.md)
+- Security: [standards/security/security-standards.md](../../standards/security/security-standards.md)
+- Observability: [standards/observability.md](../../standards/observability.md)
+- Coding standards: [standards/coding-standards.md](../../standards/coding-standards.md)
+- Full agent spec: [agents/codebase-analyst.md](../../agents/codebase-analyst.md)
 
 ## Severity Levels
 

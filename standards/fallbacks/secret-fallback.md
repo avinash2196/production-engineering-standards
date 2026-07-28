@@ -1,18 +1,18 @@
-# Secret Fallback
+# Secret Local Adapter
 
 ## Purpose
 
-Environment-variable-based secret resolution for local development when a secret manager (Vault, Key Vault) is unavailable. Activated by `FALLBACK_SECRETS=env`. Implements `SecretProvider` interface by reading secrets from OS environment variables.
+Environment-variable-based secret resolution for local development when a secret manager (Vault, Key Vault) is unavailable. Activated by `SECRET_ADAPTER=env`. Implements `SecretProvider` interface by reading secrets from OS environment variables.
 
 ## Activation
 
 | Environment | Toggle | Active |
 |-------------|--------|--------|
-| Local dev | `FALLBACK_SECRETS=env` | Yes |
-| Staging | Must be unset | No |
-| Production | Must be unset | **Never** |
+| Local dev | `SECRET_ADAPTER=env` | Yes |
+| Staging | `vault` or `secretmanager` | Production provider |
+| Production | `vault` or `secretmanager` | Local value rejected |
 
-**Startup validation:** if `FALLBACK_SECRETS=env` and the environment is production, fail startup immediately. This is a critical security violation.
+**Startup validation:** if `SECRET_ADAPTER=env` and the environment is production, fail startup immediately. This is a critical security violation.
 
 ## Behavior
 
@@ -23,7 +23,7 @@ getSecret("db-password")
 
 getSecret("db-password", "v2")
     → version parameter ignored (env vars don't have versions)
-    → logs WARNING about version being ignored in fallback mode
+    → logs WARNING about version being ignored in local-adapter mode
 ```
 
 - Key mapping: secret name is uppercased, hyphens/dots replaced with underscores.
@@ -37,7 +37,7 @@ getSecret("db-password", "v2")
 
 ```java
 @Component
-@Profile("fallback-secrets")
+@ConditionalOnProperty(name = "adapters.secrets", havingValue = "env")
 public class EnvSecretProvider implements SecretProvider {
 
     @Override
@@ -46,7 +46,7 @@ public class EnvSecretProvider implements SecretProvider {
         String value = System.getenv(envKey);
         if (value == null) {
             throw new SecretNotFoundException(name,
-                "Secret not found in env var: " + envKey + " (fallback mode)");
+                "Secret not found in env var: " + envKey + " (local-adapter mode)");
         }
         return value;
     }
@@ -74,7 +74,7 @@ class EnvSecretProvider:
         env_key = name.replace("-", "_").replace(".", "_").upper()
         value = os.environ.get(env_key)
         if value is None:
-            raise SecretNotFoundError(f"Secret not found in env var: {env_key} (fallback mode)")
+            raise SecretNotFoundError(f"Secret not found in env var: {env_key} (local-adapter mode)")
         return value
 
     def get_secret_version(self, name: str, version: str) -> str:
@@ -124,14 +124,14 @@ Load via:
 ## LLM Instructions
 
 - When scaffolding a secret fallback, use the env-var pattern above.
-- Wire via `@Profile("fallback-secrets")` or Python conditional injection.
+- Wire via `@ConditionalOnProperty(name = "adapters.secrets", havingValue = "env")` or Python conditional injection.
 - Always add `.env.local` to `.gitignore` in generated projects.
 - Always generate startup validation that prevents fallback in production.
-- Warn the user that fallback mode provides no security guarantees.
+- Warn the user that local-adapter mode provides no security guarantees.
 
 ## Review Checklist
 
-- [ ] Fallback activated only by `FALLBACK_SECRETS=env`.
+- [ ] Local adapter activated only by `SECRET_ADAPTER=env`.
 - [ ] Startup fails if fallback active in production.
 - [ ] Implements full `SecretProvider` interface.
 - [ ] `.env.local` in `.gitignore`.

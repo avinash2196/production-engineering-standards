@@ -19,11 +19,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         "service.starting",
         service=settings.service_name,
         environment=settings.environment,
-        fallback_kafka=settings.fallback_kafka,
-        fallback_cache=settings.fallback_cache,
+        messaging_adapter=settings.messaging_adapter.value,
+        cache_adapter=settings.cache_adapter.value,
+        storage_adapter=settings.storage_adapter.value,
+        secret_adapter=settings.secret_adapter.value,
     )
     yield
-    logger.info("service.stopping")
+    logger.info("service.stopping", service=settings.service_name)
 
 
 def create_app() -> FastAPI:
@@ -31,7 +33,6 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.service_name,
         version="0.1.0",
-        # Disable docs in production
         docs_url="/docs" if settings.environment != "production" else None,
         redoc_url=None,
         lifespan=lifespan,

@@ -84,7 +84,7 @@ Every secret must have a rotation plan:
 
 ## Local Development
 
-In local development, `FALLBACK_SECRETS=env` allows reading secrets from environment variables:
+In local development, `SECRET_ADAPTER=env` allows reading secrets from environment variables:
 
 ```bash
 # .env.local (NEVER committed to VCS)
@@ -129,7 +129,7 @@ If a secret is compromised:
 - **Shared credentials:** each service and each environment gets its own credentials.
 - **No rotation plan:** every secret must have a documented rotation schedule.
 - **Secrets in Docker build args:** use runtime injection, not build-time.
-- **Disabling vault in production:** `FALLBACK_SECRETS=env` must never be active in production.
+- **Disabling vault in production:** `SECRET_ADAPTER=env` must never be active in production.
 
 ## LLM Instructions
 
@@ -149,4 +149,4 @@ If a secret is compromised:
 - [ ] `.env.local` in `.gitignore`.
 - [ ] Secret scanner running in CI (`gitleaks`, `trufflehog`, etc.).
 - [ ] Vault access policies follow least privilege.
-- [ ] Fallback mode (`FALLBACK_SECRETS=env`) cannot activate in production.
+- [ ] Fallback mode (`SECRET_ADAPTER=env`) cannot activate in production.

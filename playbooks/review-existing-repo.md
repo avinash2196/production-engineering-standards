@@ -48,7 +48,7 @@ Reference: `standards/fallback-strategy.md`, `contracts/`
 - Are all env-specific values externalized?
 - Is config precedence followed? (operator → dynamic → env → files → defaults)
 - Are secrets separate from config? (SecretProvider, not mixed into config files)
-- Are `FALLBACK_*` toggles present and disabled by default?
+- Are `*_ADAPTER` toggles present and disabled by default?
 
 Reference: `standards/configuration-management.md`
 

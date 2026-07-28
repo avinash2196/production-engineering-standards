@@ -91,7 +91,7 @@ Reference: `standards/compliance-engineering.md`
 | Secrets via `SecretProvider` in production | Vault/managed secret store | ✅/❌ |
 | No secrets in source code | Confirmed via grep | ✅/❌ |
 | No secrets in config files or Docker images | Confirmed | ✅/❌ |
-| `FALLBACK_SECRETS=env` disabled in production | Confirmed | ✅/❌ |
+| `SECRET_ADAPTER=env` disabled in production | Confirmed | ✅/❌ |
 | Secret rotation strategy documented | Rotation schedule + process | ✅/❌ |
 
 Reference: `standards/security/secrets-handling.md`

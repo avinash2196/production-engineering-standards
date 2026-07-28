@@ -1,62 +1,84 @@
-# Java Spring Boot Guidance
+# Java and Spring Boot Engineering Guidance
 
-Purpose
-- Provide concrete, production-oriented patterns for building Spring Boot services that comply with the repository's engineering principles: configuration-first, fallback-aware, observable, testable, and cloud-local friendly.
+## Purpose
 
-Structure
-- Layers: `controller` -> `service` -> `domain` -> `repository`.
-- Recommended folders:
-  - `src/main/java/com/<org>/<service>/api` (controllers, DTOs)
-  - `src/main/java/com/<org>/<service>/service` (application services)
-  - `src/main/java/com/<org>/<service>/domain` (entities, value objects)
-  - `src/main/java/com/<org>/<service>/repository` (data access)
-  - `src/main/java/com/<org>/<service>/adapter` (infrastructure adapters: messaging, storage, cache)
-  - `src/main/java/com/<org>/<service>/config` (configuration wiring and `ConfigProvider` adapters)
-  - `src/test/java/...` (unit + integration tests)
-- Naming: DTOs end with `Request`/`Response`. Interfaces use `...Provider` suffix (e.g., `MessagePublisher`), implementations use `...Impl` or `...KafkaAdapter`.
+Provide practical Java 21/Spring Boot 3.x defaults for services that use plan-driven implementation, test-first behavior changes, controlled dependencies, and explicit operational decisions.
 
-Abstractions
-- Messaging: define `MessagePublisher` and `MessageSubscriber` interfaces in a shared `core` module. Publisher methods accept `topic`, `payload`, `attributes` and optional `idempotencyKey` and `traceId`.
-- Storage: define `ObjectStorageProvider` with `put/get/delete/list/presign`. Implement cloud adapter and local file adapter.
-- Config: `ConfigProvider` exposes typed config objects and supports refresh hooks; prefer Spring `@ConfigurationProperties` bound to a provider wrapper that consults dynamic config.
-- Cache: `CacheProvider` exposing `get/put/invalidate` with TTL semantics; default to Redis in prod and in-memory LRU fallback in dev.
+## Required Workflow
 
-Fallback handling (local vs production)
-- Explicit toggles: enable fallbacks only when env var like `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`, `FALLBACK_STORAGE=local`.
-- Production images must default toggles off; local dev compose files enable toggles.
-- Telemetry: when a fallback is active, emit a metric `fallback.active{name="kafka"}` and a structured warning log including the `X-Correlation-ID`.
-- Behavior differences must be documented (durability, ordering, consistency) and tested in `examples/fallback-demo`.
+For non-trivial work:
 
-Spring Boot patterns
-- Use Spring Boot starter modules and keep one `@SpringBootApplication` per service.
-- Configuration-first: use `@ConfigurationProperties` DTOs that are populated by a `ConfigProviderAdapter` which reads env → dynamic → file per precedence.
-- Wiring: prefer constructor injection and create beans for adapters (`@Configuration` classes). Keep controllers thin and map DTOs to domain models in service layer.
+1. review requirements and current code;
+2. approve `docs/.ai/Plan.md`;
+3. approve a milestone-specific Implementation Plan with exact files and tests;
+4. add the focused test and confirm RED;
+5. implement the smallest change for GREEN;
+6. refactor while tests remain green;
+7. run the full applicable Definition of Done.
 
-ControllerAdvice and DTO separation
-- Use `@RestController` for controllers and `@ControllerAdvice` for centralized exception handling and validation error mapping.
-- Keep DTOs in `api.dto` package. Use MapStruct or explicit mappers in `service` layer for DTO ↔ domain transformations.
+## Architecture
 
-Testing (Testcontainers)
-- Unit tests: mock capability abstractions (`MessagePublisher`, `ObjectStorageProvider`) using Mockito.
-- Integration tests: use Testcontainers for DB and broker in CI where possible; otherwise use local fallbacks for deterministic CI runs.
-- Provide contract tests for API and messaging flows (Pact or custom consumer-driven tests).
+Use the simplest structure that preserves clear decisions:
 
-Anti-patterns
-- Business logic in controllers.
-- Direct use of SDK objects (e.g., KafkaProducer) in domain code or controllers.
-- Implicit fallback activation in production images.
+- controllers handle transport, validation, authentication context, and response mapping;
+- application services coordinate use cases and transactions;
+- domain objects own meaningful invariants when complexity justifies them;
+- ports isolate persistence or external capabilities when they protect a real boundary;
+- infrastructure adapters contain JPA, Kafka/Pub/Sub, Redis, storage, and secret SDK details;
+- configuration classes compose implementations through typed properties.
 
-LLM instructions
-- When scaffolding a Spring Boot service, generate:
-  - `ConfigProvider` adapter and `@ConfigurationProperties` DTOs
-  - interfaces for `MessagePublisher`, `ObjectStorageProvider`, `CacheProvider`, `SecretProvider`
-  - both cloud adapter stubs and local fallback implementations with explicit env toggles
-  - centralized `@ControllerAdvice` for error mapping and correlation-ID injection at the filter level
-- Ask the user only when: data sensitivity is ambiguous, ordering guarantees are required for events, or multi-region deployment is requested.
+Do not create packages or interfaces solely to satisfy a fixed layer count.
 
-Review checklist
-- [ ] Layer separation enforced (controller/service/domain/repository).
-- [ ] DTOs present and mapped to domain objects.
-- [ ] Capability abstractions present and used.
-- [ ] Fallback toggles explicit and documented.
-- [ ] Observability hooks (logging/metrics/tracing) present and tested.
+## Spring Practices
+
+- Prefer constructor injection; avoid field injection.
+- Use `@ConfigurationProperties` with validation for grouped configuration.
+- Use records for immutable DTOs when compatible with the API/framework needs.
+- Apply Bean Validation to request shape; keep business rules in application/domain code.
+- Define transaction boundaries around coherent database work and avoid slow remote calls inside a transaction unless explicitly designed.
+- Map specific application/domain exceptions with centralized exception handling.
+- Treat method/class/constructor size as review signals; refactor based on mixed responsibilities or testability, not a number alone.
+- Configure graceful shutdown and relevant liveness/readiness checks.
+
+## Capability and Adapter Selection
+
+```yaml
+adapters:
+  messaging: ${MESSAGING_ADAPTER:kafka}
+  cache: ${CACHE_ADAPTER:redis}
+  storage: ${STORAGE_ADAPTER:s3}
+  secrets: ${SECRET_ADAPTER:vault}
+```
+
+Local-only values are `db`/`inmemory`, `jsonfile`/`inmemory`, `local`, and `env`. They must:
+
+- be selected explicitly;
+- emit activation telemetry;
+- document lost durability, ordering, consistency, concurrency, and security guarantees;
+- be rejected in production by startup validation.
+
+A database-backed message adapter and JSON-file cache are preferred when local restart persistence and inspectability matter. They are not production broker/cache replacements.
+
+## Resilience
+
+Every remote dependency has a timeout and named failure behavior. Depending on correctness and business impact, use bounded retry, circuit breaking, durable queueing, stale data, bypass, fail closed, or fail fast. Do not require a generic fallback for every dependency.
+
+## Observability
+
+Use SLF4J structured key-value logging or MDC where it aids diagnosis, Micrometer metrics on important service/external boundaries, and OpenTelemetry tracing according to support/SLO needs. Never log secrets or sensitive payloads.
+
+## Testing
+
+- JUnit 5 and Mockito/fakes for business/application tests without Spring context when possible.
+- Focused MVC/WebFlux tests for API behavior.
+- Testcontainers or supported emulators for persistence and infrastructure boundaries.
+- Tests for transaction rollback, idempotency, retries, adapter selection, and production guards when applicable.
+- Keep behavior changes separate from refactoring and preserve RED/GREEN evidence.
+
+## References
+
+- [Prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md)
+- [Architecture](../../standards/architecture.md)
+- [Local adapter strategy](../../standards/local-adapter-strategy.md)
+- [Production dependency failure strategy](../../standards/fallback-strategy.md)
+- [Java stack README](README.md)

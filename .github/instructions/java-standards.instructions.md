@@ -1,47 +1,65 @@
 ---
 applyTo: "**/*.java"
-description: "Use when writing, reviewing, or generating Java code. Enforces Spring Boot 3.x layered architecture, naming conventions, constructor injection, error handling, testing patterns, and capability interface usage."
+description: "Apply Java and Spring Boot engineering guidance with controlled dependencies, constructor injection, test-first changes, and explicit production failure behavior."
 ---
 
-Follow all rules in [stacks/java-springboot/java-spring.md](../../stacks/java-springboot/java-spring.md) and [standards/coding-standards.md](../../standards/coding-standards.md).
+Follow the applicable guidance in [Java and Spring standards](../../stacks/java-springboot/java-spring.md), [coding standards](../../standards/coding-standards.md), and the [prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md).
 
-## Layer Rules
+## Delivery Sequence
 
-- **Controller**: annotate with `@RestController`. Accept/return DTOs (records). Delegate immediately to service. No `@Autowired` — constructor injection only.
-- **Service**: annotate with `@Service`. Inject capability interfaces (`MessagePublisher`, `CacheProvider`, etc.), never `KafkaTemplate`, `RedisTemplate`, or `AmazonS3` directly.
-- **Domain**: plain Java classes/records/enums. Zero Spring annotations outside of `@Entity`/`@Embeddable`. No `import org.springframework.*` in domain classes.
-- **Repository**: extend `JpaRepository` or `CrudRepository`. One interface per aggregate root.
-- **Infrastructure**: implement capability interfaces here. Fallback beans use `@Profile("fallback-{capability}")`.
+For non-trivial behavior changes:
 
-## Naming
+1. use an approved plan and implementation plan;
+2. add or update the smallest behavior-focused test and verify the expected failure;
+3. implement the minimum code needed for green;
+4. run focused and relevant regression tests;
+5. refactor only after green and preserve behavior.
 
-| Element | Convention | Example |
-|---------|-----------|---------|
-| Class | `PascalCase` + role suffix | `OrderService`, `OrderController` |
-| Method | `camelCase`, verb-first | `findOrderById`, `publishOrderCreated` |
-| DTO | `{Entity}Request` / `{Entity}Response` | `CreateOrderRequest` |
-| Constant | `UPPER_SNAKE_CASE` | `MAX_RETRY_COUNT` |
-| Test class | `{Subject}Test` | `OrderServiceTest` |
+Do not expand scope or mix unrelated cleanup into the behavior change.
 
-## Hard Rules
+## Architecture Defaults
 
-- **Constructor injection only** — never `@Autowired` on fields.
-- Methods: **max 30 lines**. If longer, extract a private method or a domain service.
-- Classes: **max 300 lines**. If longer, split responsibilities.
-- Constructor parameters: **max 4**. If more, introduce a parameter object.
-- DTOs are Java `record`s with `@Valid` + `@NotNull`/`@NotBlank` annotations.
-- All secrets via `SecretProvider.get(key)` — never `@Value("${secret.*}")`.
-- Throw domain exceptions (`OrderNotFoundException extends RuntimeException`), not raw `Exception`.
-- Use `@ControllerAdvice` + `@ExceptionHandler` for error responses — never return `null`.
+- **Controller/API**: Spring MVC or WebFlux transport handling, DTO binding, validation, authentication context, and response mapping.
+- **Application service**: use-case orchestration and transaction ownership.
+- **Domain**: business rules and value objects when complexity justifies them; avoid coupling business decisions to Spring or vendor SDKs.
+- **Ports/contracts**: repository and external-capability abstractions where they protect a meaningful boundary.
+- **Infrastructure adapters**: JPA/SQL, Kafka/Pub/Sub, Redis, object storage, and managed-secret implementations.
 
-## Observability
+Use a simpler layered structure for straightforward CRUD when documented and testable. Do not create interfaces or folders solely to satisfy a diagram.
 
-- Log with SLF4J + structured MDC: `MDC.put("orderId", orderId.toString())`.
-- Emit Micrometer metrics: `meterRegistry.counter("order.created").increment()`.
-- Annotate service methods with `@Observed` or manually create spans for complex flows.
+## Java Practices
+
+- Prefer constructor injection. Do not use field injection.
+- Use records for immutable request/response DTOs when they fit the API contract; classes are acceptable when framework or evolution needs justify them.
+- Apply Bean Validation at the transport boundary and keep business-rule validation in application/domain code.
+- Throw specific domain/application exceptions and map them through centralized exception handling.
+- Use transactions around a coherent unit of work; do not hold database transactions open across slow remote calls without a documented reason.
+- Treat method length, class size, nesting, and constructor size as review signals, not automatic failures. Refactor when responsibilities or testability demonstrate the need.
+- Do not access Kafka, Redis, storage, or secret SDKs directly from controllers or domain logic.
+
+## Adapter Selection
+
+Use typed configuration such as:
+
+- `adapters.messaging=kafka|pubsub|db|inmemory`
+- `adapters.cache=redis|jsonfile|inmemory`
+- `adapters.storage=s3|gcs|local`
+- `adapters.secrets=vault|secretmanager|env`
+
+Select implementations in configuration/composition code. Local-only adapters must be observable, document reduced guarantees, and be rejected by production startup validation.
+
+## Security and Observability
+
+- Retrieve credentials through approved configuration/secret abstractions; never hardcode them.
+- Use SLF4J with structured key-value or MDC context where it supports diagnosis.
+- Add Micrometer metrics and tracing to critical service and external boundaries based on SLO/support needs.
+- Avoid logging tokens, credentials, PII, PHI, or full sensitive payloads.
+- Configure timeouts and explicit failure behavior for every remote dependency.
 
 ## Testing
 
-- Unit tests: mock capability interfaces with `@MockBean` or Mockito. No Spring context needed for service tests.
-- Integration tests: use `@SpringBootTest` + Testcontainers. Never mock the database in integration tests.
-- See [standards/testing/unit-testing.md](../../standards/testing/unit-testing.md).
+- Unit-test application/domain decisions with JUnit 5 and Mockito/fakes without starting Spring unless framework behavior is under test.
+- Use focused MVC/WebFlux tests for transport behavior.
+- Use Testcontainers or an equivalent realistic environment for persistence and integration boundaries when needed.
+- Prove local-adapter production guards and important retry, idempotency, rollback, and error behavior.
+- Keep tests deterministic and assert behavior rather than internal call sequences unless the sequence is itself the contract.

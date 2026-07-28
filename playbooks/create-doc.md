@@ -158,7 +158,7 @@ Follow `standards/naming.md`. Key rules:
 
 ## Step 6: Write the Plan (if doc is large)
 
-If the document will have more than 5 sections or requires reading multiple existing files, follow [agent-execution.md](../standards/agent-execution.md) and write a plan file first at `.copilot/plans/`.
+If the document will have more than 5 sections or requires reading multiple existing files, follow [agent-execution.md](../standards/agent-execution.md) and write a plan file first at `docs/.ai/Plan.md`.
 
 ## Step 7: Cross-Link
 

@@ -1,124 +1,120 @@
-# Architecture
-
-Layered architecture standard for all enterprise backend services.
+# Architecture Standard
 
 ## Purpose
 
-Define a consistent, testable, and maintainable service architecture that separates concerns into well-defined layers with strict dependency rules.
+Define clear dependency boundaries without forcing every service into the same number of folders. Architecture should match business complexity while keeping transport, business policy, persistence, and external infrastructure independently testable.
 
-## Layer Model
+## Default Dependency Model
 
-```
-┌─────────────────────────────────────┐
-│          Controller / API           │  ← HTTP, gRPC, event handlers
-├─────────────────────────────────────┤
-│            Service Layer            │  ← Business orchestration
-├─────────────────────────────────────┤
-│           Domain Layer              │  ← Entities, value objects, rules
-├─────────────────────────────────────┤
-│         Repository Layer            │  ← Data access (DB, external APIs)
-├─────────────────────────────────────┤
-│     Infrastructure / Adapters       │  ← Capability interface impls
-└─────────────────────────────────────┘
+```text
+API / Event Handlers
+        ↓
+Application Services
+        ↓
+Domain Model
+        ↑
+Ports / Contracts
+        ↑
+Persistence and Infrastructure Adapters
 ```
 
-## Layer Responsibilities
+The diagram expresses dependency direction, not a mandatory physical folder count.
 
-### Controller (API)
-- Accept and validate inbound requests.
-- Map DTOs to domain objects.
-- Delegate to the service layer — **no business logic here**.
-- Return structured responses with appropriate HTTP status codes.
+## Responsibilities
 
-### Service
-- Orchestrate business workflows across domain objects and infrastructure.
-- Enforce authorization and business rules.
-- Publish domain events via `MessagePublisher`.
-- Manage transactions (when applicable).
+### API or Event Handler
+
+- bind and validate transport input
+- map request/event models to application input
+- invoke one application use case
+- map outcomes to transport responses
+- avoid business rules and direct persistence access
+
+### Application Service
+
+- orchestrate one use case
+- coordinate transactions and authorization
+- call domain behavior and repository/capability ports
+- define idempotency and ordering boundaries where required
+- avoid vendor SDK details
 
 ### Domain
-- Pure business logic, entities, value objects, and domain events.
-- No framework dependencies — testable in isolation.
-- Rich domain model preferred over anemic DTOs.
 
-### Repository
-- Data access layer — encapsulates persistence details.
-- Returns domain objects, not raw database rows.
-- One repository per aggregate root.
+- express business rules, invariants, entities, value objects, and domain events
+- remain independent of HTTP, messaging, persistence, and vendor SDK frameworks
+- stay simple for CRUD-oriented services; use a richer model only when rules justify it
 
-### Infrastructure / Adapters
-- Implementations of capability interfaces (`MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, `ConfigProvider`).
-- Production beans and fallback beans live here.
-- Activated via environment variables and DI profiles.
+### Ports and Contracts
+
+- define stable boundaries for repositories and meaningful external capabilities
+- use domain/application language rather than vendor terminology where practical
+- avoid speculative interfaces that have no meaningful test or substitution value
+
+### Persistence and Infrastructure Adapters
+
+- implement repository and capability contracts
+- own SDK, database, serialization, retry, and provider-specific details
+- expose production and explicitly selected local implementations
+- contain no business policy
+
+## Architecture by Complexity
+
+### Simple CRUD Service
+
+A controller/API layer, application service, DTOs, and persistence adapter may be sufficient. Do not add domain-event or port layers merely to satisfy a template.
+
+### Business-Rule-Heavy Service
+
+Use domain entities/value objects and domain-owned repository or capability contracts when invariants, transaction behavior, or cross-aggregate decisions justify them.
+
+### Integration-Heavy Service
+
+Use explicit capability contracts and adapters when provider semantics, failure handling, local substitutes, testing, or migration flexibility matter.
 
 ## Dependency Rules
 
-```
-Controller  →  Service  →  Domain  ←  Repository
-                 ↓
-          Infrastructure
-```
+1. Controllers/handlers do not call database or vendor SDK clients directly.
+2. Domain logic does not depend on transport or infrastructure frameworks.
+3. Application logic depends on contracts, not concrete provider implementations, when a meaningful boundary exists.
+4. Adapters may depend on provider SDKs and mapping code; inner layers must not.
+5. Cross-layer shortcuts require an architecture decision explaining why they improve rather than weaken the design.
+6. Shared utilities must not become an unowned dumping ground.
 
-| Rule | Description |
-|------|-------------|
-| **Direction** | Dependencies flow inward — outer layers depend on inner layers, never the reverse. |
-| **Domain independence** | Domain layer has zero dependencies on framework, infrastructure, or external libraries. |
-| **Interface boundaries** | Service layer depends on capability *interfaces*, never concrete implementations. |
-| **No layer skipping** | Controllers must not call repositories directly; they go through the service layer. |
+## Framework Pragmatism
 
-## Cross-Cutting Concerns
+A persistence annotation on a domain object may be acceptable in a deliberately simple active-record or transaction-script service when documented. Do not claim “zero framework dependencies” while using framework annotations without an explicit architecture choice.
 
-| Concern | Where it lives |
-|---------|----------------|
-| Authentication | Middleware / filter (before controller) |
-| Authorization | Service layer (`@PreAuthorize` or manual check) |
-| Logging | All layers via structured logger |
-| Metrics | Controller (request metrics) + service (business metrics) |
-| Tracing | Spans created at controller edge, propagated through all layers |
-| Error handling | Global exception handler maps domain exceptions to HTTP responses |
+## Transactions and Consistency
 
-## Java Spring Boot Layout
+- define the local transaction boundary explicitly
+- roll back related database changes when a unit of work fails
+- use outbox/inbox, idempotency, or saga patterns only when requirements justify distributed consistency handling
+- do not imply that a local adapter provides the same ordering or durability as a production broker
 
-```
-src/main/java/com/myorg/{service}/
-├── controller/      # @RestController classes
-├── service/         # @Service classes
-├── domain/          # POJOs, records, enums
-├── repository/      # @Repository interfaces (Spring Data JPA)
-├── infrastructure/  # Capability implementations
-└── config/          # @Configuration, @Bean definitions
-```
+## Local Adapters and Production Degradation
 
-## Python FastAPI Layout
-
-```
-src/{service_name}/
-├── api/             # FastAPI routers
-├── service/         # Business logic classes
-├── domain/          # Pydantic models, dataclasses
-├── repository/      # SQLAlchemy / asyncpg data access
-├── infrastructure/  # Capability implementations
-└── config/          # Settings (pydantic-settings)
-```
-
-## Anti-Patterns
-
-| Anti-Pattern | Why it's wrong |
-|-------------|----------------|
-| Business logic in controllers | Untestable, duplicated across endpoints |
-| Controller calling repository directly | Skips authorization, validation, and event publishing |
-| Domain objects with framework annotations | Couples domain to infrastructure |
-| God service with 500+ lines | Split into focused services per aggregate |
-| Circular dependencies between layers | Indicates incorrect boundaries — use events to decouple |
+Local adapter selection belongs to [Local Adapter Strategy](local-adapter-strategy.md). Production dependency failure behavior belongs to [Production Dependency Failure and Degradation](fallback-strategy.md). Do not merge the two decisions.
 
 ## LLM Instructions
 
-- When generating a new endpoint, create a controller that delegates to a service, which operates on domain objects and calls repositories.
-- Never place SQL queries, HTTP calls, or caching logic in the service layer — use repository or capability interfaces.
-- If a service method exceeds ~50 lines, suggest splitting into smaller domain operations.
+- Choose the smallest architecture that protects the required boundaries.
+- Explain concrete coupling or testability risks instead of failing code because a folder is absent.
+- Do not introduce ports, domain layers, or adapters without a justified requirement.
+- Keep production provider details outside domain and application logic when a stable boundary is needed.
+- Record exceptions as architecture decisions rather than silently breaking the dependency model.
+
+## Review Checklist
+
+- [ ] Architecture matches service complexity
+- [ ] Transport, business policy, and infrastructure responsibilities are clear
+- [ ] Controllers/handlers avoid business logic and direct data access
+- [ ] Domain/application code avoids vendor SDK coupling where a capability boundary is justified
+- [ ] Transactions, idempotency, ordering, and consistency are explicit where relevant
+- [ ] Local adapters and production degradation are separate decisions
+- [ ] Exceptions are documented with rationale
 
 ## References
 
-- [principles.md](principles.md)
-- [Core abstractions](abstractions/)
-- [Fallback strategy](../standards/fallback-strategy.md)
+- [Engineering Principles](engineering-principles.md)
+- [Capability Contracts](../contracts/)
+- [Prompt-Driven Development Workflow](prompt-driven-development-workflow.md)

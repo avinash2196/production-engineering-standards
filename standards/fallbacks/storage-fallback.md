@@ -1,18 +1,18 @@
-# Storage Fallback
+# Storage Local Adapter
 
 ## Purpose
 
-Local filesystem-based object storage replacement for development when S3/Azure Blob/GCS is unavailable. Activated by `FALLBACK_STORAGE=local`. Implements `ObjectStorageProvider` interface using a local directory.
+Local filesystem-based object storage replacement for development when S3/Azure Blob/GCS is unavailable. Activated by `STORAGE_ADAPTER=local`. Implements `ObjectStorageProvider` interface using a local directory.
 
 ## Activation
 
 | Environment | Toggle | Active |
 |-------------|--------|--------|
-| Local dev | `FALLBACK_STORAGE=local` | Yes |
-| Staging | Must be unset | No |
-| Production | Must be unset | **Never** |
+| Local dev | `STORAGE_ADAPTER=local` | Yes |
+| Staging | `s3` or `gcs` | Production adapter |
+| Production | `s3` or `gcs` | Local value rejected |
 
-**Startup validation:** if `FALLBACK_STORAGE=local` and the environment is production, fail startup.
+**Startup validation:** if `STORAGE_ADAPTER=local` and the environment is production, fail startup.
 
 ## Behavior
 
@@ -65,12 +65,12 @@ Metadata sidecar file (`.meta.json`):
 
 ```java
 @Component
-@Profile("fallback-storage")
+@ConditionalOnProperty(name = "adapters.storage", havingValue = "local")
 public class LocalFileObjectStorageProvider implements ObjectStorageProvider {
     private final Path root;
 
     public LocalFileObjectStorageProvider(
-            @Value("${fallback.storage.root:./data/fallback-storage}") String rootPath) {
+            @Value("${adapters.storage.root:./data/fallback-storage}") String rootPath) {
         this.root = Path.of(rootPath);
     }
 
@@ -106,7 +106,7 @@ public class LocalFileObjectStorageProvider implements ObjectStorageProvider {
 
     @Override
     public URL getSignedUrl(String bucket, String key, Duration expiration) {
-        log.warn("Signed URLs not supported in fallback mode, returning file:// URI");
+        log.warn("Signed URLs not supported in local-adapter mode, returning file:// URI");
         return root.resolve(bucket).resolve(key).toUri().toURL();
     }
 }
@@ -182,14 +182,14 @@ data/fallback-storage/
 ## LLM Instructions
 
 - When scaffolding a storage fallback, use the local filesystem pattern above.
-- Wire via `@Profile("fallback-storage")` or Python conditional injection.
+- Wire via `@ConditionalOnProperty(name = "adapters.storage", havingValue = "local")` or Python conditional injection.
 - Always create the metadata sidecar file alongside the object.
 - Always add `data/fallback-storage/` to `.gitignore`.
 - Generate startup validation that prevents fallback in production.
 
 ## Review Checklist
 
-- [ ] Fallback activated only by `FALLBACK_STORAGE=local`.
+- [ ] Local adapter activated only by `STORAGE_ADAPTER=local`.
 - [ ] Startup fails if fallback active in production.
 - [ ] Implements full `ObjectStorageProvider` interface.
 - [ ] Metadata sidecar files created for every object.

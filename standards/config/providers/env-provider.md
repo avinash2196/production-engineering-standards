@@ -43,7 +43,7 @@ Rules:
 | External service endpoints | Complex structured config (use file-provider) |
 | Port numbers | Large config blocks (use file-provider) |
 | Log level | Values needing runtime change (use dynamic provider) |
-| Fallback toggles (`FALLBACK_KAFKA=db`) | Multi-line values |
+| Fallback toggles (`MESSAGING_ADAPTER=db`) | Multi-line values |
 | Simple feature toggles (static) | |
 
 ## Java Implementation
@@ -96,7 +96,7 @@ for (String key : required) {
 
 - **Never put secrets in env vars in production.** Use `SecretProvider` with Vault/Key Vault.
 - Env vars may be visible in process listings, container inspection, and crash dumps.
-- `FALLBACK_SECRETS=env` is acceptable only for local development.
+- `SECRET_ADAPTER=env` is acceptable only for local development.
 - Log which env vars are present at startup (names only, never values for sensitive-looking keys).
 
 ## LLM Instructions

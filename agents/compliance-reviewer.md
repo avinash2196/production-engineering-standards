@@ -46,7 +46,7 @@ You are a compliance review agent. You audit services and architecture against e
    - No secrets in source code, config files, Docker images, or logs.
    - Secret rotation strategy documented.
 7. **Check configuration compliance:**
-   - `FALLBACK_SECRETS=env` is never enabled in production.
+   - `SECRET_ADAPTER=env` is never enabled in production.
    - Compliance-relevant config (encryption keys, audit endpoints) cannot be overridden by non-admin config sources.
 
 ## Output Format

@@ -1,66 +1,68 @@
 ---
 applyTo: "**/*.py"
-description: "Use when writing, reviewing, or generating Python code. Enforces FastAPI layered architecture, Pydantic v2 DTOs, async patterns, dependency injection for capability interfaces, and testing with pytest-asyncio."
+description: "Apply Python and FastAPI engineering guidance with typed configuration, explicit boundaries, test-first changes, and safe local-adapter selection."
 ---
 
-Follow all rules in [stacks/python-fastapi/python-backend.md](../../stacks/python-fastapi/python-backend.md) and [standards/coding-standards.md](../../standards/coding-standards.md).
+Follow the applicable guidance in [Python backend standards](../../stacks/python-fastapi/python-backend.md), [coding standards](../../standards/coding-standards.md), and the [prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md).
 
-## Layer Rules
+## Delivery Sequence
 
-- **API (`api/`)**: FastAPI `APIRouter`. Accept/return Pydantic models. Call service only. No business logic.
-- **Service (`service/`)**: Receives capability interfaces via `Depends()`. No direct `aiokafka`, `redis.asyncio`, or `aiobotocore` imports.
-- **Domain (`domain/`)**: Plain Python dataclasses or Pydantic `BaseModel` subclasses. Zero framework imports (`fastapi`, `sqlalchemy`, etc. are forbidden).
-- **Repository (`repository/`)**: SQLAlchemy async sessions. One class per aggregate root. Accept `AsyncSession` via `Depends()`.
-- **Infrastructure (`infrastructure/`)**: Capability implementations. Fallback selection in `infrastructure/fallback/providers.py` using settings flags.
+For non-trivial behavior changes:
 
-## Naming
+1. work from an approved plan and implementation plan;
+2. add or update a behavior-focused test and confirm the expected failure;
+3. implement the smallest change that makes it pass;
+4. run the focused and relevant regression suites;
+5. refactor only while tests remain green.
 
-| Element | Convention | Example |
-|---------|-----------| -------|
-| Module | `snake_case` | `order_service.py` |
-| Class | `PascalCase` + role suffix | `OrderService`, `OrderRepository` |
-| Function | `snake_case`, verb-first | `find_order_by_id`, `publish_order_created` |
-| DTO | `{Entity}Request` / `{Entity}Response` | `CreateOrderRequest` |
-| Constant | `UPPER_SNAKE_CASE` | `MAX_RETRY_COUNT` |
+Do not introduce requirements or files outside the approved implementation plan.
 
-## Hard Rules
+## Architecture Defaults
 
-- All route handlers and service methods must be `async def`.
-- DTOs use `pydantic.BaseModel` (v2) with `model_config = ConfigDict(frozen=True)` for responses.
-- Request DTOs use `@field_validator` or `Annotated` validators — never validate in the service layer.
-- All secrets via `SecretProvider.get(key)` — never `os.environ["SECRET"]` in business logic.
-- Raise domain exceptions (`OrderNotFoundError(Exception)`), not generic `Exception`.
-- All errors caught and returned as `{"code": ..., "message": ..., "traceId": ...}` via exception handlers.
-- Functions: **max 30 lines**. Classes: **max 300 lines**.
-- Type annotations are **required** on all function signatures. `mypy --strict` must pass.
+- **API (`api/`)**: FastAPI routing, request parsing, validation, authentication context, and response mapping. Keep business decisions out of route handlers.
+- **Application (`service/` or `application/`)**: use-case orchestration and transaction boundaries.
+- **Domain (`domain/`)**: business rules and value objects when the service has meaningful invariants. Prefer framework-independent dataclasses or plain classes for domain behavior.
+- **Ports/contracts**: protocols or abstract interfaces when they protect a real external or persistence boundary.
+- **Infrastructure (`infrastructure/`)**: SQLAlchemy repositories and vendor-specific messaging, cache, storage, and secret adapters.
 
-## Dependency Injection Pattern
+A small CRUD service may use a simpler structure when dependencies remain controlled and the decision is documented.
 
-```python
-# Correct: inject via Depends()
-@router.post("/orders")
-async def create_order(
-    body: CreateOrderRequest,
-    service: OrderService = Depends(get_order_service),
-) -> OrderResponse:
-    ...
+## Python Practices
 
-# Wrong: instantiate in handler
-@router.post("/orders")
-async def create_order(body: CreateOrderRequest) -> OrderResponse:
-    service = OrderService(KafkaPublisher())  # ← Never do this
-    ...
-```
+- Use type annotations on public functions and important internal boundaries.
+- Prefer Pydantic v2 models for transport and configuration models; do not make every domain object a Pydantic model by default.
+- Use `async def` for handlers and operations that await asynchronous I/O. Keep CPU-only helpers synchronous unless asynchronous composition requires otherwise.
+- Use dependency injection at application boundaries; do not instantiate production vendor clients inside handlers or domain code.
+- Raise specific domain/application exceptions and map them through centralized exception handlers.
+- Avoid broad `except Exception` unless re-raising after adding useful context or handling a process boundary safely.
+- Treat function length, class size, and parameter count as review signals. Split code when mixed responsibilities, excessive nesting, or difficult testing demonstrates a concrete problem.
+- Run the configured formatter, linter, and type checker for the project. Do not claim `mypy --strict` is mandatory unless the project configuration adopts it.
 
-## Observability
+## Adapter Selection
 
-- Use `structlog.get_logger(__name__)` — never `print()` or `logging.basicConfig()`.
-- Bind trace context: `log.bind(order_id=str(order_id), trace_id=...)`.
-- Prometheus metrics via `prometheus_fastapi_instrumentator` (auto-wired in `main.py`).
+Select implementations through typed settings and provider functions in `infrastructure/local/providers.py` or the project's equivalent composition root.
+
+Examples:
+
+- messaging: `kafka`, `pubsub`, `db`, or `inmemory`
+- cache: `redis`, `jsonfile`, or `inmemory`
+- storage: `s3`, `gcs`, or `local`
+- secrets: `vault`, `secretmanager`, or `env`
+
+Local-only values must emit a warning/metric, document reduced guarantees, and be rejected when `environment=production`.
+
+## Security and Observability
+
+- Read credentials through typed settings or an approved `SecretProvider`; never embed secrets in source.
+- Use the project's structured logger rather than `print()` for service behavior.
+- Bind stable correlation and business identifiers when useful, without logging secrets, PII, or PHI.
+- Add metrics and spans to important service/external boundaries based on operating needs rather than instrumenting every helper.
+- Define timeouts and explicit failure behavior for remote calls.
 
 ## Testing
 
-- Use `pytest` + `pytest-asyncio` with `asyncio_mode = "auto"`.
-- Unit tests: mock capability interfaces with `AsyncMock`. No database or network.
-- Integration tests: `testcontainers-python` for real Postgres/Redis/Kafka.
-- See [standards/testing/unit-testing.md](../../standards/testing/unit-testing.md).
+- Use the project's selected framework, commonly `pytest`/`pytest-asyncio` or `unittest` for dependency-free template checks.
+- Unit tests isolate business decisions through ports or fakes; they do not require a live network.
+- Integration tests use realistic dependencies such as Testcontainers, emulators, or a documented local adapter when the boundary matters.
+- Assert externally meaningful behavior, production guards, durability expectations, and error contracts.
+- Keep test refactoring separate from behavior changes unless the approved implementation plan requires both.

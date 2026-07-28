@@ -74,7 +74,7 @@ server:
   port: ${PORT:8080}
   shutdown: graceful
 
-# Adapter toggles — set via environment variables, never hardcoded
+# Adapter selection — local-only values must be rejected in production
 adapters:
   messaging: ${MESSAGING_ADAPTER:kafka}
   cache: ${CACHE_ADAPTER:redis}

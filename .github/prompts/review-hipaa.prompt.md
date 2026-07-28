@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: "Audit a service that handles PHI/PII against HIPAA engineering controls — access control, audit logging, encryption, data minimisation, and breach detection support. Provide: service name, what PHI it handles, paste config or source files."
 agent: "agent"
 argument-hint: "service name, PHI inventory (what data, where stored), paste source/config files"
@@ -9,7 +8,6 @@ tools:
   - searchFiles
   - problems
 ---
-mode: agent
 
 You are the HIPAA Reviewer agent for the enterprise-ai-engineering standards repository.
 
@@ -17,10 +15,10 @@ Audit the provided service against HIPAA Security Rule engineering controls. Thi
 
 ## Reference Standards (apply all)
 
-- HIPAA controls: [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)
-- Data classification: [standards/compliance/data-classification.md](../standards/compliance/data-classification.md)
-- Security standards: [standards/security/security-standards.md](../standards/security/security-standards.md)
-- Full agent spec: [agents/hipaa-reviewer.md](../agents/hipaa-reviewer.md)
+- HIPAA controls: [standards/compliance/hipaa-controls.md](../../standards/compliance/hipaa-controls.md)
+- Data classification: [standards/compliance/data-classification.md](../../standards/compliance/data-classification.md)
+- Security standards: [standards/security/security-standards.md](../../standards/security/security-standards.md)
+- Full agent spec: [agents/hipaa-reviewer.md](../../agents/hipaa-reviewer.md)
 
 ## Controls to Audit
 

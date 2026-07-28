@@ -1,25 +1,25 @@
-# Redis Fallback
+# Cache Local Adapters
 
 ## Purpose
 
-JSON-file-backed cache fallback for local development when Redis is unavailable. Activated by `FALLBACK_CACHE=jsonfile`. Implements `CacheProvider` using a local JSON file (`./data/fallback-cache/cache.json`) so cache entries survive restarts and can be inspected with any text editor.
+JSON-file-backed cache adapter for local development when Redis is unavailable. Activated by `CACHE_ADAPTER=jsonfile`. Implements `CacheProvider` using a local JSON file (`./data/fallback-cache/cache.json`) so cache entries survive restarts and can be inspected with any text editor.
 
-An in-memory fallback (`FALLBACK_CACHE=inmemory`) is also available for CI or truly zero-infra setups, but entries are lost on restart and cannot be inspected.
+An in-memory local adapter (`CACHE_ADAPTER=inmemory`) is also available for CI or setups without a local Redis process, but entries are lost on restart and cannot be inspected.
 
 ## Activation
 
-| Environment | Toggle | Fallback used |
+| Environment | Toggle | Adapter selected |
 |-------------|--------|---------------|
-| Local dev (recommended) | `FALLBACK_CACHE=jsonfile` | JSON file — persistent, inspectable |
-| Local dev (no disk) | `FALLBACK_CACHE=inmemory` | In-memory dict/map — ephemeral |
-| Staging | Must be unset | No fallback |
-| Production | Must be unset | **Never** |
+| Local dev (recommended) | `CACHE_ADAPTER=jsonfile` | JSON file — persistent, inspectable |
+| Local dev (no disk) | `CACHE_ADAPTER=inmemory` | In-memory dict/map — ephemeral |
+| Staging | `redis` | Production adapter |
+| Production | `redis` | Local values rejected |
 
-**Startup validation:** if `FALLBACK_CACHE` is set to any value and the environment is production, fail startup.
+**Startup validation:** if `CACHE_ADAPTER` is `jsonfile` or `inmemory` and the environment is production, fail startup. `CACHE_ADAPTER=redis` remains valid.
 
 ## Behavior
 
-### JSON File Implementation (Recommended — `FALLBACK_CACHE=jsonfile`)
+### JSON File Implementation (Recommended — `CACHE_ADAPTER=jsonfile`)
 
 Stores all cache entries in `./data/fallback-cache/cache.json` as a JSON object keyed by cache key. Each entry includes value, `expiresAt`, and metadata.
 
@@ -59,7 +59,7 @@ evictByPrefix(prefix)
 - Atomic writes: write to `.cache.json.tmp` then rename — no corrupt reads.
 - Single-process only (no file locking across multiple JVMs/processes).
 
-### In-Memory Implementation (Fallback of last resort — `FALLBACK_CACHE=inmemory`)
+### In-Memory Implementation (Fallback of last resort — `CACHE_ADAPTER=inmemory`)
 
 Use only when no filesystem is available (e.g., some CI environments).
 
@@ -78,11 +78,11 @@ get(key)
 
 ## Java Example
 
-### JSON file provider (`FALLBACK_CACHE=jsonfile`)
+### JSON file provider (`CACHE_ADAPTER=jsonfile`)
 
 ```java
 @Component
-@ConditionalOnProperty(name = "fallback.cache", havingValue = "jsonfile")
+@ConditionalOnProperty(name = "adapters.cache", havingValue = "jsonfile")
 public class JsonFileCacheProvider implements CacheProvider {
     private static final Path CACHE_FILE = Path.of("./data/fallback-cache/cache.json");
     private static final Path TMP_FILE   = Path.of("./data/fallback-cache/cache.json.tmp");
@@ -141,11 +141,11 @@ public class JsonFileCacheProvider implements CacheProvider {
 }
 ```
 
-### In-memory provider (`FALLBACK_CACHE=inmemory`)
+### In-memory provider (`CACHE_ADAPTER=inmemory`)
 
 ```java
 @Component
-@ConditionalOnProperty(name = "fallback.cache", havingValue = "inmemory")
+@ConditionalOnProperty(name = "adapters.cache", havingValue = "inmemory")
 public class InMemoryCacheProvider implements CacheProvider {
     private final ConcurrentHashMap<String, CacheEntry> store = new ConcurrentHashMap<>();
 
@@ -179,7 +179,7 @@ public class InMemoryCacheProvider implements CacheProvider {
 
 ## Python Example
 
-### JSON file provider (`FALLBACK_CACHE=jsonfile`)
+### JSON file provider (`CACHE_ADAPTER=jsonfile`)
 
 ```python
 import json, os
@@ -243,7 +243,7 @@ class JsonFileCacheProvider:
         os.replace(tmp, CACHE_FILE)   # atomic rename
 ```
 
-### In-memory provider (`FALLBACK_CACHE=inmemory`)
+### In-memory provider (`CACHE_ADAPTER=inmemory`)
 
 ```python
 class InMemoryCacheProvider:
@@ -283,14 +283,14 @@ class InMemoryCacheProvider:
 | Shared across instances | Yes | No (file lock not cross-process) | No |
 | TTL precision | Millisecond | Second (ISO timestamp) | Lazy eviction + 60s sweep |
 
-## What Works in Fallback
+## What the Local Adapter Supports
 
 - Basic get/put/evict with TTL enforcement.
 - `putIfAbsent` atomicity (single-process).
 - Cache-aside pattern testing.
 - Verifying key naming conventions.
 
-## What Does NOT Work in Fallback
+## What the Local Adapter Does Not Reproduce
 
 - Shared cache across multiple service instances.
 - Redis-specific features (pub/sub, Lua scripts, sorted sets).
@@ -299,20 +299,20 @@ class InMemoryCacheProvider:
 
 ## LLM Instructions
 
-- When scaffolding a cache fallback, generate the **JSON file implementation** (`FALLBACK_CACHE=jsonfile`) as the primary option.
+- When an approved implementation plan includes a cache local adapter, generate the **JSON file implementation** (`CACHE_ADAPTER=jsonfile`) as the primary option.
 - Also generate the in-memory implementation as a secondary option for CI or no-disk environments.
 - Auto-create `./data/fallback-cache/` directory on startup. Never overwrite an existing cache file.
-- Wire via `@ConditionalOnProperty(name="fallback.cache", havingValue="jsonfile")` (Spring) or `settings.fallback_cache == "jsonfile"` (Python).
+- Wire via `@ConditionalOnProperty(name="adapters.cache", havingValue="jsonfile")` (Spring) or `settings.cache_adapter is CacheAdapter.JSON_FILE` (Python).
 - Always use atomic writes (write to `.tmp`, then rename) to prevent corrupt reads.
-- Always add startup validation that fails if `FALLBACK_CACHE` is set in production.
+- Always add startup validation that fails if a local-only cache value is selected in production.
 - Emit a structured `logger.warning` with `fallback=cache, mode=jsonfile` on startup when active.
 
 ## Review Checklist
 
-- [ ] `FALLBACK_CACHE=jsonfile` is the default local fallback (not in-memory).
+- [ ] `CACHE_ADAPTER=jsonfile` is the preferred local adapter (not in-memory).
 - [ ] Cache file stored at `./data/fallback-cache/cache.json`.
 - [ ] Atomic writes via temp file + rename — no corrupt reads.
-- [ ] Startup fails if `FALLBACK_CACHE` is set in production.
+- [ ] Startup fails if a local-only cache value is selected in production.
 - [ ] Implements full `CacheProvider` interface.
 - [ ] TTL enforced with ISO 8601 `expiresAt` timestamps.
 - [ ] Thread-safe (file lock per operation).

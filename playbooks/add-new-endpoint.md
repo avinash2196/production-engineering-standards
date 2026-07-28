@@ -1,92 +1,94 @@
-# Workflow: Add New Endpoint
+# Workflow: Add a New Endpoint
 
 ## Purpose
 
-Step-by-step procedure for adding a new REST endpoint to an existing service, ensuring it follows layered architecture, observability, testing, and security standards.
+Add an API endpoint through an approved contract and a test-first milestone without mixing unrelated implementation or refactoring.
 
-## Prerequisites
+## 1. Review Requirements and Current State
 
-- Existing service with established layered architecture
-- Clear requirement for the new endpoint (resource, operation, request/response)
+Read:
 
-## Steps
+- `docs/.ai/Plan.md` or source requirement
+- existing OpenAPI/API conventions
+- related controllers, DTOs, services, domain behavior, repositories, and tests
+- authorization and data-classification requirements
 
-### 1. Define the Endpoint Contract
+Clarify only material gaps such as validation, status codes, idempotency, or authorization. Do not invent behavior.
 
-Before writing code, define:
+## 2. Update and Review the Plan
 
-| Aspect | Decision |
-|--------|----------|
-| HTTP method | GET / POST / PUT / DELETE / PATCH |
-| Path | `/api/v1/<resource>` following `standards/api-design.md` |
-| Request DTO | Fields, validation rules, required vs optional |
-| Response DTO | Fields, HTTP status codes (success + error cases) |
-| Auth required? | Yes (default) — specify required role/scope |
+Add the endpoint milestone to `docs/.ai/Plan.md` with:
 
-### 2. Create DTOs
+- resource and business outcome
+- supported operation
+- validation and business rules
+- success and error behavior
+- explicit exclusions
 
-- Create request DTO with validation annotations (`@NotNull`, `@Size` / Pydantic validators)
-- Create response DTO separate from domain entity
-- Never expose domain entities directly in API responses
+Obtain approval.
 
-Reference: `standards/api-design.md`, `standards/dto-guidelines.md`
+## 3. Create the Endpoint Implementation Plan
 
-### 3. Implement Controller Method
+Create:
 
-- Controller receives request DTO, validates input, delegates to service layer
-- No business logic in the controller — only mapping and delegation
-- Return appropriate HTTP status codes (201 for create, 200 for read, 204 for delete)
-- Add error handling for validation failures (400) and not-found (404)
+```text
+docs/.ai/NNN_Implementation_Plan_<Endpoint>.md
+```
 
-### 4. Implement Service Method
+Define exact changes for:
 
-- Service contains the business logic
-- Interact with domain entities and repository interfaces
-- Use capability abstractions for external calls (`CacheProvider`, `MessagePublisher`, etc.)
-- Add structured logging at method entry/exit with `correlationId`
-- Emit metrics: latency histogram + error counter
+- request/response or event contracts
+- controller/API tests
+- application/domain tests
+- persistence/adapter tests only if required
+- expected RED failures
+- minimal controller, service, domain, and repository changes
+- authorization, transaction, idempotency, error mapping, and observability decisions
+- refactoring allowed after GREEN
 
-### 5. Update Domain Layer (if needed)
+Obtain approval before editing tests or production source.
 
-- Add or update domain entities/value objects
-- Domain layer must have no infrastructure imports
-- Enforce invariants in the domain model
+## 4. RED — Write Tests First
 
-### 6. Update Repository (if needed)
+Recommended order:
 
-- Define repository interface in domain layer
-- Implement in adapter/infra layer
-- Never expose raw database entities — map to domain objects
+1. contract/controller tests for validation, mapping, status codes, and authorization
+2. application/domain tests for positive and negative business behavior
+3. integration tests only for new persistence or adapter behavior
 
-### 7. Add Observability
+Run the smallest relevant command. Confirm the failure is caused by the missing endpoint behavior, not invalid setup.
 
-- [ ] Structured log at controller entry with request metadata
-- [ ] Span created for the endpoint (auto if using framework instrumentation)
-- [ ] Latency histogram metric: `<service>_<resource>_<method>_duration_seconds`
-- [ ] Error counter metric: `<service>_<resource>_<method>_errors_total`
-- [ ] Correlation ID propagated if making downstream calls
+## 5. GREEN — Minimal Implementation
 
-### 8. Write Tests
+Implement only what the approved tests require:
 
-Invoke **test-engineer** patterns:
+- transport DTOs and validation
+- thin controller/handler
+- application/domain operation
+- repository or capability interaction when required
+- explicit error mapping
 
-- **Unit tests** for service method: mock all abstractions, test happy path + primary error cases
-- **Controller test** (if stack supports it): verify request validation, status codes, DTO mapping
-- **Integration test** (if endpoint involves new adapter interactions): use testcontainers or fallback
+Do not add unrelated fields, endpoints, infrastructure, or cleanup.
 
-### 9. Review
+Run focused tests and relevant regression tests.
 
-Run through these checks:
+## 6. REFACTOR
 
-- [ ] Controller is thin (no business logic)
-- [ ] DTOs separate from domain entities
-- [ ] Input validation at controller boundary
-- [ ] Service uses abstractions (not direct SDK imports)
-- [ ] Structured logging with correlation ID
-- [ ] Metrics emitted
-- [ ] Auth/authz configured
-- [ ] Tests pass (unit + integration)
+After GREEN:
 
-### 10. Commit
+- improve names and mapping boundaries
+- remove duplication
+- extract cohesive validation or domain concepts
+- preserve API, status codes, error payloads, and persistence behavior
 
-Conventional commit: `feat(<service>): add <verb> <resource> endpoint`
+Run tests after each meaningful refactor.
+
+## 7. Review
+
+- [ ] Contract matches approved requirement
+- [ ] DTOs are separate from domain/persistence models where appropriate
+- [ ] Controller/handler contains no business policy
+- [ ] Authorization and validation are enforced at correct boundaries
+- [ ] Transaction/idempotency behavior is explicit where relevant
+- [ ] RED → GREEN → REFACTOR evidence is recorded
+- [ ] Existing API behavior remains compatible unless an approved breaking change exists

@@ -20,7 +20,7 @@ Invoke **production-readiness-reviewer** agent. This produces a checklist assess
 
 - [ ] All environment-specific values externalized (no hardcoded hosts, ports, credentials)
 - [ ] Secrets resolved via `SecretProvider` (not env vars in production)
-- [ ] `FALLBACK_*` toggles confirmed OFF in production config/image
+- [ ] `*_ADAPTER` toggles confirmed OFF in production config/image
 - [ ] Config precedence verified: operator overrides → dynamic config → env → build defaults
 - [ ] Sensitive config keys cannot be overridden by low-privilege config sources
 

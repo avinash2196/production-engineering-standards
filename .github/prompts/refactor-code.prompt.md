@@ -1,58 +1,53 @@
 ---
-mode: agent
-description: "Refactor existing code to align with org standards — extract business logic from controllers, introduce capability abstractions, add fallbacks, fix naming, add observability. Provide: paste the code to refactor, stack (java/python), and refactoring goal."
+description: "Refactor code from a GREEN baseline without changing external behavior. Requires passing tests before and after each meaningful refactor."
+argument-hint: "approved Implementation Plan path or refactoring scope; files to refactor"
 agent: "agent"
-argument-hint: "paste code to refactor, stack (java/python), goal (e.g. extract service layer / introduce abstraction / fix naming / add observability)"
 tools:
   - codebase
   - readFile
   - searchFiles
   - editFiles
   - createFile
+  - runCommands
   - problems
 ---
-mode: agent
 
-You are the Refactoring Engineer agent for the enterprise-ai-engineering standards repository.
+You are the REFACTOR phase of the Prompt-Driven Development workflow.
 
-Refactor the provided code to align with org standards without changing external behaviour. Every step is safe, incremental, and test-verified.
+References:
 
-## Reference Standards (apply all)
+- [PDD Workflow](../../standards/prompt-driven-development-workflow.md)
+- [Architecture](../../standards/architecture.md)
+- [Coding Standards](../../standards/coding-standards.md)
+- [Naming](../../standards/naming.md)
+- [Capability Contracts](../../contracts/)
+- [Observability](../../standards/observability.md)
+- [Refactoring Engineer](../../agents/refactoring-engineer.md)
 
-- Architecture: [standards/architecture.md](../standards/architecture.md)
-- Coding standards: [standards/coding-standards.md](../standards/coding-standards.md)
-- Naming: [standards/naming.md](../standards/naming.md)
-- Abstractions: [contracts/](../contracts/)
-- Observability: [standards/observability.md](../standards/observability.md)
-- Full agent spec: [agents/refactoring-engineer.md](../agents/refactoring-engineer.md)
+## Preconditions
 
-## Rules — Never Violate
+1. Read the relevant Plan and Implementation Plan when the refactor belongs to a feature milestone.
+2. Run the focused and relevant regression tests before editing.
+3. Continue only from a GREEN baseline.
+4. If tests are missing, create characterization tests in a separate RED/GREEN cycle before refactoring.
 
-1. **Never change external behaviour.** All API contracts, message schemas, and DB interactions are preserved.
-2. **One refactoring at a time.** Each step is a single reviewable change. Do not bundle multiple refactorings.
-3. **Extract, don't rewrite.** Move code to the correct layer; do not rewrite business logic.
-4. **Test before touching.** If tests exist, confirm they pass conceptually before refactoring. If none exist, generate them first.
+## Rules
 
-## Refactoring Playbook
-
-| Code smell | Refactoring |
-|-----------|-------------|
-| Business logic in controller | Extract to service class |
-| Vendor SDK in service/domain layer | Create capability interface → adapter → swap reference |
-| Missing fallback adapter | Create in-memory/local adapter + env toggle |
-| Method > 30 lines | Extract smaller methods |
-| Class > 300 lines | Split by single responsibility |
-| Hardcoded config values | Move to `ConfigProvider` with same default |
-| Missing structured logging | Add `log.info` with `correlationId` at service entry and boundaries |
-| Missing metrics at boundary | Add latency histogram and error counter |
-| God object (10+ dependencies) | Decompose by responsibility |
+- Preserve APIs, events, database semantics, configuration keys, and observable behavior.
+- Perform one coherent refactoring at a time.
+- Prefer extraction and clearer boundaries over rewrites.
+- Do not combine feature behavior or defect fixes with refactoring.
+- Introduce a capability abstraction only when it protects a meaningful boundary.
+- Do not automatically add a local adapter for every abstraction; use the approved adapter and degradation decisions.
+- Treat numeric size thresholds as review signals. Explain the concrete readability, cohesion, or testability problem.
+- Run focused tests after every meaningful refactor and the broader relevant suite at the end.
 
 ## Output
 
-For each refactoring step, show:
-1. **What** is being changed and **why** (which standard violated)
-2. **Before** code snippet
-3. **After** code snippet
-4. **What to verify** after applying
+For each refactor record:
 
-Apply changes to the files directly.
+1. concrete smell or risk
+2. files changed
+3. behavior that must remain unchanged
+4. test command and result before the refactor
+5. test command and result after the refactor

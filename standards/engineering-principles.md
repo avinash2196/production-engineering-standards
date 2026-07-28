@@ -1,114 +1,88 @@
 # Engineering Principles
 
-Non-negotiable engineering principles that govern all design and implementation decisions in this repository. Mandatory for any team scaffolding services from the `enterprise-ai-engineering` templates.
+## 1. Plan Before Implementation
 
-## Principles
+For qualifying changes, separate requirements, Plan, Implementation Plan, tests, code, and refactoring. A plan defines scope; it is not permission to generate code.
 
-### 1. Abstraction over Implementation
+**Evidence:** approved planning artifacts and RED/GREEN command results.
 
-All infrastructure access (messaging, caching, storage, secrets, config) flows through capability interfaces (`MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, `ConfigProvider`). No service directly instantiates an SDK client.
+## 2. Protect Meaningful Boundaries
 
-**Why:** Enables local development without infrastructure, zero-downtime provider swaps, and deterministic testing.
+Use capability contracts around external systems when they improve testing, provider isolation, or migration safety. Do not create interfaces only because a template says every dependency needs one.
 
-**Test:** Can you run `./mvnw test` or `pytest` with no Docker containers, network access, or cloud credentials? If not, you violated this principle.
+**Evidence:** application/domain code does not depend on provider SDK details where a boundary is justified.
 
-### 2. Fail Open with Degradation
+## 3. Define Failure Behavior, Not a Universal Fallback
 
-When a non-critical dependency is unavailable, the service continues operating at reduced fidelity using fallback implementations. Only the primary data store is a hard dependency. Fallbacks are enabled explicitly by environment variables (e.g., `FALLBACK_KAFKA=db`, `FALLBACK_CACHE=jsonfile`) and must never be implicitly used in production.
+Every external dependency must have documented failure behavior. Choose fail fast, fail closed, bounded retry, circuit break, durable queue, stale data, bypass, or reduced functionality based on correctness and business impact.
 
-**Why:** Partial service is better than total outage. Kafka down should not prevent HTTP requests from being served.
+Security, authorization, secrets, and correctness controls normally fail closed. Optional caches may be bypassed only when the system of record can safely absorb the load.
 
-**Test:** Set `FALLBACK_KAFKA=db` and verify the service still starts, accepts requests, and persists events to the `outbox_message` table.
+**Evidence:** dependency failure matrix, tests, and operational telemetry.
 
-### 3. Observable by Default
+## 4. Separate Local Adapters from Production Degradation
 
-Every service ships with structured logging, metrics (latency, error rate, throughput), distributed tracing, and health checks — without manual opt-in.
+A local database queue, JSON-file cache, local filesystem, or environment secret provider helps development and CI. It is not automatically a production failover mechanism.
 
-**Why:** You cannot fix what you cannot see. Production incidents correlate directly with observability gaps.
+Local-only adapters must be explicit, observable, document reduced guarantees, and fail startup in production.
 
-**Test:** Can you trace a single request across all services it touches using only the correlation ID?
+**Evidence:** typed adapter settings and production-guard tests.
 
-### 4. Security as a Constraint, Not a Feature
+## 5. Test at the Right Level
 
-Security controls (TLS, authentication, input validation, secrets management, least-privilege) are architectural constraints applied everywhere, not features added later. No hardcoded secrets. Implement audit logging for operations involving sensitive data.
+Write approved behavior tests before production code. Use unit tests for policy, integration tests for adapters and persistence, contract tests for API/event boundaries, and end-to-end tests for critical flows only.
 
-**Why:** Retrofitting security is exponentially more expensive and error-prone than building it in.
+**Evidence:** valid RED before implementation, then focused and regression GREEN.
 
-**Test:** Can any service read secrets from environment variables in production? (Answer must be no — secrets come from `SecretProvider`.)
+## 6. Make Transactions and Idempotency Explicit
 
-### 5. Convention over Configuration
+Define local transaction boundaries and rollback behavior. Use idempotency keys, inbox/outbox, ordering keys, or saga coordination only when duplicate, partial, or distributed processing risks require them.
 
-Standard project structures, naming conventions, config resolution orders, and metric names reduce cognitive load and enable automation. Configuration sources follow the precedence defined in `rule-precedence.md`.
+**Evidence:** tests for rollback, duplicate handling, ordering, or replay where applicable.
 
-**Why:** Every bespoke choice is a decision that slows onboarding and breaks tooling.
+## 7. Build Security into Boundaries
 
-**Test:** Can a new developer scaffold a service and have it compile, test, and deploy within one hour using the templates?
+Validate external input, enforce least privilege, retrieve production secrets through managed providers, and prevent sensitive data from entering standard logs.
 
-### 6. Test at the Right Level
+**Evidence:** security tests/scans and review findings.
 
-Unit tests for business logic (fast, isolated). Integration tests for infrastructure wiring (Testcontainers). Contract tests for API boundaries. E2E tests for critical paths only. Design for batching, caching, and efficient DB access.
+## 8. Operate What You Build
 
-**Why:** Over-testing at the wrong level creates slow, brittle suites that teams stop trusting.
+Provide logs and health information sufficient for the support model. Add metrics and tracing according to service criticality and incident-diagnosis needs, not as decorative boilerplate.
 
-**Test:** Does the test suite complete in under 5 minutes locally? Are flaky tests quarantined?
+**Evidence:** operational checks and production-readiness review.
 
-### 7. Immutable Deployments
+## 9. Prefer Evidence over Absolutes
 
-Artifacts are built once and promoted through environments unchanged. Configuration varies per environment; code does not.
+Architecture and code-quality rules should identify concrete risk. Numeric line counts, layer counts, and dependency counts are review signals, not universal proof of poor design.
 
-**Why:** "Works on my machine" must be eliminated. Environment parity prevents deployment surprises.
+**Evidence:** findings explain impact and remediation rather than only quoting a threshold.
 
-**Test:** Is the same container image SHA deployed to staging and production?
+## 10. Human Review Remains a Gate
 
-### 8. Least Knowledge
-
-Each layer knows only what it needs. Enforce controller → service → domain → repository layering. Controllers only orchestrate request validation and mapping to service calls.
-
-**Why:** Coupling spreads change impact. A database migration should not require controller changes.
-
-**Test:** Can you swap PostgreSQL for a different data store by changing only the repository layer?
-
-### 9. Distributed-Ready by Default
-
-Implement retries, timeouts, idempotency keys, and clear async/sync boundaries. Cloud integrations must have local-safe fallbacks so the service runs in development without cloud accounts.
-
-**Why:** Services run in distributed environments. Single-node assumptions cause production failures.
-
-**Test:** Does every outbound call have a configured timeout and retry policy?
-
-### 10. Agent Interaction
-
-Agents must ask targeted questions only when the repository's defined defaults cannot safely resolve design choices.
-
-**Why:** Unnecessary questions slow down development and undermine the value of the templates.
-
-**See:** `questioning-policy.md` for rules.
-
-## Quick Reference
-
-| When you're tempted to... | Apply this principle |
-|---|---|
-| Call an S3 SDK directly from a service | #1 Abstraction over Implementation |
-| Throw a 500 when Redis is down | #2 Fail Open with Degradation |
-| Skip metrics "just for this service" | #3 Observable by Default |
-| Store an API key in `application.yml` | #4 Security as a Constraint |
-| Invent a new project layout | #5 Convention over Configuration |
-| Write an E2E test for a utility function | #6 Test at the Right Level |
-| Patch production config in-place | #7 Immutable Deployments |
-| Import a controller class in a domain model | #8 Least Knowledge |
-| Make a synchronous call with no timeout | #9 Distributed-Ready by Default |
-| Ask the user which database to use when a default exists | #10 Agent Interaction |
+AI can accelerate planning, testing, implementation, and review, but humans approve scope, architecture trade-offs, and production readiness.
 
 ## LLM Instructions
 
-- When generating code, verify each principle is satisfied before presenting the result.
-- If a user asks for something that violates a principle (e.g., hardcoded secrets), explain the violation and offer the compliant alternative.
-- When reviewing code, check principle adherence before style or performance.
+- Follow the PDD lifecycle for qualifying changes.
+- Do not require a fallback for every dependency; require explicit failure behavior.
+- Distinguish local adapters from production degradation.
+- Use concrete evidence when reporting violations.
+- Do not invent requirements, infrastructure, or compliance controls.
+
+## Review Checklist
+
+- [ ] Planning and test gates were followed
+- [ ] Boundaries and abstractions are justified
+- [ ] Failure behavior is explicit
+- [ ] Local adapters cannot silently run in production
+- [ ] Transactions/idempotency are addressed where relevant
+- [ ] Security and observability match actual risk
+- [ ] Findings are evidence-based
 
 ## References
 
-- [architecture.md](architecture.md) — layered architecture standard
-- [fallback-strategy.md](fallback-strategy.md) — fallback rules and toggles
-- [standards/security/](security/) — security standards
-- [standards/observability.md](observability.md) — observability standard
-- [contracts/](../contracts/) — capability interface specifications
+- [PDD Workflow](prompt-driven-development-workflow.md)
+- [Architecture](architecture.md)
+- [Local Adapter Strategy](local-adapter-strategy.md)
+- [Production Dependency Failure and Degradation](fallback-strategy.md)

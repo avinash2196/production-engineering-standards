@@ -1,25 +1,25 @@
-# Kafka Fallback
+# Messaging Local Adapters
 
 ## Purpose
 
-Database-table-backed message queue replacement for local development when Kafka is unavailable. Activated by `FALLBACK_KAFKA=db`. Implements `MessagePublisher` and `MessageSubscriber` interfaces using the service's existing database so messages survive restarts and can be inspected with SQL.
+Database-table-backed message queue replacement for local development when Kafka is unavailable. Activated by `MESSAGING_ADAPTER=db`. Implements `MessagePublisher` and `MessageSubscriber` interfaces using the service's existing database so messages survive restarts and can be inspected with SQL.
 
-An in-memory fallback (`FALLBACK_KAFKA=inmemory`) is also available for ultra-minimal setups with no DB, but is not recommended — it loses messages on restart and cannot be inspected.
+An in-memory local adapter (`MESSAGING_ADAPTER=inmemory`) is also available for ultra-minimal setups with no DB, but is not recommended — it loses messages on restart and cannot be inspected.
 
 ## Activation
 
-| Environment | Toggle | Fallback used |
+| Environment | Toggle | Adapter selected |
 |-------------|--------|---------------|
-| Local dev (recommended) | `FALLBACK_KAFKA=db` | DB table queue — persistent, inspectable |
-| Local dev (no DB) | `FALLBACK_KAFKA=inmemory` | In-memory queue — ephemeral |
-| Staging | Must be unset | No fallback |
-| Production | Must be unset | **Never** |
+| Local dev (recommended) | `MESSAGING_ADAPTER=db` | DB table queue — persistent, inspectable |
+| Local dev (no DB) | `MESSAGING_ADAPTER=inmemory` | In-memory queue — ephemeral |
+| Staging | `kafka` or `pubsub` | Production adapter |
+| Production | `kafka` or `pubsub` | Local values rejected |
 
-**Startup validation:** if `FALLBACK_KAFKA` is set to any value and the environment is production, fail startup with a clear error message.
+**Startup validation:** if `MESSAGING_ADAPTER` is `db` or `inmemory` and the environment is production, fail startup with a clear error message. Production values such as `kafka` or `pubsub` remain valid.
 
 ## Behavior
 
-### DB Table Implementation (Recommended — `FALLBACK_KAFKA=db`)
+### DB Table Implementation (Recommended — `MESSAGING_ADAPTER=db`)
 
 Uses two tables in the service's existing local database (`outbox_message` and `outbox_consumer_offset`) so messages survive restarts and are readable via SQL.
 
@@ -63,7 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_outbox_topic_status ON outbox_message (topic, sta
 - Failed messages accumulate with `status = 'FAILED'` — no silent dropping.
 - Ordering: FIFO per topic.
 
-### In-Memory Implementation (Fallback of last resort — `FALLBACK_KAFKA=inmemory`)
+### In-Memory Implementation (Fallback of last resort — `MESSAGING_ADAPTER=inmemory`)
 
 Use only when no database is available at all.
 
@@ -82,11 +82,11 @@ Subscriber.subscribe(topic, handler)
 
 ## Java Example
 
-### DB table publisher (`FALLBACK_KAFKA=db`)
+### DB table publisher (`MESSAGING_ADAPTER=db`)
 
 ```java
 @Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")
+@ConditionalOnProperty(name = "adapters.messaging", havingValue = "db")
 public class DbTableMessagePublisher implements MessagePublisher {
     private final JdbcTemplate jdbc;
 
@@ -103,7 +103,7 @@ public class DbTableMessagePublisher implements MessagePublisher {
 }
 
 @Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")
+@ConditionalOnProperty(name = "adapters.messaging", havingValue = "db")
 public class DbTableMessageSubscriber implements MessageSubscriber {
     @Scheduled(fixedDelay = 200)
     public void poll() {
@@ -124,11 +124,11 @@ public class DbTableMessageSubscriber implements MessageSubscriber {
 }
 ```
 
-### In-memory publisher (`FALLBACK_KAFKA=inmemory`)
+### In-memory publisher (`MESSAGING_ADAPTER=inmemory`)
 
 ```java
 @Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "inmemory")
+@ConditionalOnProperty(name = "adapters.messaging", havingValue = "inmemory")
 public class InMemoryMessagePublisher implements MessagePublisher {
     private final Map<String, Queue<Message>> topics = new ConcurrentHashMap<>();
 
@@ -142,7 +142,7 @@ public class InMemoryMessagePublisher implements MessagePublisher {
 
 ## Python Example
 
-### DB table publisher (`FALLBACK_KAFKA=db`)
+### DB table publisher (`MESSAGING_ADAPTER=db`)
 
 ```python
 class DbTableMessagePublisher:
@@ -189,7 +189,7 @@ class DbTableMessageSubscriber:
             await self._db.commit()
 ```
 
-### In-memory publisher (`FALLBACK_KAFKA=inmemory`)
+### In-memory publisher (`MESSAGING_ADAPTER=inmemory`)
 
 ```python
 class InMemoryMessagePublisher:
@@ -215,14 +215,14 @@ class InMemoryMessagePublisher:
 | Backpressure | Yes | Partial (poll limit) | No |
 | Observability | Full metrics | Row counts + logging | Basic logging only |
 
-## What Works in Fallback
+## What the Local Adapter Supports
 
 - Publish/subscribe flow: messages published by one component are delivered to subscribers.
 - Idempotency keys present on messages (consumers can test dedup logic).
 - Handler invocation with message context (traceId, correlationId).
 - Basic functional testing of message-driven workflows.
 
-## What Does NOT Work in Fallback
+## What the Local Adapter Does Not Reproduce
 
 - Multi-instance parallelism and partition assignment.
 - Consumer group rebalancing.
@@ -233,21 +233,21 @@ class InMemoryMessagePublisher:
 
 ## LLM Instructions
 
-- When scaffolding a fallback for messaging, generate the **DB table implementation** (`FALLBACK_KAFKA=db`) as the primary option.
+- When an approved implementation plan includes a messaging local adapter, generate the **DB table implementation** (`MESSAGING_ADAPTER=db`) as the primary option.
 - Also generate the in-memory implementation as a secondary option for no-infra CI.
-- Auto-create the `outbox_message` table on startup when `FALLBACK_KAFKA=db` is active (use Flyway migration or `CREATE TABLE IF NOT EXISTS` on bean init).
-- Wire via `@ConditionalOnProperty(name="fallback.kafka", havingValue="db")` (Spring) or `settings.fallback_kafka == "db"` (Python).
-- Always add startup validation that fails if `FALLBACK_KAFKA` is set in production.
+- Auto-create the `outbox_message` table on startup when `MESSAGING_ADAPTER=db` is active (use Flyway migration or `CREATE TABLE IF NOT EXISTS` on bean init).
+- Wire via `@ConditionalOnProperty(name="adapters.messaging", havingValue="db")` (Spring) or `settings.messaging_adapter is MessagingAdapter.DB` (Python).
+- Always add startup validation that fails if a local-only messaging value is selected in production.
 - Emit `fallbackActiveGauge.labels("kafka").set(1)` and a structured `logger.warning` on every publish when fallback is active.
 - Remind the user that neither fallback tests consumer group rebalancing or partition assignment.
 
 ## Review Checklist
 
-- [ ] `FALLBACK_KAFKA=db` is the default local fallback (not in-memory).
-- [ ] `outbox_message` table is auto-created when `FALLBACK_KAFKA=db` is active.
-- [ ] Startup fails if `FALLBACK_KAFKA` is set in production.
+- [ ] `MESSAGING_ADAPTER=db` is the preferred local adapter (not in-memory).
+- [ ] `outbox_message` table is auto-created when `MESSAGING_ADAPTER=db` is active.
+- [ ] Startup fails if a local-only messaging value is selected in production.
 - [ ] Implements `MessagePublisher` and `MessageSubscriber` interfaces.
 - [ ] Messages include `idempotencyKey`, `traceId`, `correlationId`.
 - [ ] Failed messages set `status='FAILED'` — not silently dropped.
-- [ ] Fallback active metric and structured warning emitted on every publish in fallback mode.
+- [ ] Local-adapter active metric and structured warning emitted on every publish in local-adapter mode.
 - [ ] Limitations documented and understood by team.

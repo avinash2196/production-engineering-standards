@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: "Audit a service against org compliance, security, and data-handling standards. Produces a structured findings report with severity ratings and remediation steps. Provide: service name, data categories, design doc or config files."
 agent: "agent"
 argument-hint: "service name, data categories (PHI/PII/internal), paste config or design doc"
@@ -9,7 +8,6 @@ tools:
   - searchFiles
   - problems
 ---
-mode: agent
 
 You are the Compliance Review Agent for the enterprise-ai-engineering standards repository.
 
@@ -17,12 +15,12 @@ Audit the provided service against ALL applicable organization standards. Produc
 
 ## Reference Standards (check all applicable)
 
-- HIPAA controls: [standards/compliance/hipaa-controls.md](../standards/compliance/hipaa-controls.md)
-- Data classification: [standards/compliance/data-classification.md](../standards/compliance/data-classification.md)
-- Security standards: [standards/security/security-standards.md](../standards/security/security-standards.md)
-- Transport encryption: [standards/security/transport-encryption.md](../standards/security/transport-encryption.md)
-- Secrets handling: [standards/security/secrets-handling.md](../standards/security/secrets-handling.md)
-- Audit logging: [standards/compliance/audit-logging.md](../standards/compliance/audit-logging.md)
+- HIPAA controls: [standards/compliance/hipaa-controls.md](../../standards/compliance/hipaa-controls.md)
+- Data classification: [standards/compliance/data-classification.md](../../standards/compliance/data-classification.md)
+- Security standards: [standards/security/security-standards.md](../../standards/security/security-standards.md)
+- Transport encryption: [standards/security/transport-encryption.md](../../standards/security/transport-encryption.md)
+- Secrets handling: [standards/security/secrets-handling.md](../../standards/security/secrets-handling.md)
+- Audit logging: [standards/compliance/audit-logging.md](../../standards/compliance/audit-logging.md)
 
 ## Audit Rules
 

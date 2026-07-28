@@ -1,123 +1,114 @@
-# Capability Pattern
+# Capability Boundary Pattern
 
 ## Purpose
 
-Define the architectural pattern used across this repository for abstracting infrastructure dependencies behind capability interfaces. This document explains the pattern, why every infrastructure dependency must use it, and how to wire production and fallback implementations.
+Define when and how a service should isolate an external capability—messaging, cache, object storage, secrets, or dynamic configuration—behind an application-owned contract.
 
-## The Pattern
+An interface is valuable when it protects a meaningful business, testing, portability, or policy boundary. It is not required merely to add another layer around a single SDK call.
 
-Every external dependency (message broker, cache, object storage, secret store, database) is accessed through a **capability interface** — a technology-agnostic contract that defines what the service needs, not how it's implemented.
+## Pattern
 
+```text
+Application or domain decision
+          |
+          v
+   Capability contract
+      /           \
+production adapter  explicit local adapter
 ```
-Service Code  →  Capability Interface  →  Production Implementation (Kafka, Redis, S3, Vault)
-                                       →  Fallback Implementation (in-memory, local file, env vars)
-```
 
-The service code depends only on the interface. The concrete implementation is injected at runtime based on configuration (Spring profiles, Python dependency injection).
+Production and local implementations share the capability semantics that application code relies on, but they do not necessarily provide the same operational guarantees.
 
-## Why This Pattern
+## Why Use It
 
-1. **Testability:** unit tests mock the interface. No need for running Kafka, Redis, or S3 in unit tests.
-2. **Local development:** developers run the service without external infrastructure using fallback implementations.
-3. **Portability:** switching from Redis to Memcached or from S3 to Azure Blob requires only a new implementation of the interface.
-4. **Consistency:** all services use the same contracts, making cross-service code review and onboarding easier.
+- Unit tests can exercise business behavior without a live vendor dependency.
+- Vendor-specific retries, serialization, connection handling, and telemetry remain in adapters.
+- Local development can use an explicit substitute when an emulator or Testcontainer is not the better boundary.
+- Policy such as secret handling, durability, or production guards has one composition point.
 
-## Capability Interfaces in This Repository
+## Shared Contracts
 
-| Capability | Interface | Production Example | Fallback |
-|-----------|-----------|-------------------|----------|
-| Messaging (publish) | `MessagePublisher` | Kafka, RabbitMQ | In-memory bus |
-| Messaging (subscribe) | `MessageSubscriber` | Kafka consumer group | In-memory bus |
-| Caching | `CacheProvider` | Redis | `ConcurrentHashMap` / `dict` |
-| Object storage | `ObjectStorageProvider` | S3, Azure Blob | Local filesystem |
-| Secrets | `SecretProvider` | Vault, Key Vault | Environment variables |
-| Configuration | `ConfigProvider` | Spring Cloud Config, Consul | Env vars + local files |
+| Capability | Contract | Production examples | Local examples |
+|---|---|---|---|
+| Messaging | `MessagePublisher`, `MessageSubscriber` | Kafka, Pub/Sub | database outbox/table queue, in-memory queue |
+| Cache | `CacheProvider` | Redis | JSON-file cache, in-memory cache |
+| Object storage | `ObjectStorageProvider` | S3, GCS | local filesystem |
+| Secrets | `SecretProvider` | Vault, Secret Manager | environment variables |
+| Configuration | `ConfigProvider` | managed configuration service | typed environment/file settings |
 
-## Implementation Rules
+## Design Rules
 
-### 1. Interface Design
+1. Express the behavior the application needs, not the vendor API. Prefer `publish(message)` to exposing producer records throughout business code.
+2. Document semantics: idempotency, ordering, TTL, not-found behavior, retries, timeouts, and error types.
+3. Keep vendor SDK imports in infrastructure/composition code.
+4. Add only implementations selected by the approved plan and implementation plan.
+5. Treat local adapters as explicit development/testing choices, not automatic production failover.
+6. Document differences in durability, consistency, concurrency, security, and observability.
+7. Reject local-only values during production startup.
+8. Test selection, contract behavior, and production guards before implementing the adapter.
 
-- Define the interface with domain-meaningful methods, not technology-specific ones.
-- Use `publish(topic, message)`, not `kafkaSend(topic, key, value, headers)`.
-- Include error types in the interface contract (e.g., `ObjectNotFoundException` for storage).
+## Java Composition Example
 
-### 2. Production Implementation
-
-- Implements the interface against the real infrastructure.
-- Includes retry logic, connection pooling, health checks, and metrics.
-- Activated by default (or by explicit production profile).
-
-### 3. Fallback Implementation
-
-- Implements the same interface with simple, local-only behavior.
-- Must be functionally correct enough for development and testing.
-- No durability, no clustering, no encryption required.
-- Activated by a fallback toggle (environment variable or profile).
-- **Must never be active in production.** Enforced by startup validation.
-
-### 4. Wiring
-
-**Java (Spring profiles):**
 ```java
-@Component
-@Profile("!fallback-kafka")
-public class KafkaMessagePublisher implements MessagePublisher { ... }
+@Configuration
+class MessagingConfiguration {
 
-@Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "db")
-public class DbTableMessagePublisher implements MessagePublisher { ... }
+    @Bean
+    @ConditionalOnProperty(name = "adapters.messaging", havingValue = "db")
+    MessagePublisher databaseOutboxPublisher(OutboxRepository outboxRepository) {
+        return new DatabaseOutboxMessagePublisher(outboxRepository);
+    }
 
-@Component
-@ConditionalOnProperty(name = "fallback.kafka", havingValue = "inmemory")
-public class InMemoryMessagePublisher implements MessagePublisher { ... }
+    @Bean
+    @ConditionalOnProperty(name = "adapters.messaging", havingValue = "kafka")
+    MessagePublisher kafkaPublisher(KafkaTemplate<String, byte[]> kafkaTemplate) {
+        return new KafkaMessagePublisher(kafkaTemplate);
+    }
+}
 ```
 
-**Python (dependency injection):**
+## Python Composition Example
+
 ```python
+from app.config.settings import MessagingAdapter, Settings
+
+
 def get_message_publisher(settings: Settings) -> MessagePublisher:
-    if settings.FALLBACK_KAFKA == "db":
-        return DbTableMessagePublisher(settings.db_config)
-    if settings.FALLBACK_KAFKA == "inmemory":
+    if settings.messaging_adapter is MessagingAdapter.DB:
+        return DatabaseOutboxMessagePublisher(
+            SqlAlchemyOutboxStore(settings.database_url)
+        )
+    if settings.messaging_adapter is MessagingAdapter.IN_MEMORY:
         return InMemoryMessagePublisher()
-    return KafkaMessagePublisher(settings.kafka_config)
+    return KafkaMessagePublisher(settings.kafka_bootstrap_servers)
 ```
 
-### 5. Fallback Toggles
+## Typed Selection
 
-| Toggle | Default | Production | Local Dev |
-|--------|---------|-----------|-----------|
-| `FALLBACK_KAFKA=db` | unset | **Must be unset** | `db` or `inmemory` |
-| `FALLBACK_CACHE=jsonfile` | unset | **Must be unset** | `jsonfile` or `inmemory` |
-| `FALLBACK_STORAGE=local` | unset | **Must be unset** | `local` |
-| `FALLBACK_SECRETS=env` | unset | **Must be unset** | `env` |
+| Capability | Production values | Local-only values |
+|---|---|---|
+| `MESSAGING_ADAPTER` | `kafka`, `pubsub` | `db`, `inmemory` |
+| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` |
+| `STORAGE_ADAPTER` | `s3`, `gcs` | `local` |
+| `SECRET_ADAPTER` | `vault`, `secretmanager` | `env` |
 
-### 6. Startup Validation
+Production validation rejects only the local-only values. It does not reject explicit production adapter values.
 
-Every service must validate at startup:
-- If running in a production environment, ensure no fallback toggles are active.
-- Log the active implementation for each capability at INFO level.
-- Fail startup if a fallback is detected in production.
+## Delivery Sequence
 
-## Adding a New Capability
-
-1. Define the interface in `contracts/<Name>.md` following the template of existing ones.
-2. Provide Java and Python interface definitions with method signatures, semantics, and error types.
-3. Document production vs fallback differences.
-4. Define the fallback toggle.
-5. Add to the table above.
-6. Update `standards/` if the capability intersects with existing standards (e.g., new messaging type → update messaging-abstraction.md).
-
-## LLM Instructions
-
-- When a service needs an infrastructure dependency, always use the corresponding capability interface.
-- Never generate code that directly imports a vendor SDK in service-layer or domain-layer code.
-- Controller and configuration layers may reference vendor-specific code for wiring.
-- If no capability interface exists for a dependency, flag it and propose one following this pattern.
+1. Plan the capability and required guarantees.
+2. Create a repository-aware implementation plan listing contracts, adapters, configuration, and tests.
+3. Write contract/selection/production-guard tests and confirm the expected failure.
+4. Implement the minimum contract and selected adapters.
+5. Run focused and integration tests.
+6. Refactor composition and duplicate code only after green.
 
 ## Review Checklist
 
-- [ ] Service code depends only on capability interfaces, not vendor SDKs.
-- [ ] Production and fallback implementations both exist.
-- [ ] Fallback is wired via profile/toggle, not conditional logic in business code.
-- [ ] Startup validates no fallback is active in production.
-- [ ] Active implementation logged at startup.
+- [ ] The abstraction protects a concrete boundary rather than adding ceremony.
+- [ ] Contract semantics and error behavior are documented.
+- [ ] Only approved production/local implementations are present.
+- [ ] Business code does not import vendor SDKs.
+- [ ] Local adapters document lost guarantees and emit activation telemetry.
+- [ ] Production startup rejects local-only selections.
+- [ ] Tests prove selection and important contract behavior.
