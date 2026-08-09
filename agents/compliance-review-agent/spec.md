@@ -4,7 +4,7 @@ Spec for an agent that reviews architecture artifacts against the repository's H
 
 ## Purpose
 
-Automate compliance audits by scanning service designs, configuration, and code against the enterprise security, data-classification, and HIPAA control standards defined in this repository.
+Make engineering compliance reviews repeatable by scanning service designs, configuration, and code against the production-grade security, data-classification, and HIPAA control standards defined in this repository.
 
 ## Capabilities
 
@@ -40,12 +40,12 @@ Automate compliance audits by scanning service designs, configuration, and code 
 ### Findings
 | # | Category | Severity | Finding | Standard Reference | Remediation |
 |---|----------|----------|---------|--------------------|-------------|
-| 1 | Data Handling | HIGH | PHI stored without encryption at rest | hipaa-controls.md § Technical Safeguards | Enable AES-256 encryption |
+| 1 | Data Handling | HIGH | ePHI lacks the approved at-rest safeguard | hipaa-controls.md | Apply/document the control required by the approved risk/security decision |
 
 ### Checklist Results
-- [ ] Authentication: JWT RS256/ES256 verified
+- [ ] Authentication: approved identity mechanism verified
 - [ ] Authorization: RBAC/ABAC at service layer
-- [ ] Transport: TLS 1.2+ with approved cipher suites
+- [ ] Transport: organization-approved secure transport configuration verified
 - [ ] Secrets: No hardcoded credentials
 - [ ] Data classification: PHI/PII fields identified and protected
 - [ ] Audit logging: Access to sensitive data logged
@@ -54,10 +54,10 @@ Automate compliance audits by scanning service designs, configuration, and code 
 
 ## Guardrails
 
-- Never approve a service handling PHI without encryption at rest and in transit.
+- Do not mark a service ready when required safeguards for ePHI at rest or in transit are missing; determine requirements from the applicable risk assessment/policy rather than inventing an encryption pattern.
 - Flag any `SecretProvider` bypass (direct env var reads for secrets in non-local environments).
 - Require explicit data classification for every data store.
-- Escalate findings rated HIGH or CRITICAL to the security team channel.
+- Identify HIGH/CRITICAL findings for the project's approved security/risk escalation process; do not invent a team/channel or remediation SLA.
 
 ## Tool Access
 

@@ -1,89 +1,66 @@
 # Overview
 
-This repository documents architecture, standards, stacks, agents, templates, and examples for building enterprise backends.
+Production Engineering Standards is a reference repository for AI-assisted backend engineering. It captures engineering rules, review workflows, capability boundaries, stack guidance, project templates, and executable repository checks.
 
-## What This Repository Is
+It is not a claim that one architecture, reliability target, or implementation choice fits every service. Adopting projects select the standards and enforcement mechanisms that apply to their requirements and operating context.
 
-A **shared standards repository** that serves as the single source of truth for how enterprise backend services are designed, built, tested, deployed, and maintained. It is consumed by:
+## What This Repository Provides
 
-- **Developers** — as a reference for coding standards, architecture patterns, and integration guides.
-- **LLM agents** — as grounding context for code generation, reviews, and scaffolding.
-- **Reviewers** — as checklists for architecture reviews, compliance audits, and PR reviews.
-- **Platform teams** — as templates for CI/CD pipelines, infrastructure, and observability.
+- **Engineering guidance** for architecture, testing, security, observability, reliability, performance, and production readiness.
+- **Prompt-driven workflows** that separate Requirements, Plan, Implementation Plan, RED tests, GREEN implementation, refactoring, and final review.
+- **Capability boundaries** for infrastructure concerns such as messaging, caching, storage, secrets, and configuration.
+- **Local-adapter guidance** for development and CI without confusing local convenience with production failover.
+- **Review agents and prompts** that make architecture, distributed-systems, security, compliance, and readiness reviews repeatable.
+- **Executable repository checks** for rules that can be validated deterministically.
 
 ## Repository Structure
 
-```
-enterprise-ai-engineering/
-├── core/                    # Foundational architecture and abstractions
-│   ├── architecture.md      # Layered architecture rules
-│   ├── principles.md        # Non-negotiable engineering principles
-│   ├── abstractions/        # Capability interfaces (MessagePublisher, CacheProvider, etc.)
-│   ├── config/              # Configuration model and providers
-│   └── fallbacks/           # Fallback implementations for local dev
-├── standards/               # Cross-cutting standards
-│   ├── coding-standards.md  # Naming, structure, style
-│   ├── dto-guidelines.md    # Request/response DTOs
-│   ├── observability.md     # Metrics, tracing, logging
-│   ├── fallback-strategy.md # Fallback design philosophy
-│   ├── security/            # Security, encryption, secrets
-│   ├── compliance/          # HIPAA, data classification, audit logging
-│   ├── testing/             # Unit, integration, contract testing
-│   └── performance/         # Performance checklist and guidance
-├── stacks/                  # Stack-specific implementation guides
-│   ├── java-springboot/     # Java 21 + Spring Boot 3.x
-│   └── python-fastapi/      # Python 3.12+ + FastAPI
-├── agents/                  # LLM agent specifications and prompts
-│   ├── scaffolding-agent/   # Generate new services from templates
-│   ├── compliance-review-agent/  # Audit against compliance checklists
-│   └── lifecycle-agent/     # Dependency updates, maintenance
-├── playbooks/               # Operational procedures
-│   ├── local-dev/           # Run locally with/without infra
-│   ├── compliance-review/   # Compliance audit procedure
-│   └── release/             # Release and deployment process
-├── templates/               # Reusable document templates
-│   └── docs/               # ADR, design doc templates
-├── examples/                # Working example services
-│   ├── java-microservice/   # Minimal Java example
-│   ├── python-microservice/ # Minimal Python example
-│   └── fallback-demo/       # Demonstrates fallback toggling
-└── docs/                    # Meta-documentation
-    ├── overview.md          # This file
-    └── glossary.md          # Key terms
+```text
+.github/          Persistent Copilot guidance, task instructions, prompts, and repository CI
+agents/           Agent responsibilities, guardrails, and review behavior
+contracts/        Capability boundaries used by application code
+standards/        Engineering rules and decision guidance
+stacks/           Java/Spring Boot and Python/FastAPI stack guidance and templates
+playbooks/        Delivery, local-development, review, and release procedures
+templates/        Reusable planning, documentation, infrastructure, and monitoring templates
+examples/         Reference architectures and documented behavior walkthroughs
+tooling/          Dependency-free validator and repository tests
+docs/             Overview, decisions, and enforcement status
 ```
 
 ## How to Use This Repository
 
-### For Developers
+### Developers
 
-1. Read [standards/engineering-principles.md](../standards/engineering-principles.md) to understand the foundational values.
-2. Read [standards/architecture.md](../standards/architecture.md) for the layered architecture rules.
-3. Use your stack guide ([Java](../stacks/java-springboot/README.md) | [Python](../stacks/python-fastapi/README.md)) for implementation details.
-4. Follow [playbooks/local-dev/](../playbooks/local-dev/) to set up your development environment.
+1. Start with [Engineering Principles](../standards/engineering-principles.md).
+2. Follow the [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md) for qualifying implementation work.
+3. Read the standards relevant to the service rather than copying every rule blindly.
+4. Use the [Java](../stacks/java-springboot/README.md) or [Python](../stacks/python-fastapi/README.md) stack guidance where applicable.
+5. Use [Local Adapter Strategy](../standards/local-adapter-strategy.md) only when a local adapter adds value beyond mocks, Testcontainers, or an official emulator.
 
-### For LLM Agents
+### AI-Assisted Work
 
-1. Include the relevant standards files in the agent's context window.
-2. Use the agent specs under `agents/` for structured task execution.
-3. Reference this repo at a pinned git SHA for reproducible results.
+- `.github/copilot-instructions.md` provides stable repository-level guidance.
+- `.github/prompts/` contains repeatable planning, testing, implementation, refactoring, and review tasks.
+- `agents/` defines specialized review behavior and guardrails.
+- Human approval remains required where architecture, requirements, risk, or production behavior depends on context.
 
-### For Reviewers
+### Reviewers
 
-1. Use the review checklists embedded in each standard.
-2. Run the compliance-review-agent for automated audits.
-3. Follow [playbooks/compliance-review/procedure.md](../playbooks/compliance-review/procedure.md) for full reviews.
+Use the standard-specific checklists and review prompts, then verify evidence. A review prompt is guidance; it is not proof that a service satisfies a control.
 
-## Key Concepts
+## Key Distinctions
 
-- **Capability Interfaces:** Abstract infrastructure behind interfaces so services are testable and portable.
-- **Fallback Implementations:** Run services locally without any infrastructure dependencies.
-- **Standards as Code:** Standards are versioned, reviewable, and machine-readable.
-- **Agent-Driven Automation:** LLM agents consume standards to automate scaffolding, reviews, and maintenance.
-
-See [glossary.md](glossary.md) for full term definitions.
+- **Local adapter:** an explicitly selected development/CI implementation with documented reduced guarantees and a production startup guard.
+- **Production degradation:** the approved behavior of a live service when a dependency fails, such as fail fast, fail closed, bounded retry, circuit breaking, durable queueing, serving stale data, or bypassing a non-critical capability.
+- **Executable enforcement:** a rule is described as enforced only when an automated check can block a violation. See the [Enforcement Matrix](enforcement-matrix.md).
+- **Human judgment:** context-sensitive decisions remain reviewed rather than being presented as universally enforceable defaults.
 
 ## References
 
-- [Engineering principles](../standards/engineering-principles.md)
+- [Engineering Principles](../standards/engineering-principles.md)
 - [Architecture](../standards/architecture.md)
+- [Local Adapter Strategy](../standards/local-adapter-strategy.md)
+- [Production Dependency Failure and Degradation](../standards/fallback-strategy.md)
+- [Enforcement Matrix](enforcement-matrix.md)
 - [Glossary](glossary.md)

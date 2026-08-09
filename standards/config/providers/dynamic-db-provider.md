@@ -72,7 +72,7 @@ Default: polling at 30-second intervals. For kill switches that must propagate w
 
 - **Source unreachable:** continue serving cached values. Log WARNING every poll cycle. Emit `<service>_config_source_errors_total`.
 - **Source returns invalid data:** reject the update, keep previous value, log ERROR.
-- **Startup with source unreachable:** if static fallback defaults exist for all dynamic keys, start normally. If any dynamic key has no static fallback and is required, fail startup.
+- **Startup with source unreachable:** use approved static defaults only for keys where that is safe; fail startup or disable the affected capability when a required key has no safe default.
 
 ## Observability
 
@@ -95,14 +95,14 @@ Default: polling at 30-second intervals. For kill switches that must propagate w
 ## LLM Instructions
 
 - When generating a feature flag or runtime-tunable value, wire it through the dynamic config source via `ConfigProvider`.
-- Always provide a static fallback default so the service works without the config source.
+- Provide a static default only when it is safe and semantically valid without the dynamic config source. Required security/correctness values may need fail-fast behavior instead.
 - Generate change listeners for values that affect runtime behavior (rate limits, circuit breaker thresholds).
 
 ## Review Checklist
 
 - [ ] Poll interval configured (default 30s).
 - [ ] Stale-while-revalidate on source failure.
-- [ ] Every dynamic key has a static fallback default.
+- [ ] Every dynamic key has explicit source-failure behavior; static defaults exist only where safe and justified.
 - [ ] Change listeners registered for operationally important keys.
 - [ ] Changes logged with old/new values (sensitive values redacted).
 - [ ] Write access to config source restricted to operators.

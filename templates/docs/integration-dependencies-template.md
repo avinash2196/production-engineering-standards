@@ -2,8 +2,9 @@
 <!--
   HOW TO USE:
   Copy to docs/integration-dependencies.md (or <service>/docs/dependencies.md).
-  Fill in one row per external dependency. Keep the fallback column current.
-  See: playbooks/create-doc.md for full process.
+  Fill in one row per external dependency.
+  Keep local-development behavior separate from production failure behavior.
+  See: playbooks/create-doc.md for the documentation workflow.
 -->
 
 # Integration Dependencies: [SERVICE NAME]
@@ -13,58 +14,46 @@
 
 ## Runtime Dependencies
 
-| Dependency | Purpose | Required version | Protocol | Fallback |
-|------------|---------|-----------------|----------|----------|
-| PostgreSQL | Primary data store | 15.x | TCP/5432 | None — hard dependency |
-| Kafka | Domain event publishing | 3.x | TCP/9092 | `MESSAGING_ADAPTER=db` — DB outbox table |
-| Redis | Response cache | 7.x | TCP/6379 | `CACHE_ADAPTER=jsonfile` — local JSON file |
-| S3 / Cloud Storage | Document storage | AWS S3 API | HTTPS | `STORAGE_ADAPTER=local` — local filesystem |
-| Vault | Secrets | 1.14+ | HTTPS/8200 | `SECRET_ADAPTER=env` — env variables |
-| [Downstream service] | [Purpose] | [Version] | HTTP/gRPC | [no fallback / degrade gracefully] |
+| Dependency | Purpose | Required version | Protocol | Local adapter/emulator | Production failure behavior |
+|---|---|---|---|---|---|
+| PostgreSQL | Primary data store | [Version] | TCP | Testcontainers/local DB if approved | [fail fast / startup required / operation-specific] |
+| Kafka / Pub/Sub | Domain events | [Version/service] | Broker protocol | `db`/`inmemory` only if approved | [fail / bounded retry / durable queue per contract] |
+| Redis | Cache | [Version] | TCP | `jsonfile`/`inmemory` only if approved | [bypass / stale / fail according to correctness and load] |
+| S3 / Cloud Storage | Object storage | [Service] | HTTPS | local filesystem only if approved | [retry / fail / queue according to operation semantics] |
+| Vault / Secret Manager | Secrets | [Service] | HTTPS | environment provider for local use only | fail closed for required production secrets |
+| [Downstream service] | [Purpose] | [Version] | HTTP/gRPC | [mock/emulator/none] | [approved behavior] |
 
-## Startup Validation
+A local adapter is a development/CI choice. It is not the automatic production response to dependency failure.
 
-<!--
-  Services must fail fast at startup if hard dependencies are unavailable.
-  Document which dependencies are validated at startup vs deferred.
--->
+## Startup and Runtime Validation
 
-| Dependency | Startup-validated? | Failure behaviour |
-|------------|-------------------|-------------------|
-| PostgreSQL | Yes | Crash — hard dependency |
-| Kafka | No | Continue — fallback activates |
-| Redis | No | Continue — fallback activates |
-| Vault | Yes (prod only) | Crash in prod; warn in dev |
+| Dependency | Startup-validated? | Required for readiness? | Runtime failure behavior |
+|---|---|---|---|
+| [Dependency] | [Yes/No] | [Yes/No] | [Explicit approved behavior] |
 
-## Config Keys
+Document only checks the service actually performs. Do not mark a dependency as required for readiness merely because it exists; base readiness on whether the service can safely serve its intended traffic.
 
-<!--
-  List all config keys used to connect to each dependency.
-  Document the config provider that supplies the value.
--->
+## Configuration Keys
 
-| Key | Dependency | Provider | Notes |
-|-----|-----------|----------|-------|
-| `spring.datasource.url` / `DATABASE_URL` | PostgreSQL | Env / Vault | JDBC URL with connection pool params |
-| `spring.kafka.bootstrap-servers` / `KAFKA_BOOTSTRAP_SERVERS` | Kafka | Env | Comma-separated host:port |
-| `spring.redis.url` / `REDIS_URL` | Redis | Env / Vault | `redis://host:port` |
-| `aws.s3.bucket` / `S3_BUCKET` | S3 | Env | Bucket name per environment |
-| `vault.uri` / `VAULT_ADDR` | Vault | Env | `https://vault.internal:8200` |
+| Key | Dependency | Source/provider | Notes |
+|---|---|---|---|
+| `[KEY]` | [Dependency] | [Env/Vault/Secret Manager/etc.] | [Purpose and restrictions] |
 
 ## Local Development Setup
 
 ```bash
-# Start all dependencies
+# Start selected real/local dependencies when needed.
 docker compose -f templates/infra/docker-compose.dev.yaml up -d
 
-# Start with fallbacks only (zero Docker needed)
+# Or start with explicitly selected local adapters when the service implements them.
 MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
-  ./mvnw spring-boot:run   # or: uvicorn src.service.main:app --reload
+  ./mvnw spring-boot:run
 ```
+
+List only adapter values implemented and tested by the target service.
 
 ## References
 
-- [standards/fallback-strategy.md](../../standards/fallback-strategy.md)
-- [playbooks/local-dev/run-with-fallbacks.md](../../playbooks/local-dev/run-with-fallbacks.md)
-- [templates/infra/docker-compose.dev.yaml](../infra/docker-compose.dev.yaml)
-
+- [Local Adapter Strategy](../../standards/local-adapter-strategy.md)
+- [Production Dependency Failure and Degradation](../../standards/fallback-strategy.md)
+- [Run with Local Adapters](../../playbooks/local-dev/run-with-local-adapters.md)

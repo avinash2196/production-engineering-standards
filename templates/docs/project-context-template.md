@@ -72,13 +72,13 @@
 | `CACHE_ADAPTER` | Env | Dev only | `jsonfile` for JSON file, `inmemory` for ephemeral |
 | [Add more rows] | | | |
 
-## Fallback Configuration
+## Local Adapter and Production Failure Configuration
 
-| Dependency | Fallback toggle | Fallback behaviour | Data loss risk |
+| Dependency | Local adapter selector/value | Local reduced guarantees | Production failure behavior |
 |------------|----------------|--------------------|----------------|
 | Kafka | `MESSAGING_ADAPTER=db` | Writes to `outbox_message` DB table | None — persisted |
-| Redis | `CACHE_ADAPTER=jsonfile` | Reads/writes `./data/fallback-cache/cache.json` | None — persisted |
-| S3 | `STORAGE_ADAPTER=local` | Reads/writes `./data/fallback-storage/` | None — local disk |
+| Redis | `CACHE_ADAPTER=jsonfile` (if implemented) | File-backed, no distributed atomicity/concurrency | [bypass/stale/fail based on approved contract] |
+| S3/GCS | `STORAGE_ADAPTER=local` (if implemented) | Local disk only; no managed durability/IAM/lifecycle parity | [retry/fail/queue based on approved contract] |
 | Vault | `SECRET_ADAPTER=env` | Reads env variables | Secrets in env — dev only |
 
 ## Key Stakeholders
@@ -92,9 +92,9 @@
 
 ## References
 
-- [Architecture diagram](docs/architecture.png)
-- [OpenAPI spec](docs/openapi.yaml)
-- [Runbook](docs/runbooks/)
-- [ADRs](docs/decisions/)
-- [Jira board / GitHub project link]
+- Architecture diagram: `docs/architecture.png` *(adjust the relative path to match where this context file is stored)*
+- OpenAPI spec: `docs/openapi.yaml` *(adjust the relative path to match where this context file is stored)*
+- Runbook: `docs/runbooks/`
+- ADRs: `docs/decisions/`
+- Jira board / GitHub project: [add project URL]
 

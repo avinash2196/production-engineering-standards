@@ -76,5 +76,5 @@ Do not silently report success when durable storage has not completed unless the
 ## References
 
 - [ObjectStorageProvider](../../../contracts/ObjectStorageProvider.md)
-- [Storage local adapter detail](../../../standards/fallbacks/storage-fallback.md)
+- [Storage local adapter detail](../../../standards/local-adapters/storage-local-adapter.md)
 - [Security standards](../../../standards/security/security-standards.md)

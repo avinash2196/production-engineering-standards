@@ -79,14 +79,12 @@ Audit logs must be tamper-resistant once written:
 
 ## Retention Policy
 
-| Data Classification | Minimum Retention | Typical Retention | Disposal Method |
-|--------------------|-------------------|-------------------|-----------------|
-| Confidential | 1 year | 3 years | Automated deletion via lifecycle policy |
-| Restricted / PHI | 6 years | 7-10 years | Crypto-shredding or certified secure deletion |
+Audit retention is defined by applicable legal, regulatory, contractual, and organizational policy for the system and data involved. HIPAA's six-year documentation-retention requirement must not be treated as a universal six-year rule for every application audit log or medical record.
 
-- Retention enforced via automated lifecycle policies on the storage layer.
-- After retention expires, audit logs are permanently deleted. No manual intervention required.
-- Retention clock starts from the event timestamp.
+- Record the policy/source that determines retention for each audit stream.
+- Enforce approved retention through storage lifecycle controls where practical.
+- Protect records for the full retention period and use an approved disposal mechanism afterward.
+- Keep legal holds and investigation requirements separate from normal lifecycle deletion.
 
 ## Implementation Patterns
 

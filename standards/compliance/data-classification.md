@@ -56,13 +56,13 @@ Define data classification levels and the handling rules required for each level
 
 | Control | Requirement |
 |---------|-------------|
-| Encryption at rest | Field-level encryption (application-layer AES-256) + TDE |
+| Encryption at rest | Approved at-rest protection based on applicable policy/risk assessment; add field/application-level protection when required |
 | Encryption in transit | TLS 1.2+ required; mTLS for service-to-service |
 | Access control | Authentication + fine-grained authorization (RBAC or ABAC) |
-| Audit logging | Full CRUD audit trail; retain ≥ 6 years; tamper-resistant |
+| Audit logging | Audit according to applicable policy; retention comes from legal/regulatory/organizational requirements; protect integrity |
 | Data minimization | Strict minimum necessary; projection DTOs; no PHI in URLs |
-| Retention | Regulatory retention policy (6-10 years typical); crypto-shredding on disposal |
-| Backup encryption | Encrypted with key managed via `SecretProvider` |
+| Retention | Applicable legal/regulatory/contractual/organizational policy; approved disposal method when retention expires |
+| Backup encryption | Approved at-rest protection with managed key access appropriate to the platform |
 | Log handling | No raw Restricted/PHI values in any log, error message, or metric |
 | Additional | PHI inventory required; see `hipaa-controls.md` |
 
@@ -93,16 +93,16 @@ Define data classification levels and the handling rules required for each level
 ## Cross-Cutting Rules
 
 - **Default to higher classification when uncertain.** If a data element could be Internal or Confidential, treat it as Confidential until confirmed otherwise.
-- **Mixed-classification tables:** if a database table contains both Internal and Restricted columns, the entire table must be treated at the Restricted level for access control. Use field-level encryption for individual Restricted columns.
-- **Derived data:** aggregations or analytics derived from classified data inherit the classification of the source unless provably anonymized (k-anonymity ≥ 5 or differential privacy applied).
-- **Temporary storage:** classification applies regardless of storage duration. A Restricted value in a temp file, cache, or queue must still be encrypted and access-controlled.
+- **Mixed-classification tables:** if a database table contains both Internal and Restricted columns, the entire table must be treated at the Restricted level for access control. Apply additional field/application-level encryption when required by the approved risk assessment or security policy.
+- **Derived data:** aggregations or analytics derived from classified data inherit the source classification unless an approved de-identification/anonymization process justifies reclassification.
+- **Temporary storage:** classification applies regardless of storage duration. Temporary files, caches, and queues must use the controls required by the applicable security/data-handling policy.
 
 ## LLM Instructions
 
 - When generating a data model, ask the user to classify each field.
-- If the user does not provide classification, infer based on the field name and err toward higher classification.
+- If classification is missing, propose a classification from available evidence and mark it for human confirmation; do not infer regulatory applicability solely from a field name.
 - Apply the handling rules for the highest classification level present in the service.
-- Fields named `ssn`, `dob`, `diagnosis`, `patient*`, `health*` → default to Restricted/PHI.
+- Fields such as `ssn`, `dob`, `diagnosis`, `patient*`, or `health*` should trigger a sensitive-data/PHI review; confirm whether HIPAA or another regime actually applies.
 - Fields named `password`, `secret`, `api_key`, `token` → these are secrets, not data classifications. Route to `SecretProvider`.
 
 ## Review Checklist

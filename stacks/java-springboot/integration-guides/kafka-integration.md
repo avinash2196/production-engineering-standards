@@ -78,5 +78,5 @@ Prefer `@ConfigurationProperties`/validated enums over unrelated Spring profiles
 
 - [MessagePublisher](../../../contracts/MessagePublisher.md)
 - [MessageSubscriber](../../../contracts/MessageSubscriber.md)
-- [Messaging local adapters](../../../standards/fallbacks/kafka-fallback.md)
+- [Messaging local adapters](../../../standards/local-adapters/messaging-local-adapter.md)
 - [Production dependency failure strategy](../../../standards/fallback-strategy.md)

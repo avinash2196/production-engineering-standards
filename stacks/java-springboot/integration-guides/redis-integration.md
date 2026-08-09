@@ -56,5 +56,5 @@ Production accepts `redis`; it rejects `jsonfile` and `inmemory`.
 ## References
 
 - [CacheProvider](../../../contracts/CacheProvider.md)
-- [Cache local adapters](../../../standards/fallbacks/redis-fallback.md)
+- [Cache local adapters](../../../standards/local-adapters/cache-local-adapter.md)
 - [Production dependency failure strategy](../../../standards/fallback-strategy.md)

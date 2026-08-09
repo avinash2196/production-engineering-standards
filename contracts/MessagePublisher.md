@@ -86,4 +86,4 @@ Record useful publish success, failure, retry, and duration metrics. Propagate t
 
 - [MessageSubscriber](MessageSubscriber.md)
 - [Messaging abstraction](../standards/messaging-abstraction.md)
-- [Messaging local adapters](../standards/fallbacks/kafka-fallback.md)
+- [Messaging local adapters](../standards/local-adapters/messaging-local-adapter.md)

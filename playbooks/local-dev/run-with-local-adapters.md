@@ -86,7 +86,7 @@ Use only non-sensitive local credentials. Do not copy local files into productio
 ## Verification
 
 1. Run adapter contract and selector tests.
-2. Start locally and confirm an explicit warning/metric identifies local adapters.
+2. Start locally and confirm an explicit warning identifies local adapters; if the service exposes application metrics, confirm an adapter-active metric as well.
 3. Verify production configuration rejects all local-only values.
 4. Do not use local adapter behavior as proof of production broker/cache/storage semantics.
 

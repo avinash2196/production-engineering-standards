@@ -7,7 +7,7 @@ Step-by-step procedure for validating a service is production-ready, covering co
 ## Prerequisites
 
 - Service is functionally complete (all required endpoints implemented)
-- Service runs locally with fallback mode
+- Service has a repeatable local/test execution path
 - Basic test suite exists
 
 ## Steps
@@ -20,7 +20,7 @@ Invoke **production-readiness-reviewer** agent. This produces a checklist assess
 
 - [ ] All environment-specific values externalized (no hardcoded hosts, ports, credentials)
 - [ ] Secrets resolved via `SecretProvider` (not env vars in production)
-- [ ] `*_ADAPTER` toggles confirmed OFF in production config/image
+- [ ] `*_ADAPTER` selectors use approved production values, and startup validation rejects all local-only values
 - [ ] Config precedence verified: operator overrides → dynamic config → env → build defaults
 - [ ] Sensitive config keys cannot be overridden by low-privilege config sources
 
@@ -43,13 +43,13 @@ Reference: `standards/observability.md`, `standards/observability/*.md`
 ### 4. Resilience Hardening
 
 - [ ] Timeouts configured on all outbound calls (HTTP, DB, cache, messaging)
-- [ ] Retry policies with exponential backoff and max attempts for transient failures
-- [ ] Non-retryable errors excluded from retry (4xx, validation failures)
-- [ ] Circuit breaker or bulkhead on critical downstream dependencies
+- [ ] Retry policies, where used, are bounded and safe for duplicate effects; deterministic failures and overload signals are excluded/handled appropriately
+- [ ] Deterministic/non-retryable failures are excluded from retry according to dependency semantics
+- [ ] Circuit breaking, bulkheads, concurrency limits, durable queueing, or fail-fast behavior is applied where justified by the dependency/failure model
 - [ ] Graceful shutdown: drain in-flight requests, flush metrics, close connections
-- [ ] Dead-letter routing for failed message processing
+- [ ] Failed-message handling is explicit for message flows where retry/loss semantics require it
 
-**Validate:** simulate a dependency timeout and confirm retry + circuit breaker behavior.
+**Validate:** simulate representative dependency failures and confirm the approved timeout, retry/degradation, observability, and recovery behavior.
 
 Reference: `standards/resiliency.md`
 
@@ -69,7 +69,7 @@ Reference: `standards/security-basics.md`, `standards/security/*.md`
 - [ ] Unit tests pass — all service and domain logic covered
 - [ ] Integration tests pass — adapter contracts validated
 - [ ] No tests depend on external shared services
-- [ ] Test execution time reasonable (<5 min for full suite)
+- [ ] Test execution time fits the project's CI/developer feedback budget; slower suites are intentionally separated where needed
 - [ ] Edge cases and failure paths tested
 
 Reference: `standards/testing/*.md`
@@ -88,8 +88,8 @@ Reference: `standards/testing/*.md`
 Invoke **hipaa-reviewer** agent. Verify:
 
 - [ ] PHI inventory complete and documented
-- [ ] Encryption at rest for all PHI fields
-- [ ] TLS 1.2+ for all PHI transmission
+- [ ] Approved at-rest safeguards for PHI/ePHI are implemented according to the applicable risk/security decision
+- [ ] PHI/ePHI transmission uses the organization-approved secure transport configuration
 - [ ] Audit logging on all PHI access operations
 - [ ] Minimum necessary principle in API responses
 - [ ] No PHI in standard logs or error messages

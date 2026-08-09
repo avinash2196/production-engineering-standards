@@ -8,7 +8,7 @@ Operational steps for running a compliance review using the compliance-review-ag
 |---------|-------|-----------|
 | New service creation | Full review | Yes |
 | Pre-production launch | Full review | Yes |
-| Quarterly audit | All active services | Yes |
+| Periodic review | Scope/frequency defined by applicable compliance/security policy | As required by policy |
 | Data category change | Targeted review | Yes |
 | Major architecture change | Targeted review | Yes |
 | Dependency with known CVE | Security-focused review | Yes |
@@ -67,7 +67,7 @@ The automated review cannot verify everything. Complete these manually:
 - [ ] Access to sensitive data produces audit log entries.
 - [ ] Audit logs include: who, what, when, from-where.
 - [ ] Audit logs are shipped to a tamper-resistant store.
-- [ ] Log retention meets regulatory requirements (6 years for HIPAA).
+- [ ] Log retention meets the applicable legal/regulatory/organizational policy; do not infer a universal six-year audit-log rule from HIPAA documentation retention.
 
 #### Third-Party Dependencies
 - [ ] All third-party services handling PHI have a Business Associate Agreement (BAA).
@@ -78,12 +78,12 @@ The automated review cannot verify everything. Complete these manually:
 
 Categorize each finding:
 
-| Severity | Action | SLA |
-|----------|--------|-----|
-| CRITICAL | Block release, fix immediately | 24 hours |
-| HIGH | Fix before next release | 1 sprint |
-| MEDIUM | Schedule remediation | 2 sprints |
-| LOW | Track in backlog | Best effort |
+| Severity | Default release disposition | Remediation timing |
+|---|---|---|
+| CRITICAL | Block release unless an authorized exception exists | Follow the organization's incident/risk process |
+| HIGH | Normally block release or require explicit risk acceptance | Follow the approved risk/remediation policy |
+| MEDIUM | Track and prioritize based on impact/exposure | Project/security policy |
+| LOW | Track when useful | Project policy |
 
 ### Step 5: Remediate and Re-Review
 
@@ -104,7 +104,7 @@ Store the signed-off report in `docs/compliance/` within the service repository.
 
 ## Report Retention
 
-- Keep compliance reports for a minimum of **6 years** (HIPAA requirement).
+- Retain compliance reports according to the applicable regulatory and organizational documentation-retention policy. HIPAA does require six-year retention for specified required documentation, but applicability to a particular report must be determined rather than assumed.
 - Tag reports with the standards version used.
 - Store in a version-controlled, access-controlled location.
 

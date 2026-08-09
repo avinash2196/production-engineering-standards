@@ -1,84 +1,77 @@
 # Contributing
 
-Guidelines for contributing to the enterprise-ai-engineering repository.
+Guidelines for contributing to the Production Engineering Standards repository.
 
 ## Getting Started
 
 1. Fork or clone the repository.
 2. Create a branch from `main` (`feature/<short-description>` or `fix/<short-description>`).
-3. Make your changes following the conventions below.
-4. Open a pull request against `main`.
+3. Make the smallest change that addresses the identified gap or correction.
+4. Run repository validation before opening a pull request.
+5. Open a pull request against `main`.
 
 ## What Belongs Here
 
-| Content Type | Location | Example |
-|-------------|----------|---------|
-| Architecture decisions | `core/` | Layer responsibilities, principles |
-| Cross-cutting standards | `standards/` | Coding standards, DTO guidelines |
-| Stack-specific guides | `stacks/` | Java Spring Boot integration guide |
-| Agent specifications | `agents/` | Scaffolding agent spec + prompts |
-| Workflow procedures | `playbooks/` | Release process, local dev setup |
-| Reusable templates | `templates/` | ADR template, design doc template |
-| Working examples | `examples/` | Minimal microservice demos |
-| Meta-documentation | `docs/` | Glossary, overview |
+| Content type | Location | Examples |
+|---|---|---|
+| Engineering standards | `standards/` | Architecture, reliability, testing, security |
+| Repository decisions | `docs/decisions/` | ADRs about this standards repository |
+| Stack-specific guidance | `stacks/` | Java/Spring Boot and Python/FastAPI guidance |
+| Agent specifications | `agents/` | Review and scaffolding behavior |
+| Workflow procedures | `playbooks/` | Local development, review, release |
+| Reusable templates | `templates/` | Plan, Implementation Plan, ADR, infrastructure docs |
+| Reference examples | `examples/` | Architecture and behavior walkthroughs |
+| Meta-documentation | `docs/` | Overview, glossary, enforcement matrix |
 
 ## Conventions
 
 ### File Format
 
-- All documents are **Markdown** (`.md`).
+- Use Markdown for standards, playbooks, agent specifications, and repository documentation.
 - Use ATX headings (`#`, `##`, `###`).
-- One sentence per line (for clean diffs).
-- Code blocks must specify a language: ` ```java `, ` ```python `, ` ```yaml `, etc.
+- Prefer one sentence per line where it improves diffs and reviewability.
+- Code blocks should specify a language when one applies.
+- File and directory names use `kebab-case` unless a tool or framework requires another convention.
 
-### Standards File Structure
+### Standards Content
 
-All files under `standards/` must follow this structure:
+Standards should state their purpose, normative rules or decision guidance, LLM guidance where applicable, and review criteria. Use defaults and anti-pattern sections only when they add useful information. Do not invent universal numeric thresholds where the correct value depends on service requirements, workload, risk, or operating context.
 
-1. **Purpose** — one paragraph.
-2. **Mandatory Rules** — numbered rules (`MUST`, `MUST NOT`).
-3. **Defaults** — table of default values.
-4. **Anti-patterns** — table of bad practices to avoid.
-5. **LLM Instructions** — structured guidance for agents.
-6. **Review Checklist** — items for PR reviewers to verify.
+### Agent Specifications
 
-### Agent Spec Structure
+Agent specifications should identify purpose, scope, required inputs, behavior and guardrails, output format, and relevant references. Exact headings may vary with the agent's responsibility.
 
-All files under `agents/*/spec.md` must follow this structure:
+### Evidence and Claims
 
-1. **Purpose** — one paragraph.
-2. **Capabilities** — table with capability, description, trigger.
-3. **Inputs** — table with field, type, required status.
-4. **Outputs** — structured report format.
-5. **Guardrails** — constraints and boundaries.
-6. **Tool Access** — what the agent can read/write.
-7. **Invocation** — example CLI or CI commands.
-8. **References** — links to related standards.
-
-### Naming
-
-- File names: `kebab-case.md` (e.g., `coding-standards.md`).
-- Directories: `kebab-case/` (e.g., `compliance-review-agent/`).
-- No spaces in file or directory names.
+- Describe a rule as **enforced** only when an executable mechanism blocks the violation.
+- Do not claim tests, validators, builds, scans, or reviews passed unless they were actually run.
+- Compliance-oriented material must distinguish engineering guidance from legal certification and must not turn organization-specific choices into universal regulatory requirements.
 
 ## Pull Request Process
 
-1. **Title:** `[area] Brief description` (e.g., `[standards] Add caching TTL defaults`).
-2. **Description:** Link to the issue or motivation. Summarize what changed.
+1. **Title:** use an area prefix when useful, for example `[standards] Clarify cache degradation guidance`.
+2. **Description:** explain the motivation, what changed, and whether enforcement behavior changed.
 3. **Checklist:**
-   - [ ] Follows the correct file structure for its section.
-   - [ ] Cross-references are valid (check relative links).
-   - [ ] No broken Markdown formatting.
-   - [ ] Added to the relevant README index if it's a new file.
-4. **Review:** Minimum 1 approval required. Standards changes require 2 approvals.
+   - [ ] Relative links are valid.
+   - [ ] No placeholder implementation or stale terminology was introduced.
+   - [ ] Relevant tests/validators were run and results are reported accurately.
+   - [ ] New standards or files are linked from the appropriate index/documentation when needed.
+4. **Review:** contributions from others should receive maintainer review before merge. For solo maintenance, run repository validation and complete a documented self-review. Standards changes should explain their rationale and any change in enforcement behavior.
+
+## Validation
+
+```bash
+python -m unittest discover -s tooling/tests -p 'test_*.py'
+python tooling/scripts/validate_repository.py
+PYTHONPATH=stacks/python-fastapi/project-template \
+  python -m unittest discover \
+  -s stacks/python-fastapi/project-template/tests \
+  -p 'test_*.py'
+```
 
 ## Issues
 
-Use the [issue template](.github/ISSUE_TEMPLATE.md) for reporting:
-
-- **Gaps** — missing standards, guides, or examples.
-- **Corrections** — factual errors or outdated information.
-- **Proposals** — new standards, agents, or workflows.
+Use the [issue template](.github/ISSUE_TEMPLATE.md) for gaps, corrections, and proposals.
 
 ## Code of Conduct
 

@@ -72,7 +72,7 @@ Implement only values approved and tested by the service. Selection must be type
 Local-only activation must:
 
 - emit a structured warning
-- expose an adapter-active metric
+- expose an adapter-active metric when the project has application metrics
 - document reduced guarantees
 - fail startup in production
 

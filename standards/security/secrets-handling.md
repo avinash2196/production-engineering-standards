@@ -95,7 +95,7 @@ API_KEY=test-key-12345
 - `.env.local` must be in `.gitignore`.
 - Pre-commit hook should reject commits containing `.env.local` or patterns matching secrets.
 
-See: [secret-fallback.md](../../standards/fallbacks/secret-fallback.md)
+See: [Secret local adapter](../../standards/local-adapters/secret-local-adapter.md)
 
 ## CI/CD Pipeline Secrets
 
@@ -149,4 +149,4 @@ If a secret is compromised:
 - [ ] `.env.local` in `.gitignore`.
 - [ ] Secret scanner running in CI (`gitleaks`, `trufflehog`, etc.).
 - [ ] Vault access policies follow least privilege.
-- [ ] Fallback mode (`SECRET_ADAPTER=env`) cannot activate in production.
+- [ ] The local environment secret adapter (`SECRET_ADAPTER=env`) cannot activate in production.

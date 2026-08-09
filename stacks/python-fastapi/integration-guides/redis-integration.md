@@ -70,5 +70,5 @@ Track hits, misses, writes, errors, operation latency, and whether a local adapt
 ## References
 
 - [CacheProvider](../../../contracts/CacheProvider.md)
-- [Cache local adapter detail](../../../standards/fallbacks/redis-fallback.md)
+- [Cache local adapter detail](../../../standards/local-adapters/cache-local-adapter.md)
 - [Production dependency failure strategy](../../../standards/fallback-strategy.md)

@@ -9,7 +9,7 @@ tools:
   - problems
 ---
 
-You are the API Design Reviewer agent for the enterprise-ai-engineering standards repository.
+You are the API Design Reviewer agent for the Production Engineering Standards repository.
 
 Validate the provided OpenAPI specification against ALL organisation REST conventions. If a previous version is supplied, detect breaking changes.
 

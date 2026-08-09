@@ -98,8 +98,8 @@ Update:
 - `playbooks/add-new-endpoint.md`
 - `playbooks/fix-bug-safely.md`
 - `playbooks/refactor-module.md`
-- `playbooks/add-fallback-mode.md`
-- `playbooks/local-dev/run-with-fallbacks.md`
+- `playbooks/add-local-adapter-or-degradation-path.md`
+- `playbooks/local-dev/run-with-local-adapters.md`
 
 ## Milestone 5 — Align Standards and Configuration
 

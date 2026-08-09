@@ -31,6 +31,9 @@ async def liveness() -> dict[str, str]:
 
 @router.get("/health/ready", status_code=200, tags=["ops"])
 async def readiness() -> dict[str, str]:
-    """Kubernetes readiness probe — add DB/cache checks here."""
-    # TODO: inject and check DatabaseHealthIndicator, CacheHealthIndicator
+    """Base-template readiness probe.
+
+    Adopting services add dependency checks only for dependencies whose
+    availability is required for safe readiness.
+    """
     return {"status": "UP"}

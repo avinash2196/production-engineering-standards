@@ -1,119 +1,77 @@
 # Scaffolding Agent
 
-Agent spec to scaffold projects from templates while respecting core abstractions and standards.
+Agent specification for creating an initial service structure from approved requirements and an approved Implementation Plan.
 
 ## Purpose
 
-Generate new service projects that are wired to the organization's capability interfaces, follow the standard architecture, and include observability, fallbacks, and CI configuration out of the box.
+Generate a small, reviewable service scaffold aligned with the selected stack and only the capabilities approved for the project. Scaffolding must not invent production infrastructure, local adapters, compliance requirements, or deployment behavior that is absent from the approved plan.
 
 ## Capabilities
 
 | Capability | Description |
-|-----------|-------------|
-| Project generation | Create a new service from stack-specific templates |
-| Abstraction wiring | Wire `MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, `ConfigProvider` with production + fallback beans |
-| Config scaffolding | Generate environment-specific config files with correct resolution chain |
-| CI pipeline generation | Create GitHub Actions workflow with build, test, lint, and contract test stages |
-| Dockerfile generation | Create multi-stage Dockerfile following container best practices |
-| README generation | Create service README with quickstart, architecture, and runbook links |
+|---|---|
+| Project generation | Create the initial service structure from stack-specific guidance/templates |
+| Capability wiring | Add only approved capability boundaries such as messaging, caching, storage, secrets, and configuration |
+| Local-adapter wiring | Add a local adapter only when the approved plan justifies one and its reduced guarantees are documented |
+| Configuration scaffolding | Generate typed environment-specific configuration for selected capabilities |
+| Test scaffolding | Create the test structure required by the approved Implementation Plan |
+| README generation | Document how to build, test, configure, and run the scaffold |
 
 ## Inputs
 
 | Input | Required | Description |
-|-------|----------|-------------|
-| Service name | Yes | e.g., `order-service` |
+|---|---|---|
+| Service name | Yes | Project/service identifier |
 | Stack | Yes | `java-springboot` or `python-fastapi` |
-| Capabilities needed | Yes | List from: `messaging`, `caching`, `storage`, `secrets` |
-| Data categories | Yes | Data types handled (PHI, PII, internal, public) |
-| Team / owner | Yes | Owning team for CODEOWNERS |
-| Database | Optional | `postgresql` (default), `mysql`, `none` |
-| API style | Optional | `rest` (default), `grpc` |
+| Approved Implementation Plan | Yes | Exact milestone scope, files, tests, and capability choices |
+| Capabilities needed | As applicable | Only capabilities approved in the plan |
+| Data categories | As applicable | Data handled by the service when known/required |
+| Database/API style/deployment target | As applicable | Use only when specified or approved |
 
-## Outputs
+## Expected Structure
 
-### Java Spring Boot
+The exact structure comes from the approved Implementation Plan. A typical service may contain:
 
-```
-order-service/
-├── src/main/java/com/myorg/orderservice/
-│   ├── controller/
+```text
+service/
+├── src/ or app/
+│   ├── api-or-controller/
 │   ├── service/
 │   ├── domain/
 │   ├── repository/
-│   ├── infrastructure/
-│   │   ├── messaging/     # if messaging selected
-│   │   ├── cache/         # if caching selected
-│   │   ├── storage/       # if storage selected
-│   │   └── fallback/
+│   ├── infrastructure/      # only selected external capabilities
 │   └── config/
-├── src/main/resources/
-│   ├── application.yml
-│   ├── application-local.yml
-│   └── application-prod.yml
-├── src/test/java/
-├── Dockerfile
-├── pom.xml
-├── .github/workflows/ci.yml
-├── .env.local
-├── docker-compose.dev.yml
-└── README.md
-```
-
-### Python FastAPI
-
-```
-order-service/
-├── src/order_service/
-│   ├── api/
-│   ├── service/
-│   ├── domain/
-│   ├── repository/
-│   ├── infrastructure/
-│   ├── config/
-│   └── main.py
 ├── tests/
-├── Dockerfile
-├── requirements.txt
-├── .github/workflows/ci.yml
-├── .env.local
-├── docker-compose.dev.yml
+├── build metadata
 └── README.md
 ```
+
+Do not generate an `infrastructure/fallback/` package. If a local adapter is approved, place it under an explicit local-adapter namespace or package consistent with the target stack and project conventions.
 
 ## Guardrails
 
-- Every generated project must compile/pass `mvn verify` or `pytest` before presenting to user.
-- Fallback implementations must be present for all selected capabilities.
-- Generated code must pass the compliance-review-agent's basic checks.
-- No placeholder `// TODO` comments without an associated task description.
-- Health check endpoints must be included.
+- Generate only files in the approved Implementation Plan.
+- Do not add a capability interface merely for architectural symmetry; it must protect a meaningful boundary.
+- Do not generate a local adapter for every production dependency by default.
+- Local adapters, when approved, must use explicit typed selection, document reduced guarantees, and fail startup if selected in production.
+- Do not claim the generated project compiles or tests pass unless the relevant commands were actually run successfully.
+- Do not generate speculative CI/CD files from an unvalidated repository template. Add pipeline files only when the project has an approved pipeline design or a tested project-specific workflow.
+- Avoid placeholder implementations and untracked TODO comments.
 
 ## Post-Scaffold Checklist
 
-The agent presents this checklist after generation:
-
-- [ ] Review generated `README.md` and update service description.
-- [ ] Verify capability interfaces match your requirements.
-- [ ] Run `docker-compose -f docker-compose.dev.yml up` to validate local setup.
-- [ ] Run full test suite: `./mvnw verify` or `pytest`.
-- [ ] Run compliance review: `@compliance-review-agent review --service={name}`.
-- [ ] Add to team's deployment pipeline.
-
-## Invocation
-
-```bash
-@scaffolding-agent create \
-  --name=order-service \
-  --stack=java-springboot \
-  --capabilities=messaging,caching,storage \
-  --data-categories=PII,internal \
-  --team=platform-team
-```
+- [ ] Generated files match the approved Implementation Plan.
+- [ ] Capability boundaries exist only where justified.
+- [ ] Any local adapter has selector tests and a production guard planned or implemented as required by the milestone.
+- [ ] Build/test commands were run when the environment supports them, and results are reported accurately.
+- [ ] README describes only functionality that actually exists.
 
 ## References
 
 - [Project scaffold prompt](prompts/project-scaffold.prompt.md)
+- [Prompt-Driven Development Workflow](../../standards/prompt-driven-development-workflow.md)
 - [Architecture standard](../../standards/architecture.md)
+- [Local Adapter Strategy](../../standards/local-adapter-strategy.md)
 - [Contracts](../../contracts/)
 - [Java stack README](../../stacks/java-springboot/README.md)
 - [Python stack README](../../stacks/python-fastapi/README.md)

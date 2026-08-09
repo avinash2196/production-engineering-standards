@@ -12,7 +12,7 @@ Precedence (highest → lowest):
 Notes:
 - Secrets must be resolved via `SecretProvider` which prefers a secret manager (cloud) and falls back to environment variables only when explicitly enabled for dev.
 - Dynamic config updates must include a version or change token to prevent accidental rollbacks; services should support safe refresh with graceful degradation.
-- Configuration that affects security posture (e.g., enabling fallback to in-memory cache) requires explicit environment toggles and CI gating; never enabled silently.
+- Configuration that affects security posture (e.g., selecting an in-memory local cache adapter) requires explicit environment toggles and CI gating; never enabled silently.
 
 Override rules:
 - Operator-level overrides for emergency fixes must be auditable and limited to a narrow set of keys.

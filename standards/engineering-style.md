@@ -26,4 +26,4 @@ This style guide focuses on consistent, production-oriented patterns for code an
 - Validate inputs strictly and minimize returned data. Apply field-level redaction in logs for PII/PHI.
 
 8. Tests
-- Provide unit tests for business logic, integration tests for infra wiring (use local fallbacks), and contract tests for APIs.
+- Provide unit tests for business logic, integration tests for infrastructure wiring (use Testcontainers/emulators or approved local adapters), and contract tests for APIs.

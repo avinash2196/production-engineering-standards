@@ -15,7 +15,7 @@ Every service endpoint that serves non-public data requires authentication.
 | Default: all endpoints authenticated | Use an allow-list for public endpoints, not a deny-list |
 | Token format | JWT (RS256 or ES256) with expiration, issuer, and audience claims |
 | Service-to-service | mTLS or signed JWT with service identity |
-| No basic auth in production | Basic auth acceptable only in local dev with fallback |
+| No basic auth in production | Basic auth, if allowed at all, is limited to explicitly approved local/test use and is not a production fallback |
 | Session management | Stateless JWT preferred; if stateful, server-side session store with short TTL |
 
 ```java

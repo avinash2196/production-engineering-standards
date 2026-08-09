@@ -17,11 +17,11 @@ Local filesystem-based object storage replacement for development when S3/Azure 
 ## Behavior
 
 ```
-Storage root: ./data/fallback-storage/ (configurable)
+Storage root: ./data/local-storage/ (configurable)
 
 put("my-bucket", "orders/123/invoice.pdf", data, metadata)
-    → writes file to ./data/fallback-storage/my-bucket/orders/123/invoice.pdf
-    → writes metadata to ./data/fallback-storage/my-bucket/orders/123/invoice.pdf.meta.json
+    → writes file to ./data/local-storage/my-bucket/orders/123/invoice.pdf
+    → writes metadata to ./data/local-storage/my-bucket/orders/123/invoice.pdf.meta.json
 
 get("my-bucket", "orders/123/invoice.pdf")
     → reads file and metadata from disk
@@ -34,13 +34,13 @@ exists("my-bucket", "orders/123/invoice.pdf")
     → returns true if file exists on disk
 
 list("my-bucket", "orders/")
-    → lists files in ./data/fallback-storage/my-bucket/orders/ recursively
+    → lists files in ./data/local-storage/my-bucket/orders/ recursively
 ```
 
 ## Directory Structure
 
 ```
-./data/fallback-storage/
+./data/local-storage/
 ├── my-bucket/
 │   └── orders/
 │       └── 123/
@@ -70,7 +70,7 @@ public class LocalFileObjectStorageProvider implements ObjectStorageProvider {
     private final Path root;
 
     public LocalFileObjectStorageProvider(
-            @Value("${adapters.storage.root:./data/fallback-storage}") String rootPath) {
+            @Value("${adapters.storage.root:./data/local-storage}") String rootPath) {
         this.root = Path.of(rootPath);
     }
 
@@ -119,7 +119,7 @@ from pathlib import Path
 import json, shutil
 
 class LocalFileObjectStorageProvider:
-    def __init__(self, root: str = "./data/fallback-storage"):
+    def __init__(self, root: str = "./data/local-storage"):
         self._root = Path(root)
 
     def put(self, bucket: str, key: str, data: BinaryIO, metadata: ObjectMetadata) -> None:
@@ -145,7 +145,7 @@ class LocalFileObjectStorageProvider:
 
 ## Limitations
 
-| Feature | Production (S3/Blob/GCS) | Fallback |
+| Feature | Production (S3/Blob/GCS) | Local adapter |
 |---------|--------------------------|----------|
 | Encryption at rest | SSE / CMK | None |
 | Lifecycle policies | Auto-expiration, tier transitions | None |
@@ -154,16 +154,16 @@ class LocalFileObjectStorageProvider:
 | Multi-instance access | Yes (object store is shared) | No (local filesystem) |
 | Max object size enforcement | Storage service limits | Not enforced (log warning) |
 | Consistency | Read-after-write | Filesystem-dependent |
-| Durability | 99.999999999% | Local disk only |
+| Durability | Managed/provider-dependent | Local disk only |
 
-## What Works in Fallback
+## What Works in the Local Adapter
 
 - Basic put/get/delete/exists/list operations.
 - Metadata storage and retrieval.
 - Key naming convention validation.
 - Functional testing of upload/download workflows.
 
-## What Does NOT Work in Fallback
+## What the Local Adapter Does Not Reproduce
 
 - Encryption at rest.
 - Lifecycle/expiration policies.
@@ -176,22 +176,22 @@ class LocalFileObjectStorageProvider:
 
 Add to `.gitignore`:
 ```
-data/fallback-storage/
+data/local-storage/
 ```
 
 ## LLM Instructions
 
-- When scaffolding a storage fallback, use the local filesystem pattern above.
+- When scaffolding a storage local adapter, use the local filesystem pattern above.
 - Wire via `@ConditionalOnProperty(name = "adapters.storage", havingValue = "local")` or Python conditional injection.
 - Always create the metadata sidecar file alongside the object.
-- Always add `data/fallback-storage/` to `.gitignore`.
-- Generate startup validation that prevents fallback in production.
+- Always add `data/local-storage/` to `.gitignore`.
+- Generate startup validation that rejects the local adapter in production.
 
 ## Review Checklist
 
 - [ ] Local adapter activated only by `STORAGE_ADAPTER=local`.
-- [ ] Startup fails if fallback active in production.
+- [ ] Startup fails if local adapter active in production.
 - [ ] Implements full `ObjectStorageProvider` interface.
 - [ ] Metadata sidecar files created for every object.
-- [ ] `data/fallback-storage/` in `.gitignore`.
+- [ ] `data/local-storage/` in `.gitignore`.
 - [ ] Limitations documented and understood by team.

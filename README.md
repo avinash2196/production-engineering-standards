@@ -1,8 +1,8 @@
-# Enterprise AI Engineering Standards
+# Production Engineering Standards
 
-A practical repository for turning persistent Copilot guidance into repeatable engineering workflows and executable quality gates for Java Spring Boot and Python FastAPI services.
+Practical engineering standards for building production-oriented backend and distributed systems in Java and Python with AI-assisted development.
 
-The repository is intentionally not a promise that AI-generated code is automatically production-ready. Copilot instructions guide decisions, prompts make reviews repeatable, and tests, validators, static analysis, and CI enforce the rules that can be checked automatically.
+The repository is intentionally not a promise that AI-generated code is automatically production-ready. Copilot instructions guide decisions, prompts make reviews repeatable, and tests, validators, and CI enforce the rules that can be checked automatically.
 
 ## Why This Repository Exists
 

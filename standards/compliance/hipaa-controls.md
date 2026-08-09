@@ -1,137 +1,114 @@
-# HIPAA Controls (Engineering)
+# HIPAA Controls (Engineering Guidance)
 
 ## Purpose
 
-Engineering-level controls checklist for services handling Protected Health Information (PHI). These are technical implementation requirements derived from the HIPAA Security Rule (45 CFR §164.312). This is **not** legal compliance certification — it is a practical engineering reference.
+Engineering control guidance mapped to selected HIPAA Security Rule technical safeguards for services handling electronic Protected Health Information (ePHI). This document is not legal advice, a complete HIPAA control catalog, or compliance certification. Regulatory interpretation and organization-specific policy require qualified security/compliance/legal review.
 
 ## Applicability
 
-Apply these controls to any service where the data inventory (see `data-classification.md`) identifies Restricted/PHI data elements. Services that never touch PHI do not need these controls.
+Use this guidance when a project's data inventory identifies PHI/ePHI and the project is subject to HIPAA. Confirm applicable requirements, risk analysis, organizational policy, state law, contractual obligations, and any later regulatory changes before treating a control as mandatory for a specific system.
 
 ## Control Categories
 
 ### 1. Access Control (§164.312(a))
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Unique user identification | Every user and service account has a unique identity | OAuth2 subject claims, service principal IDs |
-| Emergency access procedure | Break-glass access with full audit trail | Admin override role with automatic audit event |
-| Automatic logoff | Sessions expire after inactivity | Token TTL ≤ 15 minutes for PHI-accessing sessions |
-| Encryption and decryption | PHI encrypted when accessed/stored | Application-layer encryption for PHI fields |
+| Control | Engineering objective | Example implementation |
+|---|---|---|
+| Unique user identification | Attribute access to a unique user/service identity | OAuth/OIDC subject, service identity |
+| Emergency access procedure | Provide approved emergency access with accountability | Break-glass role/process with audit trail |
+| Automatic logoff | Terminate inactive sessions when reasonable and appropriate | Organization-approved inactivity timeout |
+| Encryption/decryption | Protect ePHI according to risk analysis and approved safeguards | Platform/database/application encryption as appropriate |
 
 **Engineering checklist:**
-- [ ] All endpoints serving PHI require authentication (no anonymous access).
-- [ ] Authorization enforced at the service layer, not just the API gateway.
-- [ ] Role-based or attribute-based access control restricts PHI access to authorized roles.
-- [ ] Service-to-service calls use mTLS or signed tokens with scoped permissions.
-- [ ] Session timeout configured (≤ 15 minutes for PHI-accessing sessions).
+- [ ] PHI/ePHI endpoints require authenticated identities unless an approved exception exists.
+- [ ] Authorization is enforced at the appropriate application/service boundary.
+- [ ] Service-to-service access uses scoped identities and approved authentication mechanisms.
+- [ ] Inactivity/session behavior follows the organization's security policy and risk assessment; the selected value and rationale are documented.
+- [ ] Emergency access behavior is documented and auditable where applicable.
+
+HIPAA's automatic-logoff specification describes termination after a **predetermined period of inactivity**; this repository does not impose a universal 15-minute value.
 
 ### 2. Audit Controls (§164.312(b))
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Audit logging | Record all PHI access and modifications | Structured audit events for create/read/update/delete |
-| Audit log protection | Logs tamper-resistant | Append-only storage, write-once buckets |
-| Audit log retention | Retain for minimum 6 years | Automated lifecycle policy |
-| Audit log review | Regular review for anomalies | Automated alerting on unusual PHI access patterns |
+| Control | Engineering objective | Example implementation |
+|---|---|---|
+| Audit logging | Record security-relevant activity involving ePHI | Structured access/modification audit events |
+| Audit protection | Reduce unauthorized modification/deletion | Separate permissions, append-oriented/immutable storage where appropriate |
+| Retention | Retain records according to applicable legal/regulatory/organizational policy | Storage lifecycle policy tied to approved retention schedule |
+| Review/detection | Enable review of suspicious access and audit failures | SIEM/alerting and review procedures |
 
 **Engineering checklist:**
-- [ ] Every PHI create, read, update, delete produces an audit event.
-- [ ] Audit events include: who (user/service ID), what (data element), when (timestamp), where (source IP/service), outcome (success/failure).
-- [ ] Audit events do NOT contain raw PHI values — use record IDs or tokenized references.
-- [ ] Audit logs stored in append-only or write-once storage.
-- [ ] Retention policy enforced (≥ 6 years).
-- [ ] Automated alerts on bulk PHI access or access from unusual sources.
+- [ ] Required ePHI access/modification activity is auditable according to project policy.
+- [ ] Audit events identify actor, action/resource, time, outcome, and useful request context without storing unnecessary raw PHI.
+- [ ] Audit storage and permissions protect integrity and availability.
+- [ ] Retention is defined by the applicable policy and implemented in storage lifecycle configuration.
+- [ ] Audit pipeline failures and suspicious access patterns have an operational response where required.
 
-Reference: `standards/compliance/audit-logging.md`
+HIPAA includes a six-year retention rule for documentation required by the Security Rule. Do not infer from that rule that every application audit log or medical record has a universal six-year retention period.
+
+Reference: [Audit Logging](audit-logging.md)
 
 ### 3. Integrity Controls (§164.312(c))
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Data integrity | Protect PHI from improper alteration or destruction | Checksums, database constraints, change tracking |
-| Authentication of data | Verify data has not been altered in transit | Message signing, TLS, HMAC |
-
-**Engineering checklist:**
-- [ ] Database constraints prevent invalid PHI mutations (NOT NULL, CHECK, foreign keys).
-- [ ] Change tracking on PHI tables (audit columns: `updated_by`, `updated_at`, or change data capture).
-- [ ] Message integrity for PHI in transit (HMAC or message signing for async messages containing PHI).
-- [ ] Backup integrity verified (checksums on backup files).
+- Protect ePHI from improper alteration or destruction with controls appropriate to the risk and data flow.
+- Use database constraints, authorization, versioning/change tracking, checksums/signatures, or other integrity mechanisms where they address a real threat.
+- Verify backup/restore integrity for state that requires recovery.
 
 ### 4. Transmission Security (§164.312(e))
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Encryption in transit | PHI encrypted during transmission | TLS 1.2+ for all connections |
-| Integrity controls | Prevent unauthorized modification in transit | TLS provides this; additionally, sign payloads for async |
+- Protect ePHI in transit using approved transport safeguards.
+- Use TLS for network transport where it is the approved control; use stronger/additional measures when risk analysis or policy requires them.
+- Do not place raw PHI in URLs, logs, or diagnostic metadata unless specifically designed and protected for that purpose.
+- For asynchronous transport, select confidentiality/integrity controls from the broker/network architecture and approved security policy rather than assuming every message requires separate application-level encryption/signing.
+
+### 5. Encryption at Rest and Key Management
+
+HIPAA's encryption implementation specifications are addressable under the current Security Rule: organizations determine reasonable and appropriate safeguards through risk analysis and document decisions/alternatives. This repository therefore does not claim that application-layer field encryption is universally mandated for every PHI column.
 
 **Engineering checklist:**
-- [ ] All external APIs enforce TLS 1.2+ (reject plaintext connections).
-- [ ] Internal service-to-service calls use TLS or mTLS.
-- [ ] Database connections use TLS.
-- [ ] Message broker connections use TLS.
-- [ ] No PHI transmitted in URL query parameters (use request body or headers).
+- [ ] Approved at-rest protection is defined for databases, object/file storage, and backups containing ePHI.
+- [ ] Additional field/application-level encryption is used when required by the risk assessment, architecture, or organizational policy.
+- [ ] Encryption keys are managed through approved key/secret management with access control, rotation/recovery procedures, and separation from protected data where appropriate.
+- [ ] Encryption decisions and exceptions are documented.
 
-### 5. Encryption at Rest
+### 6. Data Minimization, Retention, and Disposal
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Database encryption | PHI encrypted in database | Transparent data encryption (TDE) at minimum; field-level for sensitive columns |
-| File/object encryption | PHI files encrypted | Server-side encryption (SSE) + application-layer for high-sensitivity |
-| Backup encryption | Backups encrypted | Server-side encryption with managed keys |
-| Key management | Encryption keys securely managed | `SecretProvider` with key rotation |
+- Collect, expose, and log only the data needed for the approved purpose.
+- Define retention from applicable law, regulation, contract, and organization policy; do not infer medical-record retention from this repository.
+- Use an approved disposal mechanism when retention expires.
+- Apply redaction/tokenization where operational logs and diagnostics could otherwise expose PHI.
 
-**Engineering checklist:**
-- [ ] Database has TDE or equivalent enabled.
-- [ ] PHI columns use field-level encryption (application-layer AES-256).
-- [ ] Object storage uses SSE for all PHI objects.
-- [ ] Encryption keys managed via `SecretProvider` with documented rotation schedule.
-- [ ] Key rotation does not require downtime (envelope encryption pattern).
+## PHI/ePHI Inventory Template
 
-### 6. Data Minimization & Disposal
+Every service subject to the control set should maintain an inventory appropriate to its architecture:
 
-| Control | Requirement | Implementation |
-|---------|-------------|----------------|
-| Minimum necessary | Collect and expose only required PHI | Projection DTOs, column-level access |
-| Data disposal | Irreversible deletion when retention expires | Crypto-shredding or certified secure deletion |
-| Log redaction | PHI excluded from logs and error messages | Structured logging with redaction filters |
-
-**Engineering checklist:**
-- [ ] API responses use projection DTOs that include only the PHI fields needed by the caller.
-- [ ] `SELECT *` is never used on tables containing PHI.
-- [ ] Logs never contain raw PHI (redaction filters on structured logging).
-- [ ] Error messages and stack traces never expose PHI.
-- [ ] Data retention policy implemented with automated disposal.
-- [ ] Disposal method is irreversible (crypto-shredding preferred).
-
-## PHI Inventory Template
-
-Every service handling PHI must maintain a PHI inventory:
-
-| PHI Element | Storage | Encrypted At Rest | Encrypted In Transit | Access Control | Audit Logged | Retention |
-|------------|---------|-------------------|---------------------|----------------|-------------|-----------|
-| Patient name | `patients.name` | Field-level AES-256 | TLS 1.2 | RBAC: clinician role | Yes | 7 years |
-| SSN | `patients.ssn` | Field-level AES-256 | TLS 1.2 | RBAC: admin role | Yes | 7 years |
-| Diagnosis code | `encounters.icd10` | TDE | TLS 1.2 | RBAC: clinician role | Yes | 10 years |
+| PHI/ePHI element | Storage/flow | Protection at rest | Protection in transit | Access control | Audit requirement | Retention source |
+|---|---|---|---|---|---|---|
+| [Element] | [Location/flow] | [Approved control] | [Approved control] | [Role/policy] | [Yes/No + rationale] | [Law/policy/contract] |
 
 ## LLM Instructions
 
-- When generating code that handles PHI, apply all 6 control categories.
-- Always generate field-level encryption for PHI database columns.
-- Never generate code that logs PHI values.
-- Always include audit events for PHI access.
-- Ask the user for PHI data elements before generating the data model.
-- Include the disclaimer: this is engineering guidance, not legal compliance certification.
+- Do not claim that a service is "HIPAA compliant" based on this checklist.
+- Do not invent session timeouts, audit-log retention periods, encryption algorithms/key sizes, or field-level encryption requirements when the project's approved policy/risk assessment does not specify them.
+- Never generate ordinary application logs containing raw PHI.
+- Identify missing compliance/security decisions explicitly and request qualified review where interpretation is required.
+- Include the disclaimer that this is engineering guidance, not legal compliance certification.
 
-## Review Checklist (Summary)
+## Review Checklist
 
-- [ ] PHI inventory complete and current.
-- [ ] All 6 control categories assessed and implemented.
-- [ ] No raw PHI in logs, error messages, or URL parameters.
-- [ ] Encryption at rest and in transit for all PHI.
-- [ ] Audit logging for all PHI CRUD operations.
-- [ ] Data disposal plan documented and automated.
+- [ ] PHI/ePHI inventory is complete enough for the reviewed scope.
+- [ ] Access, audit, integrity, transmission, at-rest protection, minimization, retention, and disposal controls were assessed.
+- [ ] Numeric/security-policy choices come from approved policy/risk decisions rather than this repository.
+- [ ] Raw PHI is excluded from ordinary logs, URLs, and diagnostics unless explicitly designed and protected.
+- [ ] Unresolved regulatory/policy decisions are identified for qualified review.
+
+## References
+
+- HHS, HIPAA Security Rule: https://www.hhs.gov/hipaa/for-professionals/security/index.html
+- HHS, encryption as an addressable implementation specification: https://www.hhs.gov/hipaa/for-professionals/faq/2001/is-the-use-of-encryption-mandatory-in-the-security-rule/index.html
+- HHS, Security Rule documentation retention: https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html
+- HHS, medical-record retention FAQ: https://www.hhs.gov/hipaa/for-professionals/faq/580/does-hipaa-require-covered-entities-to-keep-medical-records-for-any-period/index.html
 
 ## Disclaimer
 
-This document provides engineering control guidance derived from HIPAA Security Rule requirements. It does not constitute legal advice or compliance certification. Consult your compliance team and legal counsel for official HIPAA compliance assessment.
+This document provides engineering guidance and does not constitute legal advice or compliance certification. Consult the organization's security, privacy/compliance, and legal functions for applicability and interpretation.

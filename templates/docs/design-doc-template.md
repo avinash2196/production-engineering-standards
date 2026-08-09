@@ -120,7 +120,7 @@ List capability interfaces used:
 
 - [Architecture](../../standards/architecture.md)
 - [Engineering principles](../../standards/engineering-principles.md)
-- Related ADRs: [ADR-NNN](../adr/ADR-NNN.md) *(create docs/adr/ when first ADR is recorded)*
+- Related ADRs: `docs/adr/ADR-NNN.md` *(create `docs/adr/` when the first ADR is recorded; add a link after the file exists)*
 
 ---
 

@@ -30,7 +30,7 @@ Projects may support fewer values. Do not advertise an adapter that is not imple
 
 1. The local adapter implements the same capability contract used by application code.
 2. Selection is explicit and typed.
-3. Startup emits a structured warning and an adapter-active metric.
+3. Startup emits a structured warning. When the project exposes application metrics, expose an adapter-active metric as well.
 4. Documentation states reduced durability, ordering, consistency, concurrency, security, and multi-instance behavior.
 5. Production startup rejects local-only values.
 6. Adapter selection tests cover production and local values.

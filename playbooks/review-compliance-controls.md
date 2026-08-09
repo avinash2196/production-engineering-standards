@@ -36,9 +36,9 @@ For each confidential/restricted data element:
 
 | Check | Expected | Finding |
 |-------|----------|---------|
-| Encrypted at rest (DB column or storage) | AES-256 or equivalent | ✅/❌ |
-| Encrypted in transit | TLS 1.2+ | ✅/❌ |
-| Field-level encryption (if restricted/PHI) | App-layer encryption | ✅/❌ |
+| At-rest safeguard (DB/storage) | Approved control from risk/security policy | ✅/❌/N/A |
+| Protected in transit | Organization-approved secure transport | ✅/❌/N/A |
+| Additional field/application encryption | Required only when the approved risk/security decision calls for it | ✅/❌/N/A |
 | Encryption key management | Via `SecretProvider` with rotation | ✅/❌ |
 | Backups encrypted | Server-side encryption | ✅/❌ |
 
@@ -56,7 +56,7 @@ For each operation on confidential/restricted data:
 | Delete operations audit-logged | who, what, when, outcome | ✅/❌ |
 | Audit logs tamper-resistant | Append-only or write-once storage | ✅/❌ |
 | Audit logs do not contain raw PHI | Redacted or tokenized | ✅/❌ |
-| Audit log retention | 6+ years for HIPAA | ✅/❌/N/A |
+| Audit log retention | Source and period defined by applicable legal/regulatory/organizational policy | ✅/❌/N/A |
 
 Reference: `standards/compliance/audit-logging.md`
 
@@ -121,7 +121,7 @@ Reference: `standards/compliance/hipaa-controls.md`
 ### Control Compliance
 | Control Area | Status | Critical Gaps | Remediation |
 |-------------|--------|---------------|-------------|
-| Encryption at rest | ⚠️ Partial | SSN field unencrypted | Add field-level encryption |
+| At-rest protection | ⚠️ Partial | Approved safeguard is missing for part of the sensitive-data scope | Apply/document the approved control |
 | Encryption in transit | ✅ | — | — |
 | Audit logging | ❌ | Read ops not logged | Add audit events |
 | Access control | ✅ | — | — |
@@ -129,7 +129,7 @@ Reference: `standards/compliance/hipaa-controls.md`
 | Secret management | ✅ | — | — |
 
 ### Remediation Priority
-1. [CRITICAL] Encrypt SSN field at application layer
+1. [CRITICAL] Apply the approved at-rest safeguard to the exposed sensitive-data path
 2. [HIGH] Add audit logging for all PHI read operations
 3. [MEDIUM] Implement log redaction for patient names
 

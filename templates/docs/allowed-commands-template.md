@@ -1,9 +1,9 @@
 # Allowed Commands Template
 <!--
   HOW TO USE:
-  Copy to docs/allowed-commands.md (or config/allowed-commands.md).
-  Fill in each section. This file governs what agents and operators may run.
-  See: playbooks/create-doc.md for full process.
+  Copy to docs/allowed-commands.md (or an equivalent project-controlled location).
+  Keep only commands that actually exist in the target repository.
+  This file documents agent/operator command boundaries; it does not grant production authorization.
 -->
 
 # Allowed Commands: [SERVICE / REPO NAME]
@@ -13,101 +13,66 @@
 
 ## Local Development Commands
 
-Any developer may run these. No approval required.
+Examples below must be adapted to the target repository.
 
 ```bash
 # Install dependencies
-./mvnw dependency:resolve          # Java
-pip install -r requirements.txt    # Python
-
-# Start local stack (Docker required)
-docker compose -f templates/infra/docker-compose.dev.yaml up -d
-
-# Start service with fallbacks (no Docker needed)
-MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
-  ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
-# or
-MESSAGING_ADAPTER=db CACHE_ADAPTER=jsonfile STORAGE_ADAPTER=local SECRET_ADAPTER=env \
-  uvicorn src.<service>.main:app --reload --port 8000
+./mvnw dependency:resolve          # Maven wrapper project
+poetry install                     # Poetry-managed Python project
 
 # Run tests
-./mvnw test                        # Java unit tests
-pytest                             # Python unit tests
-./mvnw test -Dgroups=integration   # Java integration tests (requires Docker)
-pytest -m integration              # Python integration tests (requires Docker)
+./mvnw test
+poetry run pytest
 
-# Validate repo structure
-pwsh tooling/scripts/validate-repo-structure.ps1
-
-# Generate a new service scaffold
-python tooling/scripts/validate-repository.py --stack [java|python] --name <service-name>
+# Python lint/format checks when Ruff is configured
+poetry run ruff check .
+poetry run ruff format --check .
 ```
 
-## CI Commands (automated, no human approval)
+If the service implements approved local adapters, document the exact selectors it supports. Do not invent adapters that are not implemented and tested.
 
-Run by the CI pipeline on every PR and merge.
+## CI Commands
+
+List only checks configured in the target project, for example:
 
 ```bash
-./mvnw -DskipTests=false verify    # Java: compile + test + package
-pytest -q --tb=short               # Python: test suite
-./mvnw spotbugs:check              # Java: static analysis
-ruff check . && black --check .    # Python: linting + format check
-trivy image <image>:<tag>          # Container vulnerability scan
+./mvnw -DskipTests=false verify
+poetry run pytest -q
+poetry run ruff check .
+poetry run ruff format --check .
 ```
 
-## Operator Commands (requires approval + audit entry)
+Add static analysis, secret scanning, dependency scanning, container scanning, and contract/integration tests only when the corresponding tool is actually configured.
 
-These commands change production state. They MUST be:
-1. Approved by the tech lead or on-call engineer.
-2. Logged in `config/overrides.md` with reason, timestamp, and operator name.
+## Operator Commands
 
-```bash
-# Force-restart a running pod / task
-kubectl rollout restart deployment/<service-name> -n <namespace>
+Production-changing commands require the target organization's approved access-control, change-management, and audit process. Document those project-specific commands here rather than copying generic credentials, vault paths, namespaces, or approval roles.
 
-# Override a feature flag in production
-vault kv put secret/prod/<service-name>/feature-flags <key>=<value>
+## Local-Adapter Commands
 
-# Grant temporary elevated access
-az keyvault set-policy --name <vault> --object-id <id> --secret-permissions get list
-
-# Manual database migration (emergency only)
-psql $DATABASE_URL -f migrations/<NNN>-emergency-fix.sql
-
-# Rotate a secret
-vault kv patch secret/prod/<service-name> <key>=<new-value>
-```
-
-## Fallback Toggle Commands
-
-Fallbacks are **development-only**. Never set these in production.
+Local-only adapter values may be documented for development/test environments. Production configuration must use approved production values, and startup validation must reject local-only selections.
 
 ```bash
-# Enable all fallbacks (dev/test only)
 export MESSAGING_ADAPTER=db
 export CACHE_ADAPTER=jsonfile
 export STORAGE_ADAPTER=local
 export SECRET_ADAPTER=env
-
-# Disable before building release artifacts
-unset MESSAGING_ADAPTER CACHE_ADAPTER STORAGE_ADAPTER SECRET_ADAPTER
 ```
 
-## Forbidden Commands
+Use only the values implemented by the target service.
 
-Agents and automated pipelines MUST NOT run these:
+## Forbidden Command Categories
 
-| Command | Reason |
-|---------|--------|
-| `git push --force`, `git reset --hard HEAD~N` on main | Destroys audit history |
-| `kubectl delete namespace <prod-ns>` | Destroys production workloads |
-| `DROP TABLE`, `DROP DATABASE` without migration | Irreversible data loss |
-| Any command with raw production secrets in args | Secrets appear in shell history / logs |
-| `curl` or `wget` to external URLs in CI | Prevents supply-chain attacks |
+Agents and automated pipelines must not perform destructive or unapproved actions, including:
+
+- force-pushing protected branches or rewriting protected history;
+- destructive production namespace/database operations outside an approved change procedure;
+- passing raw production secrets in command arguments or logs;
+- arbitrary executable downloads or execution from unapproved sources.
+
+CI downloads must use approved sources and pinned/versioned artifacts where practical.
 
 ## References
 
-- [standards/agent-execution.md](../../standards/agent-execution.md)
-- [standards/security/security-standards.md](../../standards/security/security-standards.md)
-- [config/overrides.md](../../config/overrides.md) — operator override audit log
-
+- [Agent Execution](../../standards/agent-execution.md)
+- [Security Standards](../../standards/security/security-standards.md)

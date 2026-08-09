@@ -19,8 +19,8 @@ Agent usage and tool policy
 - Agents may read and write template files and generate scaffolding. They MUST NOT commit secrets or run external network commands without explicit human consent.
 - Overrides: Operators may provide runtime overrides via operator-level config (see `rule-precedence.md`). Operator overrides must be auditable.
 
-Fallbacks and local dev
-- All fallbacks are explicit. To enable local fallbacks, set environment variables documented per stack (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
+Local adapters and local development
+- All local adapters are explicit. Select only implemented local adapters using typed configuration documented by the project (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
 - Local-only config files must be named `application.local.yml` or `settings.local.yaml` and excluded from production bundles.
 
 Config sources summary
@@ -28,7 +28,7 @@ Config sources summary
 
 Infra dependencies
 - List expected infra (for example): Kafka, Redis, PostgreSQL, Object Storage, Secret Manager.
-- For local dev use `templates/infra/docker-compose.dev.yaml` and enable fallbacks as needed.
+- For local dev use `templates/infra/docker-compose.dev.yaml` and select approved local adapters as needed.
 
 Repository commands
 - Validate structure: `tooling/scripts/validate-repo-structure.ps1`

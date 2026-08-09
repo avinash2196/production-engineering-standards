@@ -1,6 +1,6 @@
 ---
 name: General Issue
-about: Report a gap, correction, or proposal for the enterprise-ai-engineering repository
+about: Report a gap, correction, or proposal for the production-engineering-standards repository
 title: "[AREA] Brief description"
 labels: ""
 assignees: ""

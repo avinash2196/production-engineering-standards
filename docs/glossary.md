@@ -4,9 +4,9 @@ Key terms used throughout this repository.
 
 | Term | Definition |
 |------|------------|
-| **Capability Interface** | An abstract contract (e.g., `MessagePublisher`, `CacheProvider`) that decouples business logic from infrastructure. Production and fallback implementations are swapped via DI. |
-| **Fallback Implementation** | An in-process substitute for an infrastructure capability (e.g., in-memory queue instead of Kafka) used in local development and testing. |
-| **Fallback Toggle** | An environment variable (`MESSAGING_ADAPTER`, `CACHE_ADAPTER`, etc.) that activates fallback implementations. |
+| **Capability Interface** | An abstract contract (e.g., `MessagePublisher`, `CacheProvider`) that decouples business logic from infrastructure. Production implementations and approved local adapters may be selected through dependency injection/configuration. |
+| **Local Adapter** | An explicitly selected development/CI implementation of a capability, such as an in-memory queue or local filesystem, with documented reduced guarantees and a production startup guard. |
+| **Adapter Selector** | Typed configuration such as `MESSAGING_ADAPTER` or `CACHE_ADAPTER` that selects an implemented production or local adapter. Local-only values must be rejected in production. |
 | **DTO** | Data Transfer Object — a typed, validated structure used to carry data across API boundaries. Separate from domain objects. |
 | **Domain Object** | A class representing business concepts (entities, value objects, aggregates). No framework dependencies. |
 | **Aggregate Root** | The top-level domain object that controls access to a cluster of related entities. One repository per aggregate root. |

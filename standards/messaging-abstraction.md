@@ -6,7 +6,7 @@ Purpose
 Mandatory Rules
 - Explicitly document delivery semantics: at-most-once, at-least-once, or exactly-once if supported.
 - Message interfaces must include optional `idempotencyKey` and `traceId` fields to enable deduplication and correlation.
-- Provide a local fallback adapter (file-backed or in-memory) for development and testing.
+- When local or CI execution requires an alternate implementation, use an approved local adapter, Testcontainers, or an official emulator. Do not create a local adapter for every messaging dependency by default.
 
 Defaults
 - Default publish semantics: at-least-once with idempotency support in subscribers.
@@ -24,9 +24,9 @@ Production vs Local Differences
 
 LLM instructions
 - When scaffolding message flows, generate a publisher adapter and a subscriber harness that enforces idempotency via `idempotencyKey` and durable checkpoints where possible.
-- Ask the user if message ordering and cross-topic consistency are required before selecting a fallback strategy.
+- Determine message ordering and cross-topic consistency requirements before selecting transport semantics or any local adapter.
 
 Review checklist
 - [ ] Message contract includes `idempotencyKey` and `traceId`.
-- [ ] Production and local adapters included and documented.
+- [ ] Production adapter behavior is documented; any local adapter is justified and its reduced guarantees are documented.
 - [ ] Subscriber includes deduplication/ack semantics.

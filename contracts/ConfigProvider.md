@@ -48,7 +48,7 @@ Values are resolved in this order. First match wins:
 
 - **Production:** all 5 precedence levels active. Dynamic config via centralized config service (Spring Cloud Config, Consul, Azure App Configuration, etc.).
 - **Local:** environment variables and local config files only (levels 3-5). Operator overrides and dynamic config typically not available locally.
-- No fallback toggle for config — it works the same way everywhere, just with fewer sources locally.
+- No separate local-adapter toggle for config — it works the same way everywhere, just with fewer sources locally.
 
 ## Java Example
 

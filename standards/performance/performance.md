@@ -1,133 +1,76 @@
-# Performance
-
-Performance checklist covering database access patterns, batching, caching, connection management, and profiling guidance.
+# Performance and Efficiency
 
 ## Purpose
 
-Define actionable performance standards that prevent common bottlenecks before they reach production.
+Provide reviewable performance guidance without pretending one latency target, page size, cache TTL, batch size, pool size, or asynchronous threshold fits every service.
 
 ## Mandatory Rules
 
-### Database Access
+1. Define performance targets from approved requirements, measured baselines, business impact, and downstream capacity.
+2. Bound list operations and unbounded work. Choose pagination and payload limits from cardinality, payload size, client behavior, and measured latency.
+3. Review query plans for critical or high-volume database access paths. Add indexes based on selectivity and measured access patterns rather than indexing every filtered column automatically.
+4. Configure connection pools with explicit bounds derived from database capacity, service instance count, concurrency, query latency, and load testing. Monitor saturation.
+5. Cache only when correctness permits it. Derive TTL and invalidation behavior from freshness requirements and failure semantics.
+6. Use batching and producer/client tuning only after measuring the workload and downstream limits.
+7. Use bounded concurrency only for independent work and only when downstream capacity can absorb it.
+8. Choose synchronous versus asynchronous execution from the API/business contract, latency budget, durability requirements, user workflow, and failure semantics.
+9. Establish a baseline before claiming an optimization and record the measurement method used to verify improvement.
 
-- **No N+1 queries.** Use eager fetching, batch loading, or projections for associations.
-- **Paginate all list queries.** No unbounded `SELECT *` — enforce page size limits (default 20, max 100).
-- **Index all WHERE/JOIN columns.** New queries require an explain plan review.
-- **Use read replicas** for reporting queries and dashboards.
-- **Connection pool sizing:** Start with `max_connections = 2 * CPU_cores + disk_spindles` (typically 10–20 per instance). Monitor pool saturation via metrics.
+## Decision Guidance
 
-```yaml
-# Java — HikariCP defaults
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 15
-      minimum-idle: 5
-      connection-timeout: 2000
-      idle-timeout: 300000
-      max-lifetime: 600000
-```
+### Database
 
-```python
-# Python — asyncpg pool
-pool = await asyncpg.create_pool(
-    dsn=DATABASE_URL,
-    min_size=5,
-    max_size=15,
-    command_timeout=5,
-)
-```
+- Investigate N+1 access, repeated queries, large scans, lock contention, connection saturation, and missing/ineffective indexes using evidence from plans and metrics.
+- Prefer query and schema changes that improve the measured bottleneck rather than adding generic indexes.
 
 ### Caching
 
-- **Cache at the service layer**, not the repository layer.
-- Use `CacheProvider` abstraction (see `contracts/CacheProvider.md`).
-- Default TTLs: entity lookup = 5 min, list/search = 1 min, config = 10 min.
-- **Cache invalidation:** Prefer TTL expiry over event-driven invalidation unless strict consistency is required.
-- **Cache-aside pattern:** Check cache → miss → load from DB → write to cache → return.
+- Document what is cached, freshness tolerance, invalidation behavior, stampede/hot-key risks, and behavior when the cache is unavailable.
+- Treat a cache as a performance optimization unless the business contract explicitly depends on it for correctness.
 
-### Batching
+### External Calls and Concurrency
 
-- Batch database writes (bulk insert) for operations processing > 10 records.
-- Batch Kafka publishes using `linger.ms` (default 5ms) for throughput.
-- Batch HTTP calls using concurrent futures / async gather — never sequential loops.
+- Parallelize independent I/O only when the combined load is safe for downstream systems and cancellation/timeouts are bounded.
+- Do not hide blocking work behind asynchronous syntax; measure thread/event-loop utilization and queueing.
 
-### HTTP Response Times
+### Messaging and Batching
 
-| Tier | Target P95 | Example |
-|------|------------|----------|
-| Fast | < 50ms | Health checks, cached reads |
-| Standard | < 250ms | Single-entity CRUD |
-| Complex | < 1000ms | Multi-aggregate operations, search |
-| Background | N/A | Async processing via events |
+- Choose batch size, producer buffering, linger, compression, and concurrency from throughput/latency goals and measured broker/client behavior.
+- Preserve ordering, idempotency, and durability requirements while tuning throughput.
 
-Endpoints consistently exceeding their tier target require a performance review.
+### API Payloads
 
-### Payload Size
+- Bound response sizes and list cardinality.
+- Use compression based on client/server support and measured benefit rather than a repository-wide byte threshold.
 
-- JSON response bodies: max **1 MB** for synchronous endpoints.
-- For larger payloads, use presigned URLs (storage) or streaming responses.
-- Compress responses with gzip for payloads > 1 KB (enabled by default in both stacks).
+## Anti-patterns
 
-### Async Processing
-
-- Operations taking > 500ms should be made asynchronous where possible.
-- Publish an event and return `202 Accepted` with a status-tracking endpoint.
-- Never block an HTTP thread on a long-running Kafka publish — use `send()` (async), not `send().get()` (blocking).
-
-## Profiling Guidance
-
-### When to Profile
-
-- Any endpoint exceeding its tier P95 target.
-- Before and after adding caching or batching.
-- Monthly review of top-10 slowest endpoints (from Prometheus/Grafana).
-
-### Tools
-
-| Stack | Profiler | Flame graph |
-|-------|----------|-------------|
-| Java | `async-profiler`, VisualVM | `jfr` + `jfr-flame-graph` |
-| Python | `py-spy`, `cProfile` | `py-spy` generates SVG flamegraphs |
-
-### Database Query Analysis
-
-```sql
--- PostgreSQL: identify slow queries
-SELECT query, calls, mean_exec_time, total_exec_time
-FROM pg_stat_statements
-ORDER BY mean_exec_time DESC
-LIMIT 20;
-```
-
-## Anti-Patterns
-
-| Anti-Pattern | Fix |
-|-------------|-----|
-| Loading all records then filtering in-app | Push WHERE clauses to the database |
-| Caching at the repository level | Cache at service level through `CacheProvider` |
-| Unbounded `IN (...)` clauses | Batch into chunks of 500 |
-| Synchronous external HTTP calls in a loop | `CompletableFuture.allOf()` / `asyncio.gather()` |
-| Missing connection pool limits | Set explicit pool sizes and monitor saturation |
+- Universal numeric performance targets copied into every service.
+- Indexing every `WHERE`/`JOIN` column without query-plan evidence.
+- Increasing thread or connection pools without considering downstream capacity.
+- Adding a cache without a freshness/invalidation contract.
+- Parallelizing dependent work or overwhelming downstream services.
+- Declaring an operation asynchronous solely because it crosses an arbitrary duration threshold.
 
 ## LLM Instructions
 
-- When generating list endpoints, always include pagination parameters.
-- When generating repository methods, check for N+1 patterns and suggest fetch joins.
-- If a service method calls multiple external APIs sequentially, suggest concurrent execution.
-- When adding caching, use the `CacheProvider` interface and specify a TTL.
+- Do not invent latency, throughput, pagination, TTL, pool-size, batch-size, or payload targets when requirements are missing.
+- Ask for or derive targets from documented SLOs/requirements and measured baselines.
+- When identifying a performance concern, name the evidence to collect and the trade-off of the proposed change.
+- Prefer a measurable hypothesis: baseline → change → repeat measurement → compare.
 
 ## Review Checklist
 
-- [ ] No N+1 queries in new code paths.
-- [ ] List endpoints are paginated (max 100).
-- [ ] Caching uses `CacheProvider` with explicit TTLs.
-- [ ] Connection pool size is configured and monitored.
-- [ ] No synchronous loops over external calls.
-- [ ] Response payloads are under 1 MB.
+- [ ] Performance targets come from requirements or an explicitly documented baseline.
+- [ ] High-volume list operations and work queues are bounded.
+- [ ] Critical database paths have evidence-based query/index review.
+- [ ] Connection/thread/worker pools are bounded and monitored.
+- [ ] Cache freshness and failure behavior are documented where caching is used.
+- [ ] Concurrency and batching respect downstream capacity and correctness semantics.
+- [ ] Claimed improvements include a reproducible measurement method.
 
 ## References
 
-- [CacheProvider.md](../../contracts/CacheProvider.md)
-- [observability.md](../observability.md)
-- [coding-standards.md](../coding-standards.md)
+- [Observability](../observability.md)
+- [Resiliency](../resiliency.md)
+- [Scalability](../scalability.md)

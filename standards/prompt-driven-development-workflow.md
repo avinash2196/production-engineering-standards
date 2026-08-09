@@ -74,7 +74,7 @@ The Implementation Plan defines **how** the approved milestone will be delivered
 - exact test cases, including positive and negative behavior
 - expected RED failure and why it proves the missing behavior
 - exact production-code changes
-- transaction, idempotency, fallback, security, and observability decisions where applicable
+- transaction, idempotency, dependency-failure/degradation, local-adapter, security, and observability decisions where applicable
 - explicit refactoring boundary
 - out-of-scope items
 - commands and success criteria

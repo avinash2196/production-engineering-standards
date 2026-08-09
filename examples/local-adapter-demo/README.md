@@ -33,7 +33,7 @@ Every local-only implementation should:
 
 1. implement the same capability contract used by production code;
 2. activate only through typed configuration;
-3. emit a structured warning and an adapter/fallback-active metric at activation;
+3. emit a structured warning at activation and, when the project exposes application metrics, an adapter-active metric;
 4. document durability, ordering, consistency, concurrency, and security differences;
 5. fail application startup when selected in production;
 6. have tests for selection and production rejection.
@@ -59,7 +59,7 @@ approved plan
 
 ## References
 
-- [Run with local adapters](../../playbooks/local-dev/run-with-fallbacks.md)
+- [Run with local adapters](../../playbooks/local-dev/run-with-local-adapters.md)
 - [Local adapter strategy](../../standards/local-adapter-strategy.md)
 - [Production dependency failure strategy](../../standards/fallback-strategy.md)
 - [Python adapter tests](../../stacks/python-fastapi/project-template/tests/)

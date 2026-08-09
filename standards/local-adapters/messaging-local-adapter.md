@@ -38,7 +38,7 @@ Subscriber poll (every 200ms)
     → on nack: UPDATE outbox_message SET status = 'FAILED', retry_count = retry_count + 1 WHERE id = ?
 ```
 
-**Schema (auto-created on startup when fallback is active):**
+**Schema (auto-created on startup when local adapter is active):**
 
 ```sql
 CREATE TABLE IF NOT EXISTS outbox_message (
@@ -63,7 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_outbox_topic_status ON outbox_message (topic, sta
 - Failed messages accumulate with `status = 'FAILED'` — no silent dropping.
 - Ordering: FIFO per topic.
 
-### In-Memory Implementation (Fallback of last resort — `MESSAGING_ADAPTER=inmemory`)
+### In-Memory Implementation (Local adapter of last resort — `MESSAGING_ADAPTER=inmemory`)
 
 Use only when no database is available at all.
 
@@ -97,8 +97,8 @@ public class DbTableMessagePublisher implements MessagePublisher {
           + "VALUES (?, ?, ?::jsonb, ?, ?, ?, 'PENDING', NOW())",
             UUID.randomUUID(), topic, toJson(message),
             message.getIdempotencyKey(), message.getTraceId(), message.getCorrelationId());
-        log.debug("[kafka-fallback:db] published topic={} key={}", topic, message.getIdempotencyKey());
-        fallbackActiveGauge.labels("kafka").set(1);
+        log.debug("[messaging-local-adapter:db] published topic={} key={}", topic, message.getIdempotencyKey());
+        localAdapterActiveGauge.labels("kafka").set(1);
     }
 }
 
@@ -117,7 +117,7 @@ public class DbTableMessageSubscriber implements MessageSubscriber {
                 jdbc.update("UPDATE outbox_message SET status='PROCESSED', processed_at=NOW() WHERE id=?", row.id());
             } catch (Exception e) {
                 jdbc.update("UPDATE outbox_message SET status='FAILED', retry_count=retry_count+1 WHERE id=?", row.id());
-                log.warn("[kafka-fallback:db] handler failed for id={}", row.id(), e);
+                log.warn("[messaging-local-adapter:db] handler failed for id={}", row.id(), e);
             }
         }
     }
@@ -135,7 +135,7 @@ public class InMemoryMessagePublisher implements MessagePublisher {
     @Override
     public void publish(String topic, Message message, PublishOptions options) {
         topics.computeIfAbsent(topic, k -> new ConcurrentLinkedQueue<>()).add(message);
-        log.debug("[kafka-fallback:inmemory] published topic={} key={}", topic, message.getIdempotencyKey());
+        log.debug("[messaging-local-adapter:inmemory] published topic={} key={}", topic, message.getIdempotencyKey());
     }
 }
 ```
@@ -165,7 +165,7 @@ class DbTableMessagePublisher:
             }
         )
         await self._db.commit()
-        logger.warning("fallback.active", fallback="kafka", mode="db", topic=topic)
+        logger.warning("local_adapter.active", adapter="messaging", mode="db", topic=topic)
 
 
 class DbTableMessageSubscriber:
@@ -185,7 +185,7 @@ class DbTableMessageSubscriber:
                 await self._db.execute(
                     text("UPDATE outbox_message SET status='FAILED', retry_count=retry_count+1 WHERE id=:id"),
                     {"id": row.id})
-                logger.warning("kafka_fallback_handler_failed", id=row.id, error=str(e))
+                logger.warning("messaging_local_adapter_handler_failed", id=row.id, error=str(e))
             await self._db.commit()
 ```
 
@@ -198,12 +198,12 @@ class InMemoryMessagePublisher:
 
     async def publish(self, topic: str, message: Message, options=None) -> None:
         self._topics[topic].append(message)
-        logger.debug("[kafka-fallback:inmemory] published", topic=topic, key=message.idempotency_key)
+        logger.debug("[messaging-local-adapter:inmemory] published", topic=topic, key=message.idempotency_key)
 ```
 
 ## Limitations
 
-| Feature | Production Kafka | DB table fallback | In-memory fallback |
+| Feature | Production Kafka | DB table local adapter | In-memory local adapter |
 |---------|-----------------|-------------------|--------------------|
 | Durability | Replicated, persistent | Yes — in DB rows | None — lost on restart |
 | Inspectable | Kafka UI / consumer lag | Yes — `SELECT * FROM outbox_message` | No |
@@ -234,12 +234,12 @@ class InMemoryMessagePublisher:
 ## LLM Instructions
 
 - When an approved implementation plan includes a messaging local adapter, generate the **DB table implementation** (`MESSAGING_ADAPTER=db`) as the primary option.
-- Also generate the in-memory implementation as a secondary option for no-infra CI.
+- Add the in-memory implementation only when the approved plan explicitly needs a no-database local/CI path.
 - Auto-create the `outbox_message` table on startup when `MESSAGING_ADAPTER=db` is active (use Flyway migration or `CREATE TABLE IF NOT EXISTS` on bean init).
 - Wire via `@ConditionalOnProperty(name="adapters.messaging", havingValue="db")` (Spring) or `settings.messaging_adapter is MessagingAdapter.DB` (Python).
 - Always add startup validation that fails if a local-only messaging value is selected in production.
-- Emit `fallbackActiveGauge.labels("kafka").set(1)` and a structured `logger.warning` on every publish when fallback is active.
-- Remind the user that neither fallback tests consumer group rebalancing or partition assignment.
+- Emit a structured warning once at startup when the local adapter is active. When the project exposes application metrics, expose an adapter-active gauge/counter as well; do not emit activation warnings on every publish.
+- Remind the user that neither local adapter reproduces consumer-group rebalancing or partition assignment.
 
 ## Review Checklist
 
@@ -249,5 +249,5 @@ class InMemoryMessagePublisher:
 - [ ] Implements `MessagePublisher` and `MessageSubscriber` interfaces.
 - [ ] Messages include `idempotencyKey`, `traceId`, `correlationId`.
 - [ ] Failed messages set `status='FAILED'` — not silently dropped.
-- [ ] Local-adapter active metric and structured warning emitted on every publish in local-adapter mode.
+- [ ] Structured activation warning is emitted at startup; an adapter-active metric is exposed when the project has application metrics.
 - [ ] Limitations documented and understood by team.

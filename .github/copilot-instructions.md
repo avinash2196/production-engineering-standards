@@ -1,4 +1,4 @@
-# Enterprise AI Engineering — Copilot Instructions
+# Production Engineering Standards — Copilot Instructions
 
 Use these instructions when planning, implementing, testing, reviewing, or refactoring code in this repository.
 

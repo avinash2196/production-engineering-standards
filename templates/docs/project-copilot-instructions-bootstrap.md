@@ -10,7 +10,7 @@
 
 # Project Engineering Instructions
 
-This project uses the enterprise-ai-engineering repository as a source of engineering guidance, reusable review workflows, and executable checks.
+This project uses the production-engineering-standards repository as a source of engineering guidance, reusable review workflows, and executable checks.
 
 Copilot instructions guide generation and review. They do not make compliance deterministic. Tests, static analysis, startup guards, and CI enforce the rules that can be checked automatically; architecture and design decisions still require human review.
 

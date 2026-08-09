@@ -21,10 +21,10 @@ All DTOs, event names, and database column names must use these terms exactly.
 | **[TermName]** | [One sentence definition. What it is, not how it's implemented.] | [Team] | [e.g. `POST /orders` request body, `OrderCreatedEvent`] |
 | **[TermName]** | [Definition] | [Team] | [API / event / DB column] |
 
-## Fallback-specific Terms
+## Local-Adapter and Degradation Terms
 
 <!--
-  Document terms that change meaning or have special handling in fallback mode.
+  Document terms that change meaning or have special handling in local-adapter or degraded-production mode.
   Example: "AuditEvent stored locally as a JSON file row during MESSAGING_ADAPTER=db mode."
 -->
 

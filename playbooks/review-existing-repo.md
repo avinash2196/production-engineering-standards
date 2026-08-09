@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Comprehensive assessment of an existing repository against enterprise-ai-engineering standards, producing a prioritized remediation roadmap.
+Comprehensive assessment of an existing repository against Production Engineering Standards, producing a prioritized remediation roadmap.
 
 ## Prerequisites
 
@@ -30,11 +30,11 @@ Invoke **architecture-reviewer** agent:
 - Is the domain model meaningful or anemic?
 - Are DTOs separated from domain entities?
 
-### 3. Abstraction & Fallback Review
+### 3. Abstraction, Local Adapter & Failure-Behavior Review
 
 Check each external dependency:
 
-| Dependency | Abstracted? | Fallback? | Toggle? |
+| Dependency | Boundary justified? | Local adapter? | Production failure behavior? |
 |-----------|-------------|-----------|---------|
 | Kafka | ✅/❌ | ✅/❌ | ✅/❌ |
 | Redis | ✅/❌ | ✅/❌ | ✅/❌ |
@@ -48,7 +48,7 @@ Reference: `standards/fallback-strategy.md`, `contracts/`
 - Are all env-specific values externalized?
 - Is config precedence followed? (operator → dynamic → env → files → defaults)
 - Are secrets separate from config? (SecretProvider, not mixed into config files)
-- Are `*_ADAPTER` toggles present and disabled by default?
+- Are adapter selectors explicit where adapters exist, and are local-only values rejected in production?
 
 Reference: `standards/configuration-management.md`
 
@@ -84,7 +84,7 @@ Reference: `standards/testing/*.md`
 Invoke **distributed-systems-reviewer** agent:
 
 - Timeouts on all outbound calls?
-- Retry policies with exponential backoff?
+- Retry behavior, where present, bounded and safe for duplicate effects?
 - Idempotency in message consumers?
 - Failure modes documented for each dependency?
 
@@ -110,7 +110,7 @@ Compile findings into a prioritized roadmap:
 
 ### Phase 2: High (next sprint)
 3. [HIGH] Extract business logic from OrderController → OrderService
-4. [HIGH] Add fallback adapter for Redis with env toggle
+4. [HIGH] Define Redis failure behavior; add a local adapter only if local/CI execution justifies it
 
 ### Phase 3: Medium (next quarter)
 5. [MEDIUM] Add distributed tracing

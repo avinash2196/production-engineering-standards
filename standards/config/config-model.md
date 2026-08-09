@@ -62,7 +62,7 @@ operator overrides → dynamic-db-provider
 
 ### Guidelines
 - Only values that genuinely need runtime change should be dynamic. Don't make everything dynamic.
-- Every dynamic config key must have a fallback static default so the service starts even if the config service is unavailable.
+- For each dynamic config key, explicitly decide whether startup/runtime may use a safe static default or must fail/disable the affected capability when the dynamic source is unavailable. Do not invent a default for security- or correctness-critical values.
 - Log every dynamic config change at INFO level with old and new values.
 - Emit `<service>_config_change_events_total` metric on each change.
 
@@ -121,5 +121,5 @@ See: [config-per-env patterns](#) (documented per stack guide)
 - [ ] Every configurable value classified as static, dynamic, or secret.
 - [ ] Secrets resolved via `SecretProvider`, not `ConfigProvider`.
 - [ ] Required static config validated at startup with fail-fast.
-- [ ] Dynamic config has static fallback defaults.
+- [ ] Dynamic config source failure behavior is explicit; safe defaults exist only where justified.
 - [ ] No environment-specific branching in code — config files per environment instead.

@@ -1,7 +1,7 @@
 # Storage Abstraction
 
 Purpose
-- Define the `ObjectStorageProvider` capability and required semantics for production and fallback adapters.
+- Define the `ObjectStorageProvider` capability and required semantics for production and approved local adapters.
 
 Mandatory Rules
 - Implementations must document consistency and durability guarantees (strong, eventual, best-effort).

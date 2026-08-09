@@ -117,5 +117,5 @@ Do not mark a message processed before its required business transaction succeed
 
 - [MessagePublisher](../../../contracts/MessagePublisher.md)
 - [MessageSubscriber](../../../contracts/MessageSubscriber.md)
-- [Messaging local adapter detail](../../../standards/fallbacks/kafka-fallback.md)
+- [Messaging local adapter detail](../../../standards/local-adapters/messaging-local-adapter.md)
 - [Production dependency failure strategy](../../../standards/fallback-strategy.md)

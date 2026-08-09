@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "service-name"                    # Replace with actual service name
 version = "0.1.0"
-description = "Enterprise FastAPI microservice"
+description = "FastAPI service template aligned with Production Engineering Standards"
 authors = ["your-team <team@myorg.com>"]
 readme = "README.md"
 

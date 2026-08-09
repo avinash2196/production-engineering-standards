@@ -53,7 +53,7 @@ public class EnvSecretProvider implements SecretProvider {
 
     @Override
     public String getSecret(String name, String version) {
-        log.warn("Version parameter ignored in fallback secret provider: {}@{}", name, version);
+        log.warn("Version parameter ignored in local secret provider: {}@{}", name, version);
         return getSecret(name);
     }
 
@@ -78,7 +78,7 @@ class EnvSecretProvider:
         return value
 
     def get_secret_version(self, name: str, version: str) -> str:
-        logger.warning(f"Version parameter ignored in fallback: {name}@{version}")
+        logger.warning(f"Version parameter ignored by local adapter: {name}@{version}")
         return self.get_secret(name)
 
     def get_secret_as_bytes(self, name: str) -> bytes:
@@ -100,7 +100,7 @@ Load via:
 - **Java:** Spring dotenv plugin or `source .env.local && mvn spring-boot:run`
 - **Python:** `python-dotenv` in development, or `export $(cat .env.local | xargs)`
 
-## Security Risks of Fallback Mode
+## Security Risks of Local-Adapter Mode
 
 | Risk | Mitigation |
 |------|------------|
@@ -112,27 +112,27 @@ Load via:
 
 ## Limitations
 
-| Feature | Production Vault | Fallback |
+| Feature | Production Vault | Local adapter |
 |---------|-----------------|----------|
 | Encryption at rest | Yes | No |
 | Access audit | Yes | No |
 | Rotation | Yes (automatic) | No |
 | Versioning | Yes | No |
-| Caching/TTL | Yes (5 min) | No (direct env read) |
+| Caching/TTL | Provider/configuration dependent | No (direct env read) |
 | Least privilege | Policy-based | N/A |
 
 ## LLM Instructions
 
-- When scaffolding a secret fallback, use the env-var pattern above.
+- When scaffolding a secret local adapter, use the env-var pattern above.
 - Wire via `@ConditionalOnProperty(name = "adapters.secrets", havingValue = "env")` or Python conditional injection.
 - Always add `.env.local` to `.gitignore` in generated projects.
-- Always generate startup validation that prevents fallback in production.
+- Always generate startup validation that rejects the local adapter in production.
 - Warn the user that local-adapter mode provides no security guarantees.
 
 ## Review Checklist
 
 - [ ] Local adapter activated only by `SECRET_ADAPTER=env`.
-- [ ] Startup fails if fallback active in production.
+- [ ] Startup fails if local adapter active in production.
 - [ ] Implements full `SecretProvider` interface.
 - [ ] `.env.local` in `.gitignore`.
 - [ ] Key mapping convention documented (uppercase, underscores).

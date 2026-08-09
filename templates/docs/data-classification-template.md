@@ -7,7 +7,7 @@ Columns
 - `data_type` | `sensitivity` (Public/PII/PHI/Restricted) | `access_controls` | `storage_encryption` | `retention` | `notes`
 
 Fallback considerations
-- Note whether fallback storage or local caches may contain sensitive data and how to secure or avoid such storage in dev.
+- Note whether local-adapter storage or local caches may contain sensitive data and how to secure or avoid such storage in dev.
 
 Config & infra
 - Config keys that control retention and encryption settings; infra components responsible for storage.
