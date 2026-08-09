@@ -9,6 +9,11 @@
 
 <Approved behavior delivered by this milestone.>
 
+Only include work required to satisfy this milestone.
+
+Do not introduce files, dependencies, configuration, abstractions, tests,
+or behavior that belong to later milestones.
+
 ## Current Repository State
 
 - <Relevant existing source, tests, contracts, and configuration>
@@ -19,7 +24,18 @@
 |---|---|---|
 | `path/to/file` | Create / Update | <why required> |
 
+## Build/Test Harness Prerequisite
+
+<Not applicable, or list only the minimum build/test infrastructure that
+must exist before a meaningful RED test can execute.>
+
+This section may include build and test infrastructure only.
+
+It must not include application behavior.
+
 ## Tests First — RED
+
+A build-tool failure, malformed test, missing unrelated dependency, or invalid test setup does not count as valid RED.
 
 ### Test Files
 

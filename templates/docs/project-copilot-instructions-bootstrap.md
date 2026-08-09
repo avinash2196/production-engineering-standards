@@ -20,12 +20,17 @@ Copilot instructions guide generation and review. They do not make compliance de
 
 For any non-trivial behavior change, use this sequence:
 
-1. **Plan** — clarify scope, requirements, constraints, risks, and success criteria.
-2. **Implementation Plan** — inspect the current repository and identify exact file-level changes and tests.
-3. **Implementation** — execute only the approved implementation plan.
-4. **Test First** — add or update the smallest behavior-focused test and confirm it fails for the expected reason.
-5. **Code** — add the minimum implementation needed to make that test pass.
-6. **Refactor** — improve structure only after the tests are green, preserving behavior.
+1. **Plan** — define scope, requirements, constraints, risks, milestones,
+   and success criteria.
+2. **Human Review** — review and approve the Plan.
+3. **Implementation Plan** — inspect the current repository and define
+   exact milestone-level files, tests, and implementation changes.
+4. **Human Review** — review and approve the Implementation Plan.
+5. **RED Tests** — create the approved tests and confirm valid RED.
+6. **GREEN Code** — implement the minimum approved production behavior
+   required for GREEN.
+7. **Refactor** — improve structure only after GREEN while preserving behavior.
+8. **Final Review** — verify scope, evidence, tests, and applicable standards.
 
 Do not combine planning and production-code generation in one step. Do not silently expand scope. Record clarifying questions instead of inventing material requirements.
 
@@ -112,16 +117,24 @@ Local adapters must be explicit, observable, document reduced guarantees, and be
 
 ## Reusable Prompt Workflow
 
-When the prompt files are installed, use them in this order:
+## Reusable Prompt Workflow
+
+For explicit phase-by-phase execution:
 
 1. `/create-plan`
-2. review and approve the plan
+2. review and approve the Plan
 3. `/create-implementation-plan`
-4. review and approve the implementation plan
-5. `/implement-approved-plan`
-6. `/generate-tests` for a focused red test when needed
-7. implement the smallest green change
-8. `/refactor-code` only after tests pass
-9. `/review-code` before merge
+4. review and approve the Implementation Plan
+5. `/generate-tests` — establish RED only
+6. implement the smallest approved GREEN change
+7. `/refactor-code` — only after GREEN
+8. `/review-code` or the applicable final review
+
+`/implement-approved-plan` is an optional orchestrated workflow that
+executes RED → GREEN → REFACTOR sequentially from an already approved
+Implementation Plan.
+
+Use the phase-by-phase workflow when independent RED/GREEN evidence or
+human inspection between phases is important.
 
 Copy prompt files from `{STANDARDS_REPO}/.github/prompts/` into the target repository only after validating their relative references and supported tool names.

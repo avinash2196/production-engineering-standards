@@ -81,21 +81,42 @@ Run `/implement-approved-plan`.
 
 Update the Implementation Plan with evidence and changed files.
 
-## 5. Recommended Milestone Order
+## 5. Example Milestone Decomposition
 
-A service may use this sequence when appropriate:
+Milestones describe delivery outcomes or capabilities.
 
-1. requirements and API/event contract
-2. project skeleton and typed configuration
-3. transport/contract tests and minimal transport implementation
-4. domain/application tests and minimal business implementation
-5. persistence tests and implementation
-6. external adapter contract tests and implementation
-7. security and authorization
-8. observability and operational behavior
-9. production readiness and final review
+RED, GREEN, and Refactor describe how each implementation milestone is
+executed and must not be modeled as delivery milestones themselves.
 
-Do not combine all milestones into one unreviewable implementation.
+A service may use capability-oriented milestones such as:
+
+1. Project or service baseline
+2. API or event contract and validation
+3. Core application or domain behavior
+4. Persistence and consistency
+5. External integrations and adapters
+6. Security and authorization, when required
+7. Observability and operational behavior
+8. Production readiness and final verification
+
+This sequence is guidance, not a required structure.
+
+Each implementation milestone follows:
+
+Implementation Plan
+→ Human Review
+→ RED Tests
+→ GREEN Implementation
+→ Refactor
+→ Final Review
+
+Keep milestones small and independently reviewable.
+
+Introduce configuration, dependencies, abstractions, and infrastructure
+only when required by the current milestone.
+
+Do not pull work from a later milestone into an earlier milestone merely
+to prepare for future implementation.
 
 ## 6. Adapter Decisions
 

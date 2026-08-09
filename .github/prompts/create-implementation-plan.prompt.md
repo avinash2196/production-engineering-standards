@@ -27,16 +27,19 @@ Use the [Implementation Plan Template](../../templates/docs/implementation-plan-
 
 1. Verify the requested milestone exists in `docs/.ai/Plan.md` and is approved.
 2. Review the current source, tests, contracts, configuration, and prior milestone output.
-3. Identify the exact files that require changes.
-4. Define tests before production code:
+3. Establish the exact boundary of the requested milestone.
+4. Exclude files, dependencies, configuration, abstractions, tests, and
+   behavior that are needed only by later milestones.
+5. Identify the exact files that require changes.
+6. Define tests before production code:
    - positive behavior
    - negative behavior
    - boundary behavior only where required for correctness
    - focused test command
    - expected RED failure and why it proves missing behavior
-5. Define the smallest production-code changes required for GREEN.
-6. Define permitted refactoring after GREEN.
-7. State out-of-scope items and success criteria.
+7. Define the smallest production-code changes required for GREEN.
+8. Define permitted refactoring after GREEN.
+9. State out-of-scope items and success criteria.
 
 ## Required Technical Decisions
 
@@ -55,6 +58,7 @@ When applicable, document:
 - Do not create or modify test code.
 - Do not introduce placeholder interfaces or fake dependencies when real project components exist.
 - Do not include behavior outside the approved Plan milestone.
+- Do not prepare for later milestones by introducing their dependencies,  configuration, abstractions, adapters, or tests early.
 - Do not mark the Implementation Plan approved on behalf of the human reviewer.
 
 ## Output Format

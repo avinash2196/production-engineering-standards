@@ -42,7 +42,19 @@ Create:
 docs/.ai/Plan.md
 ```
 
-The Plan defines **what** will be delivered and in what milestones. It must include:
+The Plan defines **what** will be delivered and in what milestones.
+
+Milestones describe delivery outcomes. RED, GREEN, and Refactor describe the execution lifecycle within each implementation milestone and must not
+be modeled as delivery milestones themselves.
+
+Milestones should be small and independently reviewable.
+
+A milestone contains only the behavior or foundation required for its stated outcome.
+
+Do not pull configuration, dependencies, abstractions, infrastructure, or behavior from a later milestone into an earlier milestone merely
+because later work will need it.
+
+It must include:
 
 - objective and scope
 - current-state summary
@@ -66,7 +78,18 @@ Create a milestone-specific file:
 docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
-The Implementation Plan defines **how** the approved milestone will be delivered. It must include:
+The Implementation Plan defines **how** the approved milestone will be delivered.
+
+The Implementation Plan must remain within the boundary of the requested
+milestone.
+
+Include only files, tests, dependencies, configuration, and production
+changes required to satisfy that milestone.
+
+Do not prepare for later milestones by introducing their dependencies,
+configuration, abstractions, adapters, or behavior early.
+
+It must include:
 
 - approved Plan milestone being implemented
 - current repository state
@@ -84,6 +107,29 @@ The implementation plan must target real existing interfaces and components. It 
 ### Gate 2 — Human Review
 
 Do not edit production source until the Implementation Plan is reviewed and approved.
+
+### Bootstrap Exception for a New Project
+
+When a repository does not yet have an executable build and test harness,
+the minimum infrastructure required to execute a meaningful test may be
+created before RED.
+
+Examples include:
+
+- build descriptor such as `pom.xml` or `build.gradle`
+- minimum compiler/runtime configuration
+- test framework dependency
+- test source structure
+
+This exception is limited to build and test infrastructure.
+
+It must not implement application behavior.
+
+After the minimum test harness is executable, the normal RED → GREEN
+workflow applies.
+
+A failure caused only by a missing or broken build harness does not count
+as valid RED.
 
 ## Phase 3 — RED: Write Tests First
 
@@ -171,6 +217,8 @@ Do not retain private chain-of-thought. Preserve decisions, evidence, and outcom
 - [ ] Refactoring occurred only after GREEN
 - [ ] Full relevant test and validation suite passes
 - [ ] No unapproved requirements or unrelated changes were added
+- [ ] Each milestone contains only work required for its stated outcome
+- [ ] Bootstrap infrastructure, when required, was limited to the minimum test-execution harness
 
 ## References
 

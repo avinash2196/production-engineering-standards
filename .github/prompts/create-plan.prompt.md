@@ -29,6 +29,9 @@ Use the [Plan Template](../../templates/docs/plan-template.md) and follow the [P
 2. Review the current repository state, relevant contracts, tests, configuration, and standards.
 3. If a material requirement is unclear, ask numbered clarification questions only and do not create the Plan.
 4. Otherwise create a practical milestone-based Plan.
+5. Keep milestones small and independently reviewable.
+6. Describe milestones as delivery outcomes, not RED/GREEN execution phases.
+7. Do not pull later-milestone work into an earlier milestone merely to prepare for future implementation.
 
 ## Plan Content
 

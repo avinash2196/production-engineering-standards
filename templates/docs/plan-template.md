@@ -30,8 +30,17 @@
 
 ## Milestones
 
-1. <Milestone and expected outcome>
-2. <Milestone and expected outcome>
+Milestones describe delivery outcomes, not RED/GREEN execution phases.
+
+Keep milestones small and independently reviewable. Do not pull later
+behavior, dependencies, configuration, or abstractions into an earlier
+milestone only to prepare for future work.
+
+1. **<Milestone name>**
+    - Outcome: <observable outcome required from this milestone only>
+
+2. **<Milestone name>**
+    - Outcome: <observable outcome required from this milestone only>
 
 ## Dependencies and Risks
 
