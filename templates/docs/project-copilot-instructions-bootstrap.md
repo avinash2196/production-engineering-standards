@@ -70,7 +70,7 @@ Use an abstraction when it creates a stable testing, portability, or policy boun
 | `CacheProvider` | Caching |
 | `ObjectStorageProvider` | Object storage |
 | `SecretProvider` | Managed secret access |
-| `ConfigProvider` | Typed runtime configuration |
+| `ConfigProvider` | Optional provider boundary when multiple/dynamic configuration sources justify it |
 
 Do not introduce an interface solely to wrap a single call without a real boundary or expected variation.
 
@@ -91,7 +91,7 @@ Local adapters must be explicit, observable, document reduced guarantees, and be
 ## Engineering Rules
 
 1. Keep business decisions independent of transport and vendor SDK details.
-2. Store secrets through an approved secret provider; do not hardcode credentials.
+2. Handle secrets through the approved platform mechanism; introduce a `SecretProvider` abstraction only when it creates a real boundary. Never hardcode credentials.
 3. Define a timeout and explicit failure behavior for remote calls.
 4. Add logs, health checks, metrics, and traces according to the service's support model and critical paths.
 5. Review collection access for N+1 behavior and select joins, batching, entity graphs, or purpose-built queries based on cardinality and pagination.

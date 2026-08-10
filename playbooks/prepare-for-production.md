@@ -1,118 +1,176 @@
-# Workflow: Prepare for Production
+# Playbook: Prepare a Service for Production
 
-## Purpose
+## Goal
 
-Step-by-step procedure for validating a service is production-ready, covering configuration, observability, resilience, security, testing, deployment, and compliance.
+Prepare an already planned and implemented service for its actual production environment without turning a generic enterprise checklist into invented architecture.
 
-## Prerequisites
+This playbook reviews every production-readiness area for applicability. It does **not** require every possible mechanism for every service.
 
-- Service is functionally complete (all required endpoints implemented)
-- Service has a repeatable local/test execution path
-- Basic test suite exists
+## Preconditions
 
-## Steps
+Before using this playbook:
 
-### 1. Run Production Readiness Review
+- the service behavior is represented in an approved Plan;
+- completed behavior-changing work has valid RED/GREEN evidence under the PDD workflow;
+- the target environment and operating expectations are known enough to review, or unresolved items will be marked `NEEDS VERIFICATION`;
+- no local-only adapter is being treated as automatic production fallback behavior.
 
-Invoke **production-readiness-reviewer** agent. This produces a checklist assessment across all areas. Address all CRITICAL findings before proceeding.
+## Step 1 — Establish Production Context
 
-### 2. Configuration Hardening
+Read:
 
-- [ ] All environment-specific values externalized (no hardcoded hosts, ports, credentials)
-- [ ] Secrets resolved via `SecretProvider` (not env vars in production)
-- [ ] `*_ADAPTER` selectors use approved production values, and startup validation rejects all local-only values
-- [ ] Config precedence verified: operator overrides → dynamic config → env → build defaults
-- [ ] Sensitive config keys cannot be overridden by low-privilege config sources
+- approved requirements and `docs/.ai/Plan.md`;
+- current service code/configuration;
+- target runtime/deployment documentation;
+- explicit NFRs/SLOs when they exist;
+- explicit data classification/compliance requirements when they exist.
 
-Reference: `standards/configuration-management.md`
+Do not infer missing compliance, SLO, cloud, Kubernetes, security, or dependency requirements from the words "enterprise" or "healthcare".
 
-### 3. Observability Validation
+If a missing fact materially prevents safe readiness planning, ask the user or record it as `NEEDS VERIFICATION` according to the task.
 
-- [ ] Structured JSON logging confirmed in production log output
-- [ ] Correlation ID present in all request-scoped logs
-- [ ] Four golden signal metrics exposed on `/metrics` endpoint
-- [ ] Metric names follow `<service>_<subsystem>_<signal>_<unit>` convention
-- [ ] Distributed tracing active with W3C context propagation
-- [ ] Health endpoint reports adapter connectivity status
-- [ ] Readiness and liveness probes configured for orchestrator
+## Step 2 — Classify Each Readiness Area
 
-**Validate:** send a test request and confirm log line includes `traceId`, `spanId`, `correlationId`. Confirm metrics increment.
+For each area use:
 
-Reference: `standards/observability.md`, `standards/observability/*.md`
+- `PASS`
+- `FAIL`
+- `NOT APPLICABLE`
+- `NEEDS VERIFICATION`
 
-### 4. Resilience Hardening
+Every `NOT APPLICABLE` must include a reason.
 
-- [ ] Timeouts configured on all outbound calls (HTTP, DB, cache, messaging)
-- [ ] Retry policies, where used, are bounded and safe for duplicate effects; deterministic failures and overload signals are excluded/handled appropriately
-- [ ] Deterministic/non-retryable failures are excluded from retry according to dependency semantics
-- [ ] Circuit breaking, bulkheads, concurrency limits, durable queueing, or fail-fast behavior is applied where justified by the dependency/failure model
-- [ ] Graceful shutdown: drain in-flight requests, flush metrics, close connections
-- [ ] Failed-message handling is explicit for message flows where retry/loss semantics require it
+Review:
 
-**Validate:** simulate representative dependency failures and confirm the approved timeout, retry/degradation, observability, and recovery behavior.
+1. Build/release
+2. Configuration/secrets
+3. Security/privacy
+4. Observability/operations
+5. Dependencies/resilience/failure behavior
+6. Data/persistence
+7. Capacity/performance
+8. Deployment target
+9. Testing/verification
+10. Operational ownership
 
-Reference: `standards/resiliency.md`
+Use `standards/production-readiness.md` as the canonical detail.
 
-### 5. Security Hardening
+## Step 3 — Configuration and Secrets
 
-- [ ] No secrets in source code, config files, Docker images, or logs
-- [ ] TLS on all external endpoints
-- [ ] Input validation at controller boundary (reject malformed requests early)
-- [ ] Authentication and authorization enforced on all non-health endpoints
-- [ ] Dependencies scanned for known CVEs (`OWASP dependency-check`, `pip-audit`, `npm audit`)
-- [ ] Response headers include security headers (no sensitive info leakage)
+Check applicable evidence:
 
-Reference: `standards/security-basics.md`, `standards/security/*.md`
+- required config is explicit/validated;
+- source precedence is deterministic when multiple sources exist;
+- local-only selections are rejected in production where applicable;
+- secrets use an approved mechanism and are not committed/logged;
+- invalid required config fails safely.
 
-### 6. Testing Validation
+Do not add dynamic configuration or a secret-manager product unless the approved design requires it.
 
-- [ ] Unit tests pass — all service and domain logic covered
-- [ ] Integration tests pass — adapter contracts validated
-- [ ] No tests depend on external shared services
-- [ ] Test execution time fits the project's CI/developer feedback budget; slower suites are intentionally separated where needed
-- [ ] Edge cases and failure paths tested
+## Step 4 — Security and Data Protection
 
-Reference: `standards/testing/*.md`
+Check actual trust boundaries and data classification:
 
-### 7. Deployment Artifact Validation
+- validate untrusted input;
+- authenticate protected resources;
+- authorize differing access where required;
+- enforce least privilege;
+- protect sensitive traffic/data at approved boundaries;
+- prevent secret/sensitive-data leakage;
+- verify adopted security/compliance controls.
 
-- [ ] Dockerfile uses multi-stage build (no build tools in runtime image)
-- [ ] Container runs as non-root user
-- [ ] Resource limits defined (CPU, memory)
-- [ ] Container image scanned for vulnerabilities
-- [ ] `.env.example` documents all required environment variables
-- [ ] Rollback strategy documented and tested
+Do not automatically choose JWT, mTLS, RBAC, ABAC, OAuth provider, or HIPAA/PHI controls.
 
-### 8. Compliance Validation (if HIPAA-aware)
+## Step 5 — Observability
 
-Invoke **hipaa-reviewer** agent. Verify:
+Confirm operators have enough evidence to detect/diagnose meaningful failures.
 
-- [ ] PHI inventory complete and documented
-- [ ] Approved at-rest safeguards for PHI/ePHI are implemented according to the applicable risk/security decision
-- [ ] PHI/ePHI transmission uses the organization-approved secure transport configuration
-- [ ] Audit logging on all PHI access operations
-- [ ] Minimum necessary principle in API responses
-- [ ] No PHI in standard logs or error messages
+Select only justified mechanisms:
 
-Reference: `standards/compliance/hipaa-controls.md`
+- structured/searchable logs;
+- safe correlation identifiers;
+- metrics tied to actual workload/failure/SLO needs;
+- distributed tracing for meaningful cross-service diagnosis;
+- health/readiness semantics required by the runtime;
+- actionable alerts with ownership.
 
-### 9. Load Test (if applicable)
+Do not require OpenTelemetry, Prometheus, every golden signal, or separate `/live`/`/ready` endpoints by convention.
 
-- Baseline performance under expected load
-- Verify no resource leaks (memory, connections, threads)
-- Confirm metrics/alerting detect degradation
+## Step 6 — Dependency and Failure Behavior
 
-### 10. Go/No-Go Checklist
+For important dependencies confirm applicable:
 
-| Area | Status | Blocking? |
-|------|--------|-----------|
-| Configuration | ✅/❌ | Yes |
-| Observability | ✅/❌ | Yes |
-| Resilience | ✅/❌ | Yes |
-| Security | ✅/❌ | Yes |
-| Testing | ✅/❌ | Yes |
-| Deployment | ✅/❌ | Yes |
-| Compliance | ✅/❌/N/A | Yes (if HIPAA) |
-| Load test | ✅/❌/N/A | No (but recommended) |
+- timeout behavior;
+- bounded/safe retry where used;
+- idempotency/duplicate handling;
+- ordering/concurrency behavior;
+- queue/DLQ/reconciliation behavior when messaging exists;
+- explicit degradation/fail-fast/fail-closed behavior where required;
+- graceful shutdown/drain behavior.
 
-**Verdict:** READY / NOT READY (list blocking items)
+Do not invent circuit breakers, queues, stale serving, or fallback merely to make the service look resilient.
+
+## Step 7 — Deployment and Recovery
+
+Review only the selected target:
+
+- container hardening if containers are used;
+- probes/resources/autoscaling if the platform uses them;
+- rollout/rollback behavior;
+- migration behavior for schema changes;
+- backup/restore/recovery for stateful components when required;
+- infrastructure/configuration needed by the actual target.
+
+Docker Compose is local-development tooling, not a universal production-readiness requirement.
+
+## Step 8 — Create Remediation Milestones
+
+A readiness review does not authorize implementation by itself.
+
+For every blocking change:
+
+1. trace it to an approved requirement/standard and concrete risk;
+2. update the Plan if new repository-changing scope is needed;
+3. for behavior-changing work create separate RED and GREEN milestones;
+4. create a phase-specific Implementation Plan for the current milestone;
+5. obtain human review;
+6. execute only the approved phase and stop.
+
+Use a separate REFACTOR milestone only when justified.
+
+## Step 9 — Re-Review
+
+After remediation, run the production-readiness review again and record:
+
+- remaining blockers;
+- non-blocking improvements;
+- `NOT APPLICABLE` rationale;
+- `NEEDS VERIFICATION` evidence still required.
+
+Do not declare `READY` while a fact essential to safe deployment remains unresolved.
+
+## Example Output
+
+```markdown
+## Production Readiness Review: document-service
+
+### Verdict: NOT READY
+
+| Area | Status | Evidence / Gap | Required Action |
+|---|---|---|---|
+| Configuration | PASS | Typed required settings validated at startup | None |
+| Observability | NEEDS VERIFICATION | No approved operating/SLO model yet | Confirm production monitoring expectations |
+| Resilience | FAIL | Remote inference call has no bounded timeout | Plan timeout behavior and add RED/GREEN milestones |
+| Deployment | NOT APPLICABLE | Target runtime is not Kubernetes | None |
+| Security/Privacy | NEEDS VERIFICATION | Data classification not established | Resolve classification before selecting controls |
+```
+
+## Exit Criteria
+
+Preparation is complete when:
+
+- production-readiness review has no blocking `FAIL`;
+- verification required for safe deployment is resolved;
+- all remediation followed the normal PDD gates;
+- no optional mechanism was treated as mandatory without applicability evidence;
+- no production mechanism was invented from generic enterprise/healthcare terminology.

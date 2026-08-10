@@ -67,4 +67,4 @@ Each phase is separately planned and reviewed. Do not authorize adapter tests, i
 - [Run with local adapters](../../playbooks/local-dev/run-with-local-adapters.md)
 - [Local adapter strategy](../../standards/local-adapter-strategy.md)
 - [Production dependency failure strategy](../../standards/fallback-strategy.md)
-- [Python adapter tests](../../stacks/python-fastapi/project-template/tests/)
+- [Python local-adapter reference](../../stacks/python-fastapi/reference-implementations/local-adapters/)

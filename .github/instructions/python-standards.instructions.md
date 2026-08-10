@@ -1,6 +1,6 @@
 ---
 applyTo: "**/*.py"
-description: "Apply Python and FastAPI engineering guidance with typed configuration, explicit boundaries, test-first changes, and safe local-adapter selection."
+description: "Apply Python/FastAPI guidance with PDD phase gates, typed configuration, controlled dependencies, and requirement-driven security/observability."
 ---
 
 Follow the applicable guidance in [Python backend standards](../../stacks/python-fastapi/python-backend.md), [coding standards](../../standards/coding-standards.md), and the [prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md).
@@ -11,59 +11,65 @@ For non-trivial behavior changes:
 
 1. work from an approved Plan containing separate RED and GREEN milestones; add a separate REFACTOR milestone only when justified;
 2. create and obtain approval for the current phase-specific Implementation Plan;
-3. during RED, change approved tests/checks only, confirm valid RED, record evidence, and stop;
-4. create and obtain approval for the separate GREEN Implementation Plan;
-5. during GREEN, require predecessor RED evidence, implement the smallest approved Python/FastAPI behavior, run focused and relevant regression suites, and stop;
-6. refactor only through a separately approved REFACTOR milestone from a verified GREEN baseline.
+3. RED changes approved tests/checks only, confirms valid RED, records evidence, and stops;
+4. GREEN requires predecessor RED evidence, implements the smallest approved Python/FastAPI behavior, runs focused/regression checks, records evidence, and stops;
+5. Refactor only through a separately approved REFACTOR milestone from a verified GREEN baseline.
 
-Do not introduce requirements or files outside the approved current milestone, and do not advance to the next phase without its own reviewed Implementation Plan.
+Do not introduce requirements/files outside the approved current milestone and do not auto-advance between phases.
 
-## Architecture Defaults
+## Minimal Starter Rule
 
-- **API (`api/`)**: FastAPI routing, request parsing, validation, authentication context, and response mapping. Keep business decisions out of route handlers.
-- **Application (`service/` or `application/`)**: use-case orchestration and transaction boundaries.
-- **Domain (`domain/`)**: business rules and value objects when the service has meaningful invariants. Prefer framework-independent dataclasses or plain classes for domain behavior.
-- **Ports/contracts**: protocols or abstract interfaces when they protect a real external or persistence boundary.
-- **Infrastructure (`infrastructure/`)**: SQLAlchemy repositories and vendor-specific messaging, cache, storage, and secret adapters.
+A new Python service must not inherit capabilities merely because the standards repository contains examples.
 
-A small CRUD service may use a simpler structure when dependencies remain controlled and the decision is documented.
+Add persistence, messaging, caching, object storage, security SDKs, observability SDKs, Testcontainers/emulators, or local adapters only when explicit/repository-confirmed requirements and the approved current milestone require them.
+
+## Architecture
+
+- `main.py`: app composition/lifecycle.
+- `config/`: typed validated settings.
+- Add `api/`, `application/service/`, `domain/`, `repository/`, and `infrastructure/` only when the service actually needs those responsibilities/boundaries.
+- Keep business decisions out of FastAPI route handlers and vendor adapters.
+- Do not create interfaces solely to wrap one call without a real boundary.
 
 ## Python Practices
 
-- Use type annotations on public functions and important internal boundaries.
-- Prefer Pydantic v2 models for transport and configuration models; do not make every domain object a Pydantic model by default.
-- Use `async def` for handlers and operations that await asynchronous I/O. Keep CPU-only helpers synchronous unless asynchronous composition requires otherwise.
-- Use dependency injection at application boundaries; do not instantiate production vendor clients inside handlers or domain code.
-- Raise specific domain/application exceptions and map them through centralized exception handlers.
-- Avoid broad `except Exception` unless re-raising after adding useful context or handling a process boundary safely.
-- Treat function length, class size, and parameter count as review signals. Split code when mixed responsibilities, excessive nesting, or difficult testing demonstrates a concrete problem.
-- Run the configured formatter, linter, and type checker for the project. Do not claim `mypy --strict` is mandatory unless the project configuration adopts it.
+- Use Pydantic v2 for transport/configuration models; do not make every domain type Pydantic by default.
+- Use async only for asynchronous composition/I/O; never block the event loop with blocking clients.
+- Inject selected production dependencies at boundaries rather than constructing vendor clients inside handlers/domain code.
+- Raise specific domain/application exceptions and map them centrally when an HTTP API exists.
+- Use the project's configured formatter/linter/type checker.
 
-## Adapter Selection
+## Configuration
 
-Select implementations through typed settings and provider functions in `infrastructure/local/providers.py` or the project's equivalent composition root.
+- Validate risk-bearing configuration before use/startup.
+- Centralize configuration enough to avoid scattered raw environment reads.
+- Define precedence only for sources the service actually uses.
+- Do not require `ConfigProvider` or dynamic config without a justified boundary.
+- Never hardcode/log secrets.
 
-Examples:
+## Security
 
-- messaging: `kafka`, `pubsub`, `db`, or `inmemory`
-- cache: `redis`, `jsonfile`, or `inmemory`
-- storage: `s3`, `gcs`, or `local`
-- secrets: `vault`, `secretmanager`, or `env`
+- Validate untrusted input at trust boundaries.
+- Authenticate/authorize only according to approved resource/access requirements.
+- Use least privilege and prevent sensitive-data leakage.
+- Do not infer JWT/OAuth/mTLS/RBAC/ABAC/HIPAA mechanisms from generic enterprise or healthcare terminology.
 
-Local-only values must emit a warning/metric, document reduced guarantees, and be rejected when `environment=production`.
+## Observability
 
-## Security and Observability
+- Use appropriate production logging.
+- Add correlation, metrics, traces, health checks, and alerts according to actual operating/failure/SLO needs.
+- Never log secrets or sensitive payloads.
+- Do not auto-install OpenTelemetry/Prometheus/tracing libraries.
 
-- Read credentials through typed settings or an approved `SecretProvider`; never embed secrets in source.
-- Use the project's structured logger rather than `print()` for service behavior.
-- Bind stable correlation and business identifiers when useful, without logging secrets, PII, or PHI.
-- Add metrics and spans to important service/external boundaries based on operating needs rather than instrumenting every helper.
-- Define timeouts and explicit failure behavior for remote calls.
+## Local Adapters
+
+When an approved milestone selects a local adapter, use the separate reference implementation as guidance and implement only the needed capability.
+
+Local-only adapters must document reduced guarantees and be rejected in production. They are not production fallback/degradation behavior.
 
 ## Testing
 
-- Use the project's selected framework, commonly `pytest`/`pytest-asyncio` or `unittest` for dependency-free template checks.
-- Unit tests isolate business decisions through ports or fakes; they do not require a live network.
-- Integration tests use realistic dependencies such as Testcontainers, emulators, or a documented local adapter when the boundary matters.
-- Assert externally meaningful behavior, production guards, durability expectations, and error contracts.
-- Keep test refactoring separate from behavior changes unless the approved implementation plan requires both.
+- Tests for a RED milestone cover only approved behavior and fail for the expected reason.
+- GREEN implementation is minimal and satisfies predecessor RED evidence.
+- Integration tests use realistic dependencies/emulators/local adapters only where they materially improve confidence.
+- Keep behavior changes separate from refactoring.

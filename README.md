@@ -156,7 +156,7 @@ Then run the repository validator:
 python tooling/scripts/validate_repository.py
 ```
 
-Run the executable Python template checks after installing its minimal test dependencies:
+Run the canonical minimal Python starter checks after installing its minimal dependencies:
 
 ```bash
 PYTHONPATH=stacks/python-fastapi/project-template \
@@ -164,6 +164,9 @@ PYTHONPATH=stacks/python-fastapi/project-template \
   -s stacks/python-fastapi/project-template/tests \
   -p 'test_*.py'
 ```
+
+
+The Python local-adapter implementation is a separate reference under `stacks/python-fastapi/reference-implementations/local-adapters/`. Run its tests only when working on that reference and after installing its own dependencies. Passing those tests is not production-readiness evidence for managed dependencies.
 
 Windows wrapper:
 
@@ -180,7 +183,7 @@ CI runs the same sequence and currently enforces:
 - canonical PDD phase-milestone semantics (separate RED/GREEN/optional-REFACTOR milestones and phase-specific Implementation Plans)
 - absence of known placeholder implementations
 - absence of deprecated active configuration terminology
-- Python local-adapter selection and production startup guards
+- production-foundation semantic checks for minimal Python dependencies and requirement-driven observability/configuration/security/readiness
 
 Project-level enforcement such as Java architecture tests, Python import-boundary checks, secret scanning, dependency scanning, and service tests belongs in each generated or adopting project.
 

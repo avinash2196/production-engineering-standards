@@ -1,1 +1,1 @@
-# package marker
+"""Application package for the minimal FastAPI starter."""

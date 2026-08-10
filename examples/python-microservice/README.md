@@ -2,7 +2,7 @@
 
 This directory is a documentation-only reference for a Python/FastAPI service. It is **not runnable** because it contains no application source or dependency manifest.
 
-Use the executable template under `stacks/python-fastapi/project-template/` only after a plan and the current phase-specific implementation plan have defined the required behavior and files.
+Use the minimal executable starter under `stacks/python-fastapi/project-template/` only after a Plan and the current phase-specific Implementation Plan have defined the required behavior and files. Add persistence or infrastructure packages only when that milestone requires them.
 ## Intended Workflow
 
 1. Approve the service Plan with separate RED and GREEN milestones and an optional REFACTOR milestone when justified.
@@ -21,21 +21,16 @@ app/
   infrastructure/      vendor and local adapters
   config/              typed settings and composition
 ```
-## Typed Local Adapter Selection
+## Optional Local-Adapter Reference
 
-```python
-from app.config.settings import MessagingAdapter, Settings
+When an approved service design needs a local adapter, use the separate reference implementation under `stacks/python-fastapi/reference-implementations/local-adapters/` as a pattern. Do not copy every adapter into the service by default.
 
-settings = Settings(
-    environment="local",
-    messaging_adapter=MessagingAdapter.DB,
-)
-```
+Local adapters are explicitly selected development/test mechanisms with reduced guarantees; they are not production fallback/degradation behavior.
 
-The database outbox retains messages across process restarts and can be inspected with SQL. It does not reproduce Kafka partitions, consumer groups, rebalancing, or production backpressure. The in-memory option is suitable only when those lost guarantees are acceptable.
 ## References
 
 - [Python/FastAPI standards](../../stacks/python-fastapi/python-backend.md)
-- [Executable Python template](../../stacks/python-fastapi/project-template/)
+- [Minimal Python starter](../../stacks/python-fastapi/project-template/)
+- [Local-adapter reference](../../stacks/python-fastapi/reference-implementations/local-adapters/)
 - [Prompt-driven development workflow](../../standards/prompt-driven-development-workflow.md)
 - [Local adapter strategy](../../standards/local-adapter-strategy.md)

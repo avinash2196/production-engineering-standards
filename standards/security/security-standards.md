@@ -1,172 +1,200 @@
-# Security Standards
+# Security Engineering Standard
 
 ## Purpose
 
-High-level security standards that apply to every service. Covers authentication, authorization, input validation, dependency management, and least-privilege principles. These are mandatory engineering requirements, not optional best practices.
+Define mandatory security invariants for production software while keeping authentication, authorization, identity, encryption, and security products driven by approved requirements and architecture.
 
-## Mandatory Rules
+Security is mandatory. A specific security mechanism is not automatically mandatory merely because it is common in enterprise systems.
 
-### 1. Authentication
+## Core Principle
 
-Every service endpoint that serves non-public data requires authentication.
+Protect the actual trust boundaries, identities, resources, data, and dependencies established by the approved system design.
 
-| Rule | Detail |
-|------|--------|
-| Default: all endpoints authenticated | Use an allow-list for public endpoints, not a deny-list |
-| Token format | JWT (RS256 or ES256) with expiration, issuer, and audience claims |
-| Service-to-service | mTLS or signed JWT with service identity |
-| No basic auth in production | Basic auth, if allowed at all, is limited to explicitly approved local/test use and is not a production fallback |
-| Session management | Stateless JWT preferred; if stateful, server-side session store with short TTL |
+Do not invent:
 
-```java
-// Java — Spring Security default: secure everything, allow-list public paths
-@Configuration
-public class SecurityConfig {
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/health", "/ready", "/metrics").permitAll()
-            .anyRequest().authenticated()
-        );
-        return http.build();
-    }
-}
-```
+- authentication requirements for deliberately public resources;
+- an OAuth/OIDC provider;
+- JWT algorithms or token formats;
+- mTLS or workload identity;
+- RBAC, ABAC, or another authorization model;
+- HIPAA/PHI controls merely from healthcare vocabulary;
+- encryption/key-management products;
+- retention/audit requirements not established by policy or requirements.
 
-```python
-# Python — FastAPI dependency
-async def require_auth(token: str = Depends(oauth2_scheme)) -> AuthContext:
-    claims = verify_jwt(token)  # validates signature, expiry, issuer, audience
-    return AuthContext.from_claims(claims)
-```
+When a material security decision is unresolved for the current Plan, ask the user rather than selecting a common default.
 
-### 2. Authorization
+## Mandatory Invariants
 
-Authentication proves identity; authorization determines what the identity can do.
+### Trust Boundaries and Input Validation
 
-| Rule | Detail |
-|------|--------|
-| Enforce at service layer | Not just at gateway or controller |
-| RBAC or ABAC | Role-based minimum; attribute-based for fine-grained PHI access |
-| No implicit admin | Admin capabilities require explicit role assignment |
-| Resource-level checks | User can only access resources they own or are assigned to |
+Treat data crossing an external or lower-trust boundary as untrusted.
 
-```java
-// Service layer authorization check
-public OrderDto getOrder(String orderId, AuthContext auth) {
-    Order order = orderRepository.findById(orderId);
-    if (!auth.hasRole("admin") && !order.getOwnerId().equals(auth.getUserId())) {
-        throw new AccessDeniedException("Not authorized to access order: " + orderId);
-    }
-    return OrderDto.from(order);
-}
-```
+Validate applicable concerns such as:
 
-### 3. Input Validation
+- required fields and types;
+- bounds and lengths;
+- allowed values/formats;
+- path/file safety;
+- content type/size;
+- injection risk;
+- deserialization behavior;
+- business invariants at the layer that owns them.
 
-All external input is untrusted. Validate at the system boundary.
+Transport validation must not replace domain/business validation when both are needed.
 
-| Rule | Detail |
-|------|--------|
-| Validate at controller/handler | Before data reaches service or domain layer |
-| Allowlist validation | Define what's valid, reject everything else |
-| Type coercion | Use typed DTOs, not raw string maps |
-| Size limits | Max string lengths, max collection sizes, max request body |
-| No SQL/command injection | Use parameterized queries exclusively. Never concatenate user input into queries |
-| No XSS | HTML-encode output. Use framework-provided template engines |
-| Path traversal | Validate file paths. Never pass user input directly to file operations |
+### Authentication
 
-```java
-// Java — validation annotations on DTOs
-public record CreateOrderRequest(
-    @NotNull @Size(min = 1, max = 100) String customerId,
-    @NotNull @Size(min = 1, max = 50) List<@Valid OrderItem> items,
-    @Size(max = 500) String notes
-) {}
-```
+Protected resources must authenticate callers using the mechanism selected by the approved architecture.
 
-```python
-# Python — Pydantic validation
-class CreateOrderRequest(BaseModel):
-    customer_id: str = Field(min_length=1, max_length=100)
-    items: list[OrderItem] = Field(min_length=1, max_length=50)
-    notes: str | None = Field(default=None, max_length=500)
-```
+Authentication may be unnecessary for explicitly public endpoints/resources. Do not add authentication merely because an endpoint exists.
 
-### 4. Dependency Security
+When authentication is required:
 
-| Rule | Detail |
-|------|--------|
-| Automated CVE scanning | Run `dependabot`, `snyk`, or `trivy` on every build |
-| No known critical CVEs | CI fails on CRITICAL or HIGH severity vulnerabilities |
-| Minimal dependencies | Don't add libraries for trivial functionality |
-| Pinned versions | Use exact versions, not ranges, for reproducible builds |
-| License compliance | Verify license compatibility before adding a dependency |
+- validate identity at the appropriate trust boundary;
+- reject invalid/expired credentials correctly;
+- avoid exposing credential details in errors/logs;
+- do not implement custom cryptography or token verification when a supported platform/library exists.
 
-### 5. Least Privilege
+Mechanisms may include OIDC/OAuth2, platform/workload identity, sessions, signed tokens, mTLS, API gateway identity, or other approved methods. This standard does not preselect one.
 
-| Rule | Detail |
-|------|--------|
-| Service accounts | Minimum required permissions. No wildcard policies |
-| Database accounts | Service uses a restricted DB user (SELECT/INSERT/UPDATE on its own tables only) |
-| Secret access | Each service accesses only its own secrets in the vault |
-| Network | Services exposed only to their consumers (no public exposure unless required) |
-| File system | Read-only container filesystem where possible |
+### Authorization
 
-### 6. Error Handling & Information Disclosure
+Authorization is required when authenticated identities have differing permissions or resource access.
 
-| Rule | Detail |
-|------|--------|
-| Generic error responses | Return `500 Internal Server Error` without stack traces or internals |
-| No PII/PHI in errors | Error messages must not contain user data |
-| No infrastructure details | Don't expose database names, internal IPs, or library versions |
-| Structured error format | `{ "error": "ORDER_NOT_FOUND", "message": "The requested order does not exist" }` |
+Enforce authorization close enough to the protected operation that bypass is difficult.
 
-```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handle(Exception e) {
-        log.error("Unhandled exception", e); // full details in server log
-        return ResponseEntity.status(500)
-            .body(new ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred"));
-    }
-}
-```
+The authorization model must follow approved requirements. Examples include:
 
-### 7. CORS and Headers
+- role-based access;
+- attribute/policy-based access;
+- resource ownership/tenant boundaries;
+- service-to-service policy;
+- delegated scopes/claims.
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS |
-| `X-Content-Type-Options` | `nosniff` | Prevent MIME type sniffing |
-| `X-Frame-Options` | `DENY` | Prevent clickjacking |
-| `Content-Security-Policy` | Appropriate for the application | Prevent XSS |
-| CORS | Explicit origin allowlist | No wildcard `*` in production |
+Do not infer RBAC/ABAC or PHI-specific authorization without requirements establishing that model.
+
+### Least Privilege
+
+Users, services, workloads, database accounts, and automation must receive only the permissions needed for their approved responsibilities.
+
+Avoid broad wildcard permissions and shared privileged credentials unless explicitly justified and reviewed.
+
+### Secrets and Credentials
+
+Never commit secrets or credentials to source control.
+
+Production credentials must come from an approved secure mechanism. Do not log secrets or include them in diagnostic responses.
+
+Prefer short-lived or automatically rotated credentials when the approved platform supports them and the risk model justifies it.
+
+### Secure Transport
+
+Protect sensitive or authenticated traffic across untrusted or policy-defined network boundaries using the approved transport-security mechanism.
+
+TLS may terminate at the application, ingress, proxy, service mesh, gateway, load balancer, or another approved boundary. Do not force application-level TLS when the platform already provides the required protection and trust model.
+
+### Sensitive Data
+
+Handle data according to the project's approved data classification.
+
+At minimum:
+
+- collect/store only data needed for the approved function;
+- prevent sensitive values from leaking through logs, metrics, traces, errors, URLs, or debug endpoints;
+- restrict access according to least privilege;
+- use approved encryption/storage controls where the data classification requires them;
+- avoid copying production sensitive data into local/test environments without an approved protection process.
+
+Healthcare terminology does not by itself establish HIPAA applicability or that every health-related value is PHI. Apply HIPAA/PHI-specific controls only when project requirements, legal/compliance classification, or approved policy establishes them.
+
+### Error Handling
+
+External errors must not expose:
+
+- stack traces;
+- secrets;
+- internal credentials;
+- raw SQL;
+- sensitive internal topology;
+- sensitive payloads;
+- authorization internals that meaningfully increase attackability.
+
+Preserve enough internal diagnostic context through secure logs/telemetry without leaking it to untrusted callers.
+
+### Data Access and Injection
+
+Use parameterized database access and supported ORM/query APIs appropriately. Never compose untrusted values into executable SQL/shell/command/template contexts without safe binding or strict validation.
+
+### Dependency and Supply-Chain Security
+
+Production delivery should include dependency/source/image/security scanning appropriate to the adopting project and release environment.
+
+Do not claim one scanner or remediation SLA as universal unless the organization has adopted it.
+
+Material vulnerabilities must be assessed according to exploitability, exposure, data sensitivity, and approved risk policy.
+
+### Security-Relevant Logging and Audit
+
+Record security-relevant events when the approved threat/risk/compliance model requires them, while avoiding sensitive payload leakage.
+
+Do not invent audit-retention durations or immutable-audit infrastructure unless requirements/policy establish them.
+
+## Mechanism Selection
+
+The following are design choices, not universal defaults:
+
+- JWT vs sessions vs opaque tokens;
+- RS256/ES256 vs platform-managed token verification;
+- mTLS vs workload identity vs gateway identity;
+- RBAC vs ABAC vs ownership/policy models;
+- secret-manager vendor;
+- KMS/key-management vendor;
+- WAF/API gateway/service mesh;
+- encryption-at-rest implementation;
+- authentication middleware/framework.
+
+Select them in the Plan/Implementation Plan from explicit requirements and repository-confirmed platform constraints.
+
+## Local Development
+
+Local development may use reduced-risk credentials/adapters when explicitly supported, but local mechanisms must never become an automatic production fallback.
+
+Local configuration must not contain real production credentials or sensitive datasets.
+
+## PDD Integration
+
+Security is considered during requirements analysis and planning, but mechanisms are introduced only when sufficiently specified.
+
+Examples:
+
+- If a requirement says a resource is public, do not add authentication by convention.
+- If a requirement says authenticated users have roles, authorization planning must resolve the role/resource behavior before implementation.
+- If regulated data handling is explicitly established, planning must load the applicable compliance/privacy standards before code changes.
+
+For behavior-changing security work, use separate RED and GREEN milestones. RED defines focused tests/checks for the approved security behavior; GREEN adds only the minimum implementation required. Refactor remains separate when justified.
+
+## Review Questions
+
+1. What are the trust boundaries?
+2. Which resources are public versus protected?
+3. How are callers identified, if identification is required?
+4. What authorization decisions exist?
+5. What data classification applies?
+6. Which network/storage boundaries require encryption/protection?
+7. What secrets/credentials exist and how are they provided?
+8. What failure behavior prevents leakage or privilege escalation?
+9. What security evidence is required for production release?
+
+If an answer materially affects the current Plan and cannot be derived from explicit/repository-confirmed evidence, ask the user.
 
 ## Anti-Patterns
 
-- **Security by obscurity:** never rely on hidden endpoints or secret URL paths.
-- **Client-side-only validation:** always validate on the server. Client validation is UX, not security.
-- **Shared credentials across services:** each service gets its own identity and secrets.
-- **Catch-all CORS policy (`*`):** use explicit origin allowlist in production.
-- **Logging sensitive data for debugging:** use correlation IDs instead.
-
-## LLM Instructions
-
-- When generating any endpoint, add authentication by default. Ask the user if it should be public.
-- Generate input validation on all DTOs/request models.
-- Use parameterized queries exclusively. Never generate string concatenation for SQL.
-- Add security headers to HTTP response configuration.
-- Generate Global exception handler that returns generic errors.
-
-## Review Checklist
-
-- [ ] All endpoints authenticated (public endpoints explicitly allow-listed).
-- [ ] Authorization enforced at service layer.
-- [ ] Input validation on all external inputs with size limits.
-- [ ] Parameterized queries only (no SQL concatenation).
-- [ ] Generic error responses (no stack traces, no internal details).
-- [ ] Security headers configured.
-- [ ] Dependency CVE scanning in CI.
-- [ ] Least privilege for service accounts, DB users, and secret access.
+- Adding authentication to every endpoint by default.
+- Selecting OAuth2/OIDC/JWT/mTLS because the service is called "enterprise".
+- Treating RBAC or ABAC as universally required.
+- Treating healthcare vocabulary as proof of HIPAA/PHI applicability.
+- Logging request/response bodies containing sensitive data for troubleshooting.
+- Hardcoding secrets or placing real credentials in example files.
+- Writing custom cryptography when supported audited libraries/platform mechanisms exist.
+- Granting broad service-account/database permissions for convenience.
+- Declaring security complete because a framework security dependency was added.
