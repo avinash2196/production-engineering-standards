@@ -3,8 +3,6 @@ from typing import AsyncIterator
 
 import structlog
 from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.router import router
 from app.config.settings import get_settings
@@ -38,8 +36,9 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     app.include_router(router)
-    FastAPIInstrumentor.instrument_app(app)
-    Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+
+    # Add metrics and distributed tracing only when the approved service design
+    # requires them and the selected production runtime supports the mechanism.
     return app
 
 

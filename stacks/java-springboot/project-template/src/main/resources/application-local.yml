@@ -1,36 +1,11 @@
 # Local development profile — activate with: --spring.profiles.active=local
-# Selects explicit local adapters and local-only security endpoints.
-# Do NOT commit real credentials here.
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/service_db
-    username: postgres
-    password: postgres
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop   # Reset schema on restart in local dev
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8180/realms/local
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0   # Full sampling in local
+#
+# This base profile deliberately defines no database, broker, cache, storage,
+# security, or local-adapter defaults. Add only the local configuration selected
+# by the approved Implementation Plan for the service being built.
+#
+# Do not commit real credentials.
 
 logging:
   level:
-    com.myorg: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-
-adapters:
-  messaging: db
-  cache: jsonfile
-  storage: local
-  secrets: env
+    root: INFO

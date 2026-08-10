@@ -64,7 +64,7 @@ When a user explicitly requests an end-to-end repository update and provides all
 
 ## Execution Rules
 
-- **Read before writing.** Read every existing file before modifying it.
+- **Read before writing.** Read every existing file you intend to modify, plus enough adjacent source, tests, contracts, configuration, and call-path context to understand the change.
 - **Scope-lock.** Update both planning artifacts before expanding scope.
 - **Tests first.** Test files or executable checks are changed before production implementation.
 - **Prove RED.** The failure must be caused by missing behavior, not invalid setup.

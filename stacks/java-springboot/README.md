@@ -1,6 +1,6 @@
 # Java Spring Boot Stack
 
-Guidance, a configuration/build skeleton, and integration notes for Java 21 and Spring Boot 3.x services.
+Guidance, a minimal configuration/build skeleton, and integration notes for Java 21 and Spring Boot 3.x services.
 
 ## Delivery Workflow
 
@@ -9,11 +9,13 @@ Use the template only after approving:
 1. a Plan defining scope, milestones, risks, and success criteria;
 2. an Implementation Plan defining exact files, tests, code approach, and exclusions.
 
-Then add the first failing test, implement the minimum code for green, and refactor separately.
+Then add the first failing test, implement the minimum code for GREEN, and refactor separately.
 
 ## Base Template Status
 
-`project-template/` contains a Maven descriptor and configuration examples. It is **not a complete runnable service** because application source and selected adapters must come from the approved implementation plan.
+`project-template/` contains only the minimum Spring Boot build/configuration foundation. It is not a complete runnable service. Application source plus database, messaging, cache, storage, security, observability, vendor, and local-adapter dependencies must be added only when selected by the approved Implementation Plan.
+
+For an event-only service, do not add the web stack merely because it appears in another example. For a simple REST service, do not add Kafka, Redis, object storage, or managed-secret SDKs unless the service actually uses them.
 
 ## Suggested Structure
 
@@ -35,25 +37,21 @@ A straightforward CRUD service may use fewer packages when dependency direction 
 
 ## Adapter Configuration
 
+Define selectors only for capabilities the service actually uses. For example, a service that publishes messages may define:
+
 ```yaml
 adapters:
   messaging: ${MESSAGING_ADAPTER:kafka}
-  cache: ${CACHE_ADAPTER:redis}
-  storage: ${STORAGE_ADAPTER:s3}
-  secrets: ${SECRET_ADAPTER:vault}
 ```
 
-A local profile may deliberately select:
+A local profile may deliberately select a local implementation for that same capability:
 
 ```yaml
 adapters:
   messaging: db
-  cache: jsonfile
-  storage: local
-  secrets: env
 ```
 
-Local-only selections must emit activation telemetry, document reduced guarantees, and fail startup in production. A database-backed queue/outbox and inspectable file cache are preferred over in-memory substitutes when restart behavior matters.
+Add cache, storage, or secret selectors only when those capabilities are part of the approved design. Local-only selections must emit activation telemetry, document reduced guarantees, and fail startup in production. A database-backed queue/outbox and inspectable file cache are preferred over in-memory substitutes when restart behavior matters.
 
 ## Guides
 

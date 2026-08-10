@@ -12,7 +12,6 @@ MODULE_PATH = (
     / "scripts"
     / "validate_repository.py"
 )
-
 spec = importlib.util.spec_from_file_location("validate_repository", MODULE_PATH)
 if spec is None or spec.loader is None:
     raise RuntimeError(f"Unable to load validator module from {MODULE_PATH}")
@@ -36,7 +35,6 @@ class RepositoryValidatorTest(unittest.TestCase):
 
     def test_required_paths_reports_only_missing_paths(self) -> None:
         self.write("standards/architecture.md", "# Architecture\n")
-
         errors = validator.validate_required_paths(
             self.root,
             required_paths=("standards", "contracts", "README.md"),
@@ -125,7 +123,7 @@ Do work.
             errors,
         )
 
-    def test_prompt_validation_accepts_supported_frontmatter(self) -> None:
+    def test_prompt_validation_accepts_supported_multiline_frontmatter(self) -> None:
         self.write(
             ".github/prompts/example.prompt.md",
             """---
@@ -133,8 +131,8 @@ description: Example
 agent: agent
 tools:
   - codebase
+  - readFile
 ---
-
 Do work.
 """,
         )
@@ -142,6 +140,104 @@ Do work.
         errors = validator.validate_prompt_files(self.root)
 
         self.assertEqual([], errors)
+
+    def test_prompt_validation_accepts_supported_inline_tools_list(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: agent
+tools: ['search/codebase', 'vscode/askQuestions']
+---
+Do work.
+""",
+        )
+
+        errors = validator.validate_prompt_files(self.root)
+
+        self.assertEqual([], errors)
+
+    def test_prompt_validation_rejects_malformed_list_marker(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: agent
+tools:
+  * codebase
+---
+Do work.
+""",
+        )
+
+        errors = validator.validate_prompt_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md:5: invalid list item; use '- value'"
+            ],
+            errors,
+        )
+
+    def test_prompt_validation_rejects_scalar_tools_value(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+tools: codebase
+---
+Do work.
+""",
+        )
+
+        errors = validator.validate_prompt_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md: frontmatter field 'tools' must be a YAML list"
+            ],
+            errors,
+        )
+
+    def test_prompt_validation_rejects_duplicate_frontmatter_key(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+description: Duplicate
+---
+Do work.
+""",
+        )
+
+        errors = validator.validate_prompt_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md:3: duplicate frontmatter field 'description'"
+            ],
+            errors,
+        )
+
+    def test_prompt_validation_rejects_unexpected_indentation(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+  agent: agent
+---
+Do work.
+""",
+        )
+
+        errors = validator.validate_prompt_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md:3: unexpected indentation in prompt frontmatter"
+            ],
+            errors,
+        )
 
     def test_prohibited_reference_scan_reports_stale_active_document_terms(self) -> None:
         stale_prefix = "FALL" + "BACK_"

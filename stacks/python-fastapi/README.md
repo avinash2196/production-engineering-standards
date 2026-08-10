@@ -1,6 +1,6 @@
 # Python FastAPI Stack
 
-Guidance, an executable base template, and integration notes for Python 3.12+ FastAPI services.
+Guidance, an executable reference template, and integration notes for Python 3.12+ FastAPI services.
 
 ## Delivery Workflow
 
@@ -8,7 +8,7 @@ Do not copy the template and immediately generate production behavior. Follow:
 
 > Plan -> Implementation Plan -> RED Test -> GREEN Code -> Refactor
 
-The approved implementation plan selects the required endpoints, persistence, production adapters, local adapters, and verification commands. The base template intentionally does not include every production integration.
+The approved implementation plan selects the required endpoints, persistence, production adapters, local adapters, and verification commands. The template demonstrates the shared local-adapter strategy; it is not a mandate to carry every demonstrated capability into every real service.
 
 ## Base Template
 
@@ -21,7 +21,9 @@ The approved implementation plan selects the required endpoints, persistence, pr
 - local filesystem storage and environment secret adapters;
 - behavior-focused tests for selection, persistence, TTL, and production guards.
 
-Production Kafka, Pub/Sub, Redis, S3, GCS, Vault, or Secret Manager adapters are added only when selected by an approved implementation plan. Requesting a missing adapter produces an actionable error rather than silently choosing a local substitute.
+Production Kafka, Pub/Sub, Redis, S3, GCS, Vault, or Secret Manager adapters and their SDK dependencies are added only when selected by an approved implementation plan. Requesting a missing adapter produces an actionable error rather than silently choosing a local substitute.
+
+Metrics, distributed tracing, authentication, and other optional production mechanisms are also added only when selected by the approved service design. Structured startup/shutdown logging remains part of the reference template.
 
 ## Suggested Structure
 
@@ -45,7 +47,7 @@ A simple CRUD service may combine areas when dependencies remain controlled and 
 
 ## Run Template Tests
 
-After installing the minimal dependencies declared in `pyproject.toml`:
+After installing the dependencies declared in `pyproject.toml`:
 
 ```bash
 PYTHONPATH=project-template \

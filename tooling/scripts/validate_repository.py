@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[2]
-
 REQUIRED_PATHS = (
     ".github/copilot-instructions.md",
     ".github/prompts",
@@ -26,7 +25,6 @@ REQUIRED_PATHS = (
     "tooling/scripts",
     "tooling/tests",
 )
-
 PLACEHOLDER_PATTERNS = (
     "Add validation steps",
     "Template generator placeholder",
@@ -39,6 +37,8 @@ PROHIBITED_ACTIVE_REFERENCES = (
 )
 
 MARKDOWN_LINK = re.compile(r"\[[^\]]*]\(([^)]+)\)")
+FRONTMATTER_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):(?:\s*(.*))?$")
+FRONTMATTER_LIST_ITEM = re.compile(r"^ {2,}-\s+(.+)$")
 TEXT_SUFFIXES = {
     ".java",
     ".json",
@@ -51,8 +51,6 @@ TEXT_SUFFIXES = {
     ".yaml",
     ".yml",
 }
-
-SKIPPED_TOP_LEVEL_DIRECTORIES = {".git", ".copilot", "templates"}
 
 
 def _is_under(path: Path, directory: Path) -> bool:
@@ -67,7 +65,6 @@ def _iter_text_files(root: Path, *, include_templates: bool = False) -> Iterable
     for path in sorted(root.rglob("*")):
         if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
             continue
-
         relative = path.relative_to(root)
         if any(part == ".git" for part in relative.parts):
             continue
@@ -111,11 +108,9 @@ def validate_markdown_links(root: Path = ROOT) -> list[str]:
             continue
         if relative_file.parts and relative_file.parts[0] == "templates":
             continue
-
         content = _read_text(markdown_file)
         if content is None:
             continue
-
         for line_number, line in enumerate(content.splitlines(), start=1):
             for match in MARKDOWN_LINK.finditer(line):
                 target = match.group(1).strip()
@@ -123,7 +118,6 @@ def validate_markdown_links(root: Path = ROOT) -> list[str]:
                     target = target.split(" ", maxsplit=1)[0]
                 target = target.strip("<>")
                 target_without_anchor = target.split("#", maxsplit=1)[0]
-
                 if not target_without_anchor:
                     continue
                 if target.startswith(("http://", "https://", "mailto:", "#", "{")):
@@ -150,7 +144,6 @@ def validate_no_placeholders(root: Path = ROOT) -> list[str]:
         content = _read_text(path)
         if content is None:
             continue
-
         for pattern in PLACEHOLDER_PATTERNS:
             if pattern in content:
                 errors.append(
@@ -164,12 +157,92 @@ def _split_frontmatter(content: str) -> tuple[list[str], list[str]] | None:
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":
         return None
-
     for index in range(1, len(lines)):
         if lines[index].strip() == "---":
             return lines[1:index], lines[index + 1 :]
 
     return None
+
+
+def _parse_prompt_frontmatter(
+    frontmatter_lines: list[str],
+    relative_file: Path,
+) -> tuple[dict[str, str | list[str]], list[str]]:
+    """Parse the YAML subset used by this repository's prompt frontmatter.
+
+    The repository validator intentionally remains dependency-free. Prompt
+    metadata uses only top-level scalar fields plus a list-valued ``tools``
+    field, so validating this supported subset is sufficient to catch malformed
+    frontmatter without pretending to be a general YAML parser.
+    """
+    metadata: dict[str, str | list[str]] = {}
+    errors: list[str] = []
+    active_list_key: str | None = None
+
+    for offset, raw_line in enumerate(frontmatter_lines, start=2):
+        if not raw_line.strip():
+            continue
+
+        if "\t" in raw_line:
+            errors.append(
+                f"{relative_file}:{offset}: tabs are not supported in prompt frontmatter"
+            )
+            continue
+
+        if raw_line.startswith(" "):
+            if active_list_key is None:
+                errors.append(
+                    f"{relative_file}:{offset}: unexpected indentation in prompt frontmatter"
+                )
+                continue
+
+            item_match = FRONTMATTER_LIST_ITEM.fullmatch(raw_line)
+            if item_match is None:
+                errors.append(
+                    f"{relative_file}:{offset}: invalid list item; use '- value'"
+                )
+                continue
+
+            item = item_match.group(1).strip()
+            if not item:
+                errors.append(
+                    f"{relative_file}:{offset}: prompt frontmatter list item is empty"
+                )
+                continue
+
+            value = metadata[active_list_key]
+            if isinstance(value, list):
+                value.append(item)
+            continue
+
+        active_list_key = None
+        key_match = FRONTMATTER_KEY.fullmatch(raw_line)
+        if key_match is None:
+            errors.append(
+                f"{relative_file}:{offset}: malformed prompt frontmatter entry"
+            )
+            continue
+
+        key = key_match.group(1)
+        raw_value = (key_match.group(2) or "").strip()
+        if key in metadata:
+            errors.append(
+                f"{relative_file}:{offset}: duplicate frontmatter field '{key}'"
+            )
+            continue
+
+        if not raw_value:
+            metadata[key] = []
+            active_list_key = key
+        else:
+            metadata[key] = raw_value
+
+    return metadata, errors
+
+
+def _is_inline_list(value: str) -> bool:
+    stripped = value.strip()
+    return stripped.startswith("[") and stripped.endswith("]")
 
 
 def validate_prompt_files(root: Path = ROOT) -> list[str]:
@@ -191,27 +264,42 @@ def validate_prompt_files(root: Path = ROOT) -> list[str]:
             continue
 
         frontmatter_lines, body_lines = split
-        frontmatter_keys = {
-            line.split(":", maxsplit=1)[0].strip()
-            for line in frontmatter_lines
-            if ":" in line and not line.startswith((" ", "\t"))
-        }
+        metadata, syntax_errors = _parse_prompt_frontmatter(
+            frontmatter_lines,
+            relative_file,
+        )
+        errors.extend(syntax_errors)
+        if syntax_errors:
+            continue
 
-        if "description" not in frontmatter_keys:
+        description = metadata.get("description")
+        if not isinstance(description, str) or not description.strip():
             errors.append(f"{relative_file}: missing frontmatter field 'description'")
-        if "mode" in frontmatter_keys:
+
+        if "mode" in metadata:
             errors.append(f"{relative_file}: deprecated frontmatter field 'mode'")
+
+        tools = metadata.get("tools")
+        if tools is not None:
+            if isinstance(tools, list):
+                if not tools:
+                    errors.append(
+                        f"{relative_file}: frontmatter field 'tools' must contain at least one tool"
+                    )
+            elif not _is_inline_list(tools):
+                errors.append(
+                    f"{relative_file}: frontmatter field 'tools' must be a YAML list"
+                )
 
         if any(line.strip() == "mode: agent" for line in body_lines):
             errors.append(f"{relative_file}: duplicate body metadata 'mode: agent'")
 
-    return sorted(errors)
+    return sorted(set(errors))
 
 
 def validate_prohibited_references(root: Path = ROOT) -> list[str]:
     """Reject stale terminology in active guidance and implementation files."""
     errors: list[str] = []
-
     for path in _iter_text_files(root):
         relative = path.relative_to(root)
         if relative.parts and relative.parts[0] in {".copilot", ".git", "templates"}:
@@ -224,7 +312,6 @@ def validate_prohibited_references(root: Path = ROOT) -> list[str]:
         content = _read_text(path)
         if content is None:
             continue
-
         for reference in PROHIBITED_ACTIVE_REFERENCES:
             if reference in content:
                 errors.append(
@@ -248,7 +335,6 @@ def validate_repository(root: Path = ROOT) -> list[str]:
 
 def main() -> int:
     errors = validate_repository(ROOT)
-
     if errors:
         print("Repository validation failed:\n")
         for error in errors:

@@ -13,7 +13,7 @@ For non-trivial work:
 3. approve a milestone-specific Implementation Plan with exact files and tests;
 4. add the focused test and confirm RED;
 5. implement the smallest change for GREEN;
-6. refactor while tests remain green;
+6. refactor while tests remain GREEN;
 7. run the full applicable Definition of Done.
 
 ## Architecture
@@ -38,19 +38,20 @@ Do not create packages or interfaces solely to satisfy a fixed layer count.
 - Define transaction boundaries around coherent database work and avoid slow remote calls inside a transaction unless explicitly designed.
 - Map specific application/domain exceptions with centralized exception handling.
 - Treat method/class/constructor size as review signals; refactor based on mixed responsibilities or testability, not a number alone.
-- Configure graceful shutdown and relevant liveness/readiness checks.
+- Configure graceful shutdown and relevant liveness/readiness checks where the selected runtime and operating model require them.
 
 ## Capability and Adapter Selection
+
+Define only the capability selectors the service actually uses. The following is an example for a messaging capability, not a required configuration bundle:
 
 ```yaml
 adapters:
   messaging: ${MESSAGING_ADAPTER:kafka}
-  cache: ${CACHE_ADAPTER:redis}
-  storage: ${STORAGE_ADAPTER:s3}
-  secrets: ${SECRET_ADAPTER:vault}
 ```
 
-Local-only values are `db`/`inmemory`, `jsonfile`/`inmemory`, `local`, and `env`. They must:
+If the approved design also uses cache, storage, or managed secrets, add those selectors and dependencies explicitly in that milestone.
+
+Local-only values may include `db`/`inmemory` for messaging, `jsonfile`/`inmemory` for cache, `local` for storage, and `env` for secrets. When used, they must:
 
 - be selected explicitly;
 - emit activation telemetry;
@@ -61,17 +62,17 @@ A database-backed message adapter and JSON-file cache are preferred when local r
 
 ## Resilience
 
-Every remote dependency has a timeout and named failure behavior. Depending on correctness and business impact, use bounded retry, circuit breaking, durable queueing, stale data, bypass, fail closed, or fail fast. Do not require a generic fallback for every dependency.
+Every important remote dependency has a timeout and named failure behavior. Depending on correctness and business impact, use bounded retry, circuit breaking, durable queueing, stale data, bypass, fail closed, or fail fast. Do not require a generic fallback for every dependency.
 
 ## Observability
 
-Use SLF4J structured key-value logging or MDC where it aids diagnosis, Micrometer metrics on important service/external boundaries, and OpenTelemetry tracing according to support/SLO needs. Never log secrets or sensitive payloads.
+Use SLF4J structured key-value logging or MDC where it aids diagnosis, Micrometer metrics on important service/external boundaries, and OpenTelemetry tracing according to support/SLO needs. Never log secrets or sensitive payloads. Add libraries only for the mechanisms selected by the approved service design.
 
 ## Testing
 
 - JUnit 5 and Mockito/fakes for business/application tests without Spring context when possible.
-- Focused MVC/WebFlux tests for API behavior.
-- Testcontainers or supported emulators for persistence and infrastructure boundaries.
+- Focused MVC/WebFlux tests for API behavior when that transport is used.
+- Testcontainers or supported emulators for persistence and infrastructure boundaries when they provide meaningful integration evidence.
 - Tests for transaction rollback, idempotency, retries, adapter selection, and production guards when applicable.
 - Keep behavior changes separate from refactoring and preserve RED/GREEN evidence.
 

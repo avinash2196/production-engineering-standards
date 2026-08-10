@@ -2,81 +2,10 @@ spring:
   application:
     name: ${SERVICE_NAME:service-name}
 
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/service_db}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}   # use SecretProvider in production
-    hikari:
-      maximum-pool-size: ${DB_POOL_SIZE:10}
-      minimum-idle: 2
-      connection-timeout: 20000
-      idle-timeout: 300000
-
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
-
-  flyway:
-    enabled: true
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
-      retries: 3
-    consumer:
-      group-id: ${spring.application.name}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-
-  data:
-    redis:
-      url: ${REDIS_URL:redis://localhost:6379}
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${JWT_ISSUER_URI:https://auth.myorg.com}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      probes:
-        enabled: true
-      group:
-        readiness:
-          include: db,redis
-        liveness:
-          include: ping
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-  tracing:
-    sampling:
-      probability: ${TRACING_SAMPLE_RATE:0.1}
-
-logging:
-  structured:
-    format:
-      console: ecs   # Structured JSON for log aggregation
-
 server:
   port: ${PORT:8080}
   shutdown: graceful
 
-# Adapter selection — local-only values must be rejected in production
-adapters:
-  messaging: ${MESSAGING_ADAPTER:kafka}
-  cache: ${CACHE_ADAPTER:redis}
-  storage: ${STORAGE_ADAPTER:s3}
-  secrets: ${SECRET_ADAPTER:vault}
+# Add database, messaging, cache, storage, security, observability, and adapter
+# configuration only when the approved Implementation Plan selects those capabilities.
+# Local-only adapter values must be rejected when the service runs in production.
