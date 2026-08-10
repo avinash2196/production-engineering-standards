@@ -4,11 +4,10 @@ description: "Review code or a pull request against applicable engineering stand
 agent: "agent"
 argument-hint: "code, diff, or files to review; optional stack and compliance tier"
 tools:
-
-* codebase
-* readFile
-* searchFiles
-* problems
+  - codebase
+  - readFile
+  - searchFiles
+  - problems
 
 ---
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate structural, documentation, and prompt rules for this repository."""
+"""Validate structural, documentation, prompt, and Agent Skill rules for this repository."""
 
 from __future__ import annotations
 
@@ -12,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[2]
 REQUIRED_PATHS = (
     ".github/copilot-instructions.md",
     ".github/prompts",
+    ".github/skills",
+    ".github/skills/requirements-analysis/SKILL.md",
+    ".github/skills/code-review/SKILL.md",
     ".github/workflows/ci-validate.yml",
     "contracts",
     "docs/enforcement-matrix.md",
@@ -39,6 +42,7 @@ PROHIBITED_ACTIVE_REFERENCES = (
 MARKDOWN_LINK = re.compile(r"\[[^\]]*]\(([^)]+)\)")
 FRONTMATTER_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):(?:\s*(.*))?$")
 FRONTMATTER_LIST_ITEM = re.compile(r"^ {2,}-\s+(.+)$")
+SKILL_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TEXT_SUFFIXES = {
     ".java",
     ".json",
@@ -297,6 +301,59 @@ def validate_prompt_files(root: Path = ROOT) -> list[str]:
     return sorted(set(errors))
 
 
+def validate_skill_files(root: Path = ROOT) -> list[str]:
+    """Validate repository Agent Skill structure and required metadata."""
+    errors: list[str] = []
+    skills_directory = root / ".github/skills"
+    if not skills_directory.exists():
+        return errors
+
+    for skill_directory in sorted(path for path in skills_directory.iterdir() if path.is_dir()):
+        skill_file = skill_directory / "SKILL.md"
+        relative_directory = skill_directory.relative_to(root)
+        if not skill_file.exists():
+            errors.append(f"{relative_directory}: missing SKILL.md")
+            continue
+
+        relative_file = skill_file.relative_to(root)
+        content = _read_text(skill_file)
+        if content is None:
+            continue
+        split = _split_frontmatter(content)
+        if split is None:
+            errors.append(f"{relative_file}: missing or unterminated frontmatter")
+            continue
+
+        frontmatter_lines, _ = split
+        metadata, syntax_errors = _parse_prompt_frontmatter(
+            frontmatter_lines,
+            relative_file,
+        )
+        errors.extend(syntax_errors)
+        if syntax_errors:
+            continue
+
+        name = metadata.get("name")
+        description = metadata.get("description")
+        if not isinstance(name, str) or not name.strip():
+            errors.append(f"{relative_file}: missing frontmatter field 'name'")
+        else:
+            normalized_name = name.strip().strip('"').strip("'")
+            if not SKILL_NAME.fullmatch(normalized_name):
+                errors.append(
+                    f"{relative_file}: skill name '{normalized_name}' must use lowercase letters, numbers, and hyphens"
+                )
+            if normalized_name != skill_directory.name:
+                errors.append(
+                    f"{relative_file}: skill name '{normalized_name}' must match directory '{skill_directory.name}'"
+                )
+
+        if not isinstance(description, str) or not description.strip():
+            errors.append(f"{relative_file}: missing frontmatter field 'description'")
+
+    return sorted(set(errors))
+
+
 def validate_prohibited_references(root: Path = ROOT) -> list[str]:
     """Reject stale terminology in active guidance and implementation files."""
     errors: list[str] = []
@@ -328,6 +385,7 @@ def validate_repository(root: Path = ROOT) -> list[str]:
         *validate_markdown_links(root),
         *validate_no_placeholders(root),
         *validate_prompt_files(root),
+        *validate_skill_files(root),
         *validate_prohibited_references(root),
     ]
     return sorted(set(errors))

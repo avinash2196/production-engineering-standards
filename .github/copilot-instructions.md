@@ -19,6 +19,19 @@ For any task that changes production behavior, contracts, shared standards, reli
 
 Full workflow: [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md)
 
+## Requirements Gate
+
+Before creating or materially updating `docs/.ai/Plan.md`, apply the [Requirements Analysis Skill](skills/requirements-analysis/SKILL.md) or the equivalent behavior defined there.
+
+- Separate facts that are explicit in the request from facts confirmed by the repository.
+- Do not convert common architecture practices, framework defaults, industry conventions, or prior examples into requirements.
+- If missing or contradictory information materially affects the current Plan's behavior, contract, data handling, security/compliance decision, persistence/integration behavior, test expectations, or milestone boundaries, ask numbered clarification questions and stop before creating the Plan.
+- Ask the smallest set of questions needed for the current planning boundary. Do not ask about decisions that belong only to later milestones.
+- When a decision is not required yet, leave it unresolved for the milestone where it becomes necessary rather than inventing it early.
+- Repository defaults may guide implementation mechanics only after requirements and approved architecture permit the choice; they must never create business behavior, validation rules, compliance obligations, SLOs, or external dependencies.
+
+See [Questioning Policy](../standards/questioning-policy.md).
+
 ## Default Architecture
 
 Use architecture appropriate to the service's business complexity. Preserve these dependency rules:
@@ -130,7 +143,8 @@ Do not call a rule “enforced” unless an executable mechanism blocks the viol
 
 ## Available Prompt Workflows
 
-- `/create-plan` — create or update `docs/.ai/Plan.md`; no implementation
+- `/review-requirements` — analyze requirement completeness and ask only blocking clarification questions; no planning or implementation
+- `/create-plan` — create or update `docs/.ai/Plan.md` only after the requirements gate passes; no implementation
 - `/create-implementation-plan` — create the exact milestone implementation plan; no source changes
 - `/implement-approved-plan` — run RED → GREEN → REFACTOR from an approved implementation plan
 - `/scaffold-service` — orchestrate service creation through all planning and test gates
@@ -138,3 +152,5 @@ Do not call a rule “enforced” unless an executable mechanism blocks the viol
 - `/refactor-code` — refactor only from a GREEN baseline
 - `/review-code`, `/review-architecture`, `/review-distributed-systems`, `/review-production-readiness` — evidence-based reviews
 - `/compliance-review`, `/review-hipaa` — engineering control reviews, not legal certification
+
+Repository Agent Skills under `.github/skills/` provide deeper task-specific behavior. The requirements-analysis skill is a planning gate; the code-review skill reinforces evidence-based review without replacing the canonical standards or prompts.

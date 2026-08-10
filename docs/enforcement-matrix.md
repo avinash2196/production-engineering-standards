@@ -9,6 +9,7 @@ A rule is described as **enforced** only when the automated-enforcement column n
 | Required standards-repository structure | `README.md` | Repository review | `validate_repository.py` and CI | Enforced |
 | Active internal Markdown links resolve | Documentation guidance | Documentation review | `validate_repository.py` and CI | Enforced |
 | Prompt files use supported frontmatter | Agent execution standard | Prompt review | `validate_repository.py` and CI | Enforced |
+| Agent Skills use required structure and metadata | Requirements/review skills | Skill review | `validate_repository.py` and CI | Enforced |
 | Known placeholder implementations are rejected | Definition of Done | Code review | `validate_repository.py` and CI | Enforced |
 | Plan and Implementation Plan templates exist | PDD workflow | Planning review | Required-path validator | Enforced in this repository |
 | Plan precedes Implementation Plan | PDD workflow | Human approval gate | Workflow/prompt behavior; project CI not yet implemented | Reviewed |

@@ -9,7 +9,7 @@ The repository is intentionally not a promise that AI-generated code is automati
 A single `copilot-instructions.md` file is useful for persistent context, but it is not enough for engineering governance. This repository separates:
 
 1. **Stable standards** — architecture, testing, security, observability, local adapters, and production degradation.
-2. **Task workflows** — Plan, Implementation Plan, tests, implementation, refactoring, and review.
+2. **Task workflows** — requirements analysis, Plan, Implementation Plan, tests, implementation, refactoring, and review through prompts and Agent Skills.
 3. **Executable enforcement** — repository tests, validators, stack-specific tests, and CI gates.
 4. **Human judgment** — architecture, trade-offs, operational safety, and exceptions that cannot be reduced to a brittle rule.
 
@@ -24,7 +24,7 @@ The two planning artifacts have different responsibilities:
 - `docs/.ai/Plan.md` defines **what** will be delivered, milestone order, scope, risks, and success criteria.
 - `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` defines **how** one approved milestone will be implemented: exact files, tests, expected RED behavior, minimal GREEN code, refactoring boundaries, and commands.
 
-Production code is not written during either planning phase. Tests or executable checks are created first, observed RED for the intended reason, followed by the smallest implementation required for GREEN. Refactoring is separate and must preserve GREEN.
+Before Plan creation, material requirement ambiguity is resolved rather than guessed through. Production code is not written during either planning phase. Tests or executable checks are created first, observed RED for the intended reason, followed by the smallest implementation required for GREEN. Refactoring is separate and must preserve GREEN.
 
 See [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md).
 
@@ -74,6 +74,7 @@ A documented rule is described as enforced only when an executable mechanism blo
   copilot-instructions.md       Workspace-level persistent guidance
   instructions/                Stack and task-specific instructions
   prompts/                     Reusable PDD and review workflows
+  skills/                      Task-specific Agent Skills for requirements and review
   workflows/                   Repository validation CI
 agents/                        Agent responsibilities and review behavior
 contracts/                     Capability boundaries
@@ -90,8 +91,11 @@ docs/                          Overview, decisions, and enforcement status
 
 ### In this repository
 
-VS Code Copilot loads `.github/copilot-instructions.md` from the workspace. Prompt files under `.github/prompts/` provide workflows such as:
+VS Code Copilot loads `.github/copilot-instructions.md` from the workspace. Prompt files under `.github/prompts/` provide explicit workflows, while Agent Skills under `.github/skills/` provide specialized behavior that Copilot can load when relevant. The always-on instructions still carry the non-negotiable PDD and anti-invention rules.
 
+Prompt workflows include:
+
+- `/review-requirements`
 - `/create-plan`
 - `/create-implementation-plan`
 - `/implement-approved-plan`
@@ -149,6 +153,7 @@ CI runs the same sequence and currently enforces:
 - required repository structure
 - active Markdown link integrity
 - prompt frontmatter conventions
+- Agent Skill structure and required frontmatter
 - absence of known placeholder implementations
 - absence of deprecated active configuration terminology
 - Python local-adapter selection and production startup guards

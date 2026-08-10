@@ -259,5 +259,110 @@ Do work.
         )
 
 
+
+    def test_skill_validation_accepts_valid_skill(self) -> None:
+        self.write(
+            ".github/skills/requirements-analysis/SKILL.md",
+            """---
+name: requirements-analysis
+description: Review requirements before planning.
+---
+# Requirements Analysis
+""",
+        )
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual([], errors)
+
+    def test_skill_validation_requires_skill_md_for_each_skill_directory(self) -> None:
+        (self.root / ".github/skills/code-review").mkdir(parents=True)
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual(
+            [".github/skills/code-review: missing SKILL.md"],
+            errors,
+        )
+
+    def test_skill_validation_requires_name_and_description(self) -> None:
+        self.write(
+            ".github/skills/code-review/SKILL.md",
+            """---
+name: code-review
+---
+# Code Review
+""",
+        )
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual(
+            [".github/skills/code-review/SKILL.md: missing frontmatter field 'description'"],
+            errors,
+        )
+
+    def test_skill_validation_requires_name_to_match_directory(self) -> None:
+        self.write(
+            ".github/skills/code-review/SKILL.md",
+            """---
+name: pull-request-review
+description: Review code.
+---
+# Code Review
+""",
+        )
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/skills/code-review/SKILL.md: skill name 'pull-request-review' must match directory 'code-review'"
+            ],
+            errors,
+        )
+
+    def test_skill_validation_rejects_invalid_skill_name_format(self) -> None:
+        self.write(
+            ".github/skills/Code_Review/SKILL.md",
+            """---
+name: Code_Review
+description: Review code.
+---
+# Code Review
+""",
+        )
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/skills/Code_Review/SKILL.md: skill name 'Code_Review' must use lowercase letters, numbers, and hyphens"
+            ],
+            errors,
+        )
+
+    def test_skill_validation_rejects_malformed_frontmatter(self) -> None:
+        self.write(
+            ".github/skills/code-review/SKILL.md",
+            """---
+name: code-review
+description: Review code.
+allowed-tools:
+  * shell
+---
+# Code Review
+""",
+        )
+
+        errors = validator.validate_skill_files(self.root)
+
+        self.assertEqual(
+            [
+                ".github/skills/code-review/SKILL.md:5: invalid list item; use '- value'"
+            ],
+            errors,
+        )
+
 if __name__ == "__main__":
     unittest.main()
