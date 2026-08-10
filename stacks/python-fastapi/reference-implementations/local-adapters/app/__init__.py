@@ -1,1 +1,1 @@
-"""Reference application package for local-adapter examples."""
+"""Local-adapter reference package."""

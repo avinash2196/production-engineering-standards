@@ -51,38 +51,85 @@ class PddWorkflowSemanticTests(unittest.TestCase):
             for phrase in OBSOLETE_PHRASES:
                 if phrase.lower() in lowered:
                     failures.append(f"{path.relative_to(ROOT)}: {phrase}")
-
-        self.assertEqual([], failures, "Obsolete PDD phase semantics found:\n" + "\n".join(failures))
+        self.assertEqual(
+            [],
+            failures,
+            "Obsolete PDD phase semantics found:\n" + "\n".join(failures),
+        )
 
     def test_canonical_workflow_requires_separate_phase_milestones(self):
-        workflow = (ROOT / "standards/prompt-driven-development-workflow.md").read_text(encoding="utf-8")
+        workflow = (
+            ROOT / "standards/prompt-driven-development-workflow.md"
+        ).read_text(encoding="utf-8")
         self.assertIn("RED is a separate milestone", workflow)
         self.assertIn("GREEN is a separate milestone", workflow)
-        self.assertIn("REFACTOR is a separate milestone when refactoring is justified", workflow)
-        self.assertIn("Do not advance to the next phase milestone until its own Implementation Plan is approved", workflow)
+        self.assertIn(
+            "REFACTOR is a separate milestone when refactoring is justified", workflow
+        )
+        self.assertIn(
+            "Do not advance to the next phase milestone until its own Implementation Plan is approved",
+            workflow,
+        )
 
     def test_red_execution_stops_before_green(self):
-        prompt = (ROOT / ".github/prompts/generate-tests.prompt.md").read_text(encoding="utf-8")
+        prompt = (ROOT / ".github/prompts/generate-tests.prompt.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("Stop after valid RED", prompt)
-        self.assertIn("Do not change production code, production configuration, or production contracts", prompt)
+        self.assertIn(
+            "Do not change production code, production configuration, or production contracts",
+            prompt,
+        )
 
     def test_green_execution_stops_before_refactor(self):
-        prompt = (ROOT / ".github/prompts/implement-approved-plan.prompt.md").read_text(encoding="utf-8")
+        prompt = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
         self.assertIn("Stop after GREEN", prompt)
         self.assertIn("Do not advance to another Plan milestone in this invocation", prompt)
 
     def test_refactor_requires_its_own_milestone(self):
-        prompt = (ROOT / ".github/prompts/refactor-code.prompt.md").read_text(encoding="utf-8")
+        prompt = (ROOT / ".github/prompts/refactor-code.prompt.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("REFACTOR", prompt)
         self.assertIn("predecessor GREEN", prompt)
-        self.assertIn("Do not combine feature behavior or defect fixes with refactoring", prompt)
+        self.assertIn(
+            "Do not combine feature behavior or defect fixes with refactoring", prompt
+        )
 
     def test_implementation_plan_template_is_phase_specific(self):
-        template = (ROOT / "templates/docs/implementation-plan-template.md").read_text(encoding="utf-8")
-        self.assertIn("**Phase:** FOUNDATION | RED | GREEN | REFACTOR | OTHER", template)
-        self.assertIn("Complete **only the section matching the milestone Phase**", template)
+        template = (
+            ROOT / "templates/docs/implementation-plan-template.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "**Phase:** FOUNDATION | RED | GREEN | REFACTOR | OTHER", template
+        )
+        self.assertIn(
+            "Complete **only the section matching the milestone Phase**", template
+        )
         self.assertIn("No production implementation changes", template)
-        self.assertIn("No refactoring; use a separately approved REFACTOR milestone", template)
+        self.assertIn(
+            "No refactoring; use a separately approved REFACTOR milestone", template
+        )
+
+    def test_local_adapter_standard_uses_phase_specific_plans(self):
+        standard = (ROOT / "standards/local-adapter-strategy.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("RED milestone Implementation Plan", standard)
+        self.assertIn("GREEN milestone Implementation Plan", standard)
+        self.assertIn("REFACTOR milestone and Implementation Plan only when justified", standard)
+        self.assertIn("Approval of the RED milestone does not authorize GREEN", standard)
+
+    def test_fallback_standard_uses_phase_specific_plans(self):
+        standard = (ROOT / "standards/fallback-strategy.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("RED milestone Implementation Plan", standard)
+        self.assertIn("GREEN milestone Implementation Plan", standard)
+        self.assertIn("REFACTOR milestone and Implementation Plan only when justified", standard)
+        self.assertIn("does not waive the separate Plan or phase-specific Implementation Plan review gates", standard)
 
 
 if __name__ == "__main__":

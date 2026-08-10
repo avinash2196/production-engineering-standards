@@ -55,23 +55,28 @@ Define timeout budgets, retryable error classes, bounded attempts, idempotency r
 
 ## Observability
 
-A degradation path must expose:
+A degradation path must expose telemetry appropriate to its operational risk, such as:
 
 - structured activation/recovery logs
-- metrics for activation, duration, failures, queue depth, stale responses, or bypasses
+- metrics for activation, duration, failures, queue depth, stale responses, or bypasses when those signals are useful
 - health/readiness behavior appropriate to whether the service can safely operate
 - alerts based on business and operational risk
 
+Do not invent a specific observability mechanism merely because a degradation path exists; apply the repository observability standard and approved operating model.
+
 ## Test-First Changes
 
-Dependency failure behavior is production behavior and follows the full PDD lifecycle:
+Dependency failure behavior is production behavior and follows the full phase-milestone PDD lifecycle:
 
-1. Plan and Implementation Plan
-2. failure-path tests first
-3. valid RED
-4. minimal behavior to GREEN
-5. refactor after GREEN
-6. production-readiness review
+1. Define or confirm the behavior in the approved Plan. If material failure semantics are unresolved, ask the user and stop rather than inventing them.
+2. Create and review a **RED milestone Implementation Plan** for failure-path tests only.
+3. Execute the RED milestone, confirm valid RED for the expected missing behavior, record evidence, and stop.
+4. Create and review a separate **GREEN milestone Implementation Plan** for the minimum approved degradation/failure behavior.
+5. Execute the GREEN milestone, reach GREEN, run regression checks, record evidence, and stop.
+6. Use a separate **REFACTOR milestone and Implementation Plan only when justified**, preserving observable behavior and GREEN tests.
+7. Perform production-readiness review using applicability-based evidence.
+
+A request for end-to-end implementation does not waive the separate Plan or phase-specific Implementation Plan review gates.
 
 ## Core Principle
 
@@ -80,16 +85,18 @@ Dependency failure behavior is production behavior and follows the full PDD life
 ## LLM Instructions
 
 - Do not assume every dependency should fail open.
-- Treat security, secrets, authorization, and correctness controls as fail-closed by default.
-- Require durable handling when data loss is unacceptable.
+- Treat security, secrets, authorization, and correctness controls as fail-closed unless approved requirements or architecture explicitly define another safe behavior.
+- Require durable handling when approved requirements establish that data loss is unacceptable.
 - Separate local adapters from production failure behavior.
 - Include recovery and observability, not only activation behavior.
+- Do not collapse RED, GREEN, and optional REFACTOR work into one Implementation Plan.
 
 ## Review Checklist
 
-- [ ] Every material dependency has named failure behavior
+- [ ] Every material dependency has named failure behavior when that decision is required by the current scope
 - [ ] Correctness, data loss, duplication, ordering, and replay were considered
 - [ ] Retry policy is bounded and safe for idempotency
 - [ ] Degradation is observable and recoverable
-- [ ] Failure-path tests exist
+- [ ] Failure-path RED evidence exists before GREEN implementation
+- [ ] RED and GREEN used separate approved milestones and Implementation Plans
 - [ ] Local adapters are not presented as production failover

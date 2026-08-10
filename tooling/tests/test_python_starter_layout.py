@@ -25,11 +25,11 @@ class PythonStarterLayoutTest(unittest.TestCase):
     def test_local_adapter_reference_contains_real_implementation(self) -> None:
         self.assertTrue(
             (REFERENCE / "app/infrastructure/local/providers.py").is_file(),
-            "Move local-adapter implementation into the reference directory.",
+            "Local-adapter implementation must live in the reference directory.",
         )
         self.assertTrue(
             (REFERENCE / "tests/test_provider_selection.py").is_file(),
-            "Move local-adapter tests into the reference directory.",
+            "Local-adapter tests must live in the reference directory.",
         )
         self.assertTrue((REFERENCE / "app/config/settings.py").is_file())
         self.assertTrue((REFERENCE / "pyproject.toml").is_file())

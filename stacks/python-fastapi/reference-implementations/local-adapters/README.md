@@ -2,20 +2,28 @@
 
 This directory is a **reference implementation**, not the canonical Python service starter.
 
-It is intentionally capability-rich so engineers can inspect/test local adapter patterns when a real service requires them. Depending on the version moved here from the prior starter, it may include examples for database/in-memory messaging, file/in-memory cache, local filesystem storage, environment-backed local secrets, adapter selection, and production startup guards.
+It demonstrates explicit local-development/test adapters for:
+
+- database-backed or in-memory message publishing;
+- JSON-file or in-memory caching;
+- local filesystem object storage;
+- environment-backed local secrets;
+- typed adapter selection and production startup guards.
 
 ## Use This Reference When
 
 - an approved Plan introduces one of these capabilities;
 - the phase-specific Implementation Plan selects a local adapter for development/test use;
-- reduced guarantees are documented and acceptable for that use case.
+- the reduced guarantees are documented and acceptable for that use case.
 
 ## Do Not
 
 - copy every adapter into every Python service;
-- infer Kafka/Redis/object-storage/secret requirements from the existence of this reference;
+- infer Kafka, Pub/Sub, Redis, object-storage, or secret-manager requirements from this reference;
 - treat local adapter behavior as production degradation/fallback;
-- treat local-adapter tests as proof of managed production-service guarantees;
+- treat these tests as proof of managed production-service guarantees;
 - allow local-only adapters to activate in production.
 
-The canonical minimal starter remains at `../../project-template/`.
+Production adapters are intentionally absent. The factories fail with an actionable planning error until an approved milestone adds the selected production adapter.
+
+The canonical minimal starter remains at `../../project-template/` and deliberately contains none of these capability packages.

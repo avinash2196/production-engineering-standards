@@ -59,14 +59,16 @@ environment=production + MESSAGING_ADAPTER=db → startup failure
 
 ## Test-First Implementation
 
-When adding a local adapter:
+Adding a local adapter follows the same phase-milestone PDD lifecycle as any behavior-changing work:
 
-1. Update the approved Implementation Plan.
-2. Write contract and selector tests first.
-3. Confirm RED because the adapter/guard is missing.
-4. Implement the smallest adapter and selector wiring.
-5. Reach GREEN.
-6. Refactor shared mapping/telemetry only after GREEN.
+1. Add or confirm the approved Plan milestones for the adapter behavior.
+2. Create and review a **RED milestone Implementation Plan** for contract, selector, and production-guard tests only.
+3. Execute the RED milestone, confirm the expected RED, record evidence, and stop.
+4. Create and review a separate **GREEN milestone Implementation Plan** for the smallest adapter and selector wiring required by the approved RED tests.
+5. Execute the GREEN milestone, confirm focused and regression tests are GREEN, record evidence, and stop.
+6. Create a separate **REFACTOR milestone and Implementation Plan only when justified**; keep behavior unchanged and tests GREEN.
+
+Approval of the RED milestone does not authorize GREEN implementation. Approval of GREEN does not authorize refactoring.
 
 ## LLM Instructions
 
@@ -75,11 +77,13 @@ When adding a local adapter:
 - Keep local adapter selection separate from production degradation behavior.
 - Reject production use through typed startup validation.
 - State behavior differences explicitly rather than claiming parity.
+- Do not collapse RED, GREEN, and optional REFACTOR work into one Implementation Plan.
 
 ## Review Checklist
 
 - [ ] Local adapter has a justified development/CI use case
-- [ ] Contract and selector tests were written first
+- [ ] RED tests were planned, reviewed, executed, and shown to fail for the expected missing behavior before GREEN implementation
+- [ ] GREEN implementation has its own approved milestone and Implementation Plan
 - [ ] Local-only values are typed and explicit
 - [ ] Production startup rejects local-only values
 - [ ] Reduced guarantees are documented

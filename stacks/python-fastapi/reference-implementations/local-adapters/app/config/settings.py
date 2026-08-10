@@ -43,7 +43,6 @@ class Settings(BaseSettings):
 
     service_name: str = "service-name"
     environment: str = "local"
-
     messaging_adapter: MessagingAdapter = MessagingAdapter.KAFKA
     cache_adapter: CacheAdapter = CacheAdapter.REDIS
     storage_adapter: StorageAdapter = StorageAdapter.S3
@@ -56,18 +55,14 @@ class Settings(BaseSettings):
     kafka_bootstrap_servers: str = "localhost:9092"
     kafka_consumer_group: str = "service-name"
     gcp_project_id: str = ""
-
     redis_url: str = "redis://localhost:6379/0"
     json_cache_path: str = "./data/local-cache/cache.json"
-
     s3_bucket: str = "service-bucket"
     s3_endpoint_url: str = ""
     s3_region: str = "us-east-1"
     gcs_bucket: str = ""
     local_storage_path: str = "./data/local-storage"
-
     vault_address: str = "http://localhost:8200"
-    jwt_issuer_uri: str = "https://auth.myorg.com"
 
     @model_validator(mode="after")
     def reject_local_adapters_in_production(self) -> "Settings":
