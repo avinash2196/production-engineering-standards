@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Decide whether a dependency concern is a **local-development adapter** or a **production failure/degradation behavior**, then implement it through the PDD lifecycle. Do not combine the two concepts under a vague fallback toggle.
+Decide whether a dependency concern is a **local-development adapter** or a **production failure/degradation behavior**, then implement it through separate PDD RED/GREEN milestones. Do not combine the two concepts under a vague fallback toggle.
 
 ## 1. Classify the Need
 
@@ -25,40 +25,48 @@ Use when defining live behavior during dependency failure.
 
 Examples:
 
-- fail closed when secrets are unavailable
-- durably queue an event when a broker is unavailable
-- bypass a non-critical cache when the database can absorb load
-- return stale data under an approved freshness contract
+- fail closed when a critical security dependency is unavailable when approved requirements require it
+- durably queue an event when the approved design requires deferred delivery
+- bypass a non-critical cache when the database can safely absorb load
+- return stale data only under an approved freshness contract
 
 Reference: [Production Dependency Failure and Degradation](../standards/fallback-strategy.md)
 
-## 2. Plan and Review
+## 2. Update and Review the Plan
 
-Update `docs/.ai/Plan.md` with the capability, business need, reduced guarantees, and scope. Create a milestone Implementation Plan with exact contract, selector, tests, code, telemetry, production guard, and recovery behavior.
+Add separate behavior milestones, for example:
 
-Obtain approval before tests or source changes.
+1. `<Capability> Adapter/Degradation Tests — RED`
+2. `<Capability> Adapter/Degradation Implementation — GREEN`
+3. `<Capability> Refactor — REFACTOR` only when concrete cleanup is justified
 
-## 3. RED — Tests First
+The Plan must capture the approved business/engineering need, reduced guarantees, production guard/recovery expectations, and explicit exclusions. Obtain approval.
 
-For a local adapter, write:
+## 3. RED Milestone
 
-- capability contract tests
-- selector tests for production and local values
-- production-startup rejection test for local-only values
-- telemetry activation test where practical
+Create a RED Implementation Plan containing only the exact tests/checks required by the approved behavior.
 
-For production degradation, write:
+For a local adapter, this may include approved:
 
-- dependency failure-path test
-- correctness/data-loss/idempotency assertions
-- recovery behavior test where relevant
-- health/metric behavior test where relevant
+- capability contract tests;
+- selector tests for implemented values;
+- production-startup rejection test for local-only values;
+- activation telemetry test where the project uses that telemetry.
 
-Confirm valid RED.
+For production degradation, this may include approved:
 
-## 4. GREEN — Minimal Implementation
+- dependency failure-path test;
+- correctness/data-loss/idempotency assertions;
+- recovery behavior test;
+- health/metric behavior test where applicable.
 
-Standard selectors:
+Obtain approval, execute with `/generate-tests`, confirm valid RED, record evidence, and stop.
+
+## 4. GREEN Milestone
+
+Create a separate GREEN Implementation Plan referencing the RED evidence and defining only the minimum approved implementation.
+
+Possible selectors, only when actually implemented by the service:
 
 ```text
 MESSAGING_ADAPTER=kafka|pubsub|db|inmemory
@@ -67,32 +75,20 @@ STORAGE_ADAPTER=s3|gcs|local
 SECRET_ADAPTER=vault|secretmanager|env
 ```
 
-Implement only values approved and tested by the service. Selection must be typed and explicit.
+Local-only activation must follow the approved design, including production rejection and documented reduced guarantees. Production degradation must preserve required correctness/durability, be observable where required, define recovery, and avoid unapproved silent fail-open behavior.
 
-Local-only activation must:
+Obtain approval, execute with `/implement-approved-plan`, verify GREEN, record evidence, and stop.
 
-- emit a structured warning
-- expose an adapter-active metric when the project has application metrics
-- document reduced guarantees
-- fail startup in production
+## 5. Optional REFACTOR Milestone
 
-Production degradation must:
-
-- preserve required correctness and durability
-- be observable
-- define recovery
-- avoid silent fail-open behavior
-
-## 5. REFACTOR
-
-After GREEN, extract shared selector, telemetry, or mapping code only when it reduces real duplication. Keep all contract and failure tests GREEN.
+Only when concrete duplication/boundary cleanup remains after GREEN, create and approve a separate REFACTOR milestone. Keep all approved behavior and failure/guard tests GREEN.
 
 ## Completion Criteria
 
 - [ ] Need classified as local adapter or production degradation
-- [ ] Plan and Implementation Plan approved
-- [ ] Contract/failure tests were RED first
-- [ ] Typed selector and production guard implemented where applicable
-- [ ] Reduced guarantees and recovery documented
-- [ ] Activation/degradation observable
-- [ ] Refactor preserved GREEN
+- [ ] RED and GREEN are separate approved milestones
+- [ ] RED tests/checks failed for the expected approved behavior
+- [ ] GREEN implementation is minimal and matches approved selector/failure behavior
+- [ ] Reduced guarantees/recovery are documented where applicable
+- [ ] Activation/degradation is observable where required by the operating model
+- [ ] Any refactor was separate and preserved GREEN

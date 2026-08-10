@@ -25,12 +25,14 @@ Read enough surrounding implementation, requirements, approved Plan, Implementat
 
 Confirm that the change follows the repository lifecycle when the project has adopted it:
 
-1. an approved Plan defines scope and success criteria;
-2. an approved Implementation Plan identifies exact files, behavior, tests, and risks;
-3. tests were added or updated before production code where behavior changed;
-4. implementation is limited to the approved milestone;
-5. refactoring occurs only after tests pass and does not introduce behavior changes;
-6. final review verifies the delivered scope and remaining risks.
+1. an approved Plan defines scope, phase-specific milestones, predecessor relationships, and success criteria;
+2. behavior-changing work uses separate RED and GREEN milestones;
+3. the RED milestone has its own approved Implementation Plan and valid RED evidence;
+4. the GREEN milestone has its own separately approved Implementation Plan, references predecessor RED evidence, and contains only minimal production scope;
+5. refactoring, when present, is a separate justified REFACTOR milestone with its own approved Implementation Plan and a verified GREEN baseline;
+6. one phase did not automatically advance into the next without the next milestone's approval;
+7. implementation stayed inside the approved current milestone and did not pull later work forward;
+8. final review verifies delivered scope and remaining risks.
 
 A missing workflow artifact is a finding only when the project has adopted this workflow for the change being reviewed.
 
@@ -250,10 +252,13 @@ Do not:
 
 ### Workflow Evidence
 - Plan: present / missing / not applicable
-- Implementation Plan: present / missing / not applicable
+- Current milestone and phase: RED / GREEN / REFACTOR / FOUNDATION / OTHER / not established / not applicable
+- Current milestone Implementation Plan: present / missing / not applicable
+- Predecessor milestone evidence: valid RED / verified GREEN / missing / not applicable
 - Test-first evidence: present / missing / not demonstrated / not applicable
-- Green test evidence: command and result, if actually executed or supplied
-- Refactor boundary: respected / mixed with behavior changes / not applicable
+- GREEN evidence: command and result, if actually executed or supplied
+- Refactor boundary: separate approved milestone / mixed with behavior changes / not applicable
+- Phase gate: respected / next phase executed without separate approval / needs verification
 
 ### Findings
 

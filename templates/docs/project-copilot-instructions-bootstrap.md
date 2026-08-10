@@ -20,17 +20,18 @@ Copilot instructions guide generation and review. They do not make compliance de
 
 For any non-trivial behavior change, use this sequence:
 
-1. **Plan** — define scope, requirements, constraints, risks, milestones,
-   and success criteria.
+1. **Plan** — define scope, requirements, constraints, risks, and small phase-specific milestones.
 2. **Human Review** — review and approve the Plan.
-3. **Implementation Plan** — inspect the current repository and define
-   exact milestone-level files, tests, and implementation changes.
-4. **Human Review** — review and approve the Implementation Plan.
-5. **RED Tests** — create the approved tests and confirm valid RED.
-6. **GREEN Code** — implement the minimum approved production behavior
-   required for GREEN.
-7. **Refactor** — improve structure only after GREEN while preserving behavior.
-8. **Final Review** — verify scope, evidence, tests, and applicable standards.
+3. **RED Milestone Implementation Plan** — define tests/checks and expected RED only.
+4. **Human Review** — approve the RED Implementation Plan.
+5. **RED Execution** — create approved tests/checks, confirm valid RED, record evidence, and stop.
+6. **GREEN Milestone Implementation Plan** — separately define the minimum production changes using predecessor RED evidence.
+7. **Human Review** — approve the GREEN Implementation Plan.
+8. **GREEN Execution** — implement only the approved minimum behavior, verify GREEN, record evidence, and stop.
+9. **REFACTOR Milestone** — only when concrete cleanup is justified; create and approve a separate REFACTOR Implementation Plan, preserve behavior, and remain GREEN.
+10. **Final Review** — verify scope, milestone evidence, tests/checks, and applicable standards.
+
+An end-to-end request does not waive the Plan or per-milestone human review gates for behavior-changing work.
 
 Do not combine planning and production-code generation in one step. Do not silently expand scope. Record clarifying questions instead of inventing material requirements.
 
@@ -117,22 +118,21 @@ Local adapters must be explicit, observable, document reduced guarantees, and be
 
 ## Reusable Prompt Workflow
 
-For explicit phase-by-phase execution:
+For behavior-changing work:
 
 1. `/create-plan`
-2. review and approve the Plan
-3. `/create-implementation-plan`
-4. review and approve the Implementation Plan
-5. `/generate-tests` — establish RED only
-6. implement the smallest approved GREEN change
-7. `/refactor-code` — only after GREEN
-8. `/review-code` or the applicable final review
+2. review and approve the Plan containing separate RED/GREEN and optional REFACTOR milestones
+3. `/create-implementation-plan` for the RED milestone
+4. review and approve the RED Implementation Plan
+5. `/generate-tests` — establish valid RED only and stop
+6. `/create-implementation-plan` for the GREEN milestone
+7. review and approve the GREEN Implementation Plan
+8. `/implement-approved-plan` — implement minimal GREEN only and stop
+9. when justified, `/create-implementation-plan` for the REFACTOR milestone
+10. review and approve the REFACTOR Implementation Plan
+11. `/refactor-code` — preserve GREEN and stop
+12. `/review-code` or the applicable final review
 
-`/implement-approved-plan` is an optional orchestrated workflow that
-executes RED → GREEN → REFACTOR sequentially from an already approved
-Implementation Plan.
-
-Use the phase-by-phase workflow when independent RED/GREEN evidence or
-human inspection between phases is important.
+No prompt is allowed to execute RED → GREEN → REFACTOR sequentially from one Implementation Plan. Each phase milestone has its own reviewed authorization boundary.
 
 Copy prompt files from `{STANDARDS_REPO}/.github/prompts/` into the target repository only after validating their relative references and supported tool names.

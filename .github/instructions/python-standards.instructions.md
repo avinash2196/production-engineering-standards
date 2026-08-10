@@ -9,13 +9,14 @@ Follow the applicable guidance in [Python backend standards](../../stacks/python
 
 For non-trivial behavior changes:
 
-1. work from an approved plan and implementation plan;
-2. add or update a behavior-focused test and confirm the expected failure;
-3. implement the smallest change that makes it pass;
-4. run the focused and relevant regression suites;
-5. refactor only while tests remain green.
+1. work from an approved Plan containing separate RED and GREEN milestones; add a separate REFACTOR milestone only when justified;
+2. create and obtain approval for the current phase-specific Implementation Plan;
+3. during RED, change approved tests/checks only, confirm valid RED, record evidence, and stop;
+4. create and obtain approval for the separate GREEN Implementation Plan;
+5. during GREEN, require predecessor RED evidence, implement the smallest approved Python/FastAPI behavior, run focused and relevant regression suites, and stop;
+6. refactor only through a separately approved REFACTOR milestone from a verified GREEN baseline.
 
-Do not introduce requirements or files outside the approved implementation plan.
+Do not introduce requirements or files outside the approved current milestone, and do not advance to the next phase without its own reviewed Implementation Plan.
 
 ## Architecture Defaults
 

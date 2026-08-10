@@ -15,16 +15,37 @@ A single `copilot-instructions.md` file is useful for persistent context, but it
 
 ## Required Development Lifecycle
 
-Qualifying implementation work follows:
+Qualifying implementation work follows the same high-level PDD/TDD sequence used throughout this repository:
 
 > **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
-The two planning artifacts have different responsibilities:
+The important control boundary is that **RED, GREEN, and optional REFACTOR are separate Plan milestones for behavior-changing work**:
 
-- `docs/.ai/Plan.md` defines **what** will be delivered, milestone order, scope, risks, and success criteria.
-- `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` defines **how** one approved milestone will be implemented: exact files, tests, expected RED behavior, minimal GREEN code, refactoring boundaries, and commands.
+```text
+Approved Plan
+  → RED milestone
+      → RED Implementation Plan
+      → Human Review
+      → Tests/checks only
+      → Valid RED evidence
+  → GREEN milestone
+      → GREEN Implementation Plan
+      → Human Review
+      → Minimal production implementation
+      → GREEN evidence
+  → REFACTOR milestone (only when justified)
+      → REFACTOR Implementation Plan
+      → Human Review
+      → Behavior-preserving cleanup
+      → Remains GREEN
+  → Final Review
+```
 
-Before Plan creation, material requirement ambiguity is resolved rather than guessed through. Production code is not written during either planning phase. Tests or executable checks are created first, observed RED for the intended reason, followed by the smallest implementation required for GREEN. Refactoring is separate and must preserve GREEN.
+`docs/.ai/Plan.md` defines **what** will be delivered, the phase-specific milestone order, predecessor relationships, scope, risks, and success criteria. Each repository-changing milestone then receives its own `docs/.ai/NNN_Implementation_Plan_<Milestone>.md`, which defines **how that phase only** will be executed.
+
+This extra separation is intentional for AI-assisted development: a human can validate the RED interpretation before production code is authorized, GREEN stays minimal, and refactoring cannot be smuggled into feature implementation. An end-to-end request does not waive these review gates for behavior-changing work.
+
+Before Plan creation, material requirement ambiguity is resolved rather than guessed through. Framework defaults, common practices, and industry assumptions do not become requirements merely because information is missing.
 
 See [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md).
 
@@ -66,6 +87,8 @@ See:
 | **Human review** | Evaluate context-sensitive trade-offs | Architecture, resilience, security, operational readiness |
 
 A documented rule is described as enforced only when an executable mechanism blocks the violation. Current status is tracked in the [Enforcement Matrix](docs/enforcement-matrix.md).
+
+Repository tests also guard the canonical PDD phase model so active guidance cannot silently collapse RED, GREEN, and optional REFACTOR back into one milestone or one Implementation Plan.
 
 ## Repository Structure
 
@@ -154,6 +177,7 @@ CI runs the same sequence and currently enforces:
 - active Markdown link integrity
 - prompt frontmatter conventions
 - Agent Skill structure and required frontmatter
+- canonical PDD phase-milestone semantics (separate RED/GREEN/optional-REFACTOR milestones and phase-specific Implementation Plans)
 - absence of known placeholder implementations
 - absence of deprecated active configuration terminology
 - Python local-adapter selection and production startup guards

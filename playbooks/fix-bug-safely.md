@@ -2,94 +2,102 @@
 
 ## Purpose
 
-Diagnose and fix a defect with a reproducible test, minimal implementation, and separate refactoring.
+Diagnose and fix a defect with a reproducible RED milestone, a separately reviewed minimal GREEN fix, and optional separately reviewed refactoring.
 
 ## 1. Reproduce and Bound the Defect
 
 Collect evidence:
 
 - observed and expected behavior
-- reproducible input or event
-- affected environment and adapter selection
+- reproducible input/event when available
+- affected environment and adapter selection when relevant
 - correlation ID, logs, metrics, or trace when available
 - affected contract and regression risk
 
-Do not change code while the failure is still ambiguous.
+Do not change code while the defect or expected behavior is materially ambiguous.
 
-## 2. Update the Plan
+## 2. Update and Review the Plan
 
-Add a bug-fix milestone to `docs/.ai/Plan.md` describing:
+Add separate milestones such as:
 
-- user/business impact
-- reproduction
-- expected behavior
-- scope and exclusions
-- success criteria
+1. `<Defect> Regression Test — RED`
+2. `<Defect> Minimal Fix — GREEN`
+3. `<Defect> Refactor — REFACTOR` only when justified
 
-Obtain approval.
+The Plan must describe impact, reproduction, expected behavior, scope/exclusions, predecessor relationships, and success criteria. Obtain approval.
 
-## 3. Create the Implementation Plan
+## 3. RED Milestone — Plan and Reproduce
 
-Create a milestone-specific Implementation Plan with:
+Create a RED Implementation Plan with:
 
-- root-cause hypothesis supported by current code
-- exact failing test to add
+- exact regression test/check file
+- expected approved behavior
+- focused command
 - expected RED assertion
-- minimal source change
-- transaction/concurrency/idempotency impact
-- observability update only when needed to detect recurrence
-- refactoring explicitly separated
+- test support required to reproduce the defect
+- out-of-scope work
 
-Obtain approval.
+Do not include the source fix or refactoring design.
 
-## 4. RED — Add the Regression Test
+Obtain approval, execute with `/generate-tests`, and confirm failure is caused by the reported defect. A broken fixture or unrelated environment failure is not valid RED. Stop after recording valid RED.
 
-Create the smallest test that reproduces the defect:
+## 4. Diagnose Root Cause
 
-- unit test for policy/logic defects
-- controller/contract test for validation or API defects
-- integration test for persistence, transaction, adapter, or concurrency defects
-
-Run it and confirm it fails for the reported defect. A broken fixture or unrelated environment failure is not valid RED.
-
-## 5. Diagnose Root Cause
-
-Trace the real path and document why the defect occurred. Distinguish:
+Use the established RED reproduction and current code to identify the supported root cause. Distinguish as applicable:
 
 - incorrect business logic
 - missing validation
 - transaction/rollback issue
-- duplicate or ordering issue
-- configuration or adapter-selection issue
+- duplicate/ordering issue
+- configuration/adapter-selection issue
 - race condition
 - provider-specific behavior
 
-Do not fix only the symptom when the approved scope covers the root cause.
+Do not widen scope beyond the approved defect. If diagnosis reveals a materially different requirement or larger problem, update the Plan before continuing.
 
-## 6. GREEN — Implement the Minimal Fix
+## 5. GREEN Milestone — Plan and Implement the Minimal Fix
 
-- change only files named in the Implementation Plan
+Create a separate GREEN Implementation Plan that references the RED evidence and defines:
+
+- root cause supported by current code/evidence
+- exact production files
+- minimum source change
+- transaction/concurrency/idempotency impact where applicable
+- observability update only when required to diagnose recurrence and supported by scope
+- focused/regression commands
+- explicit exclusions
+
+Obtain approval, then execute with `/implement-approved-plan`:
+
+- change only approved files
 - preserve unrelated behavior
-- avoid cleanup or new features
-- run the regression test and relevant suite
+- avoid cleanup/new features
+- run regression test and relevant suite
+- record GREEN evidence
+- stop after GREEN
 
-## 7. REFACTOR
+## 6. Optional REFACTOR Milestone
 
-Only after GREEN:
+Only when a concrete maintainability/design issue remains after the fix:
 
-- improve names or extraction needed to make the fix maintainable
-- keep behavior unchanged
-- rerun tests after every meaningful change
+- add a separate REFACTOR milestone
+- create and approve its Implementation Plan
+- start from verified GREEN
+- perform behavior-preserving cleanup only
+- rerun focused and relevant regression tests
 
-## 8. Operational Follow-Up
+Do not hide additional bug fixes inside refactoring.
 
-When the defect was not observable, add the smallest appropriate log, metric, trace attribute, or alerting signal. Do not log secrets or sensitive payloads.
+## 7. Operational Follow-Up
+
+When the approved scope includes improving detectability, add the smallest appropriate log, metric, trace attribute, or alerting signal. Do not log secrets or sensitive payloads.
 
 ## Completion Criteria
 
 - [ ] Reproduction and expected behavior are documented
-- [ ] Regression test was observed RED
-- [ ] Minimal fix made it GREEN
+- [ ] RED regression milestone was observed failing for the expected defect
+- [ ] GREEN fix had a separately reviewed Implementation Plan
+- [ ] Minimal fix made the regression test GREEN
 - [ ] Relevant regression suite is GREEN
-- [ ] Refactoring was separate and preserved behavior
+- [ ] Any refactor was a separate justified milestone and preserved behavior
 - [ ] Root cause and residual risk are recorded

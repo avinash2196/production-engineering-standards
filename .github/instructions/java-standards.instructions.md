@@ -9,13 +9,14 @@ Follow the applicable guidance in [Java and Spring standards](../../stacks/java-
 
 For non-trivial behavior changes:
 
-1. use an approved plan and implementation plan;
-2. add or update the smallest behavior-focused test and verify the expected failure;
-3. implement the minimum code needed for green;
-4. run focused and relevant regression tests;
-5. refactor only after green and preserve behavior.
+1. work from an approved Plan containing separate RED and GREEN milestones; add a separate REFACTOR milestone only when justified;
+2. create and obtain approval for the current phase-specific Implementation Plan;
+3. during RED, change approved tests/checks only, verify valid RED, record evidence, and stop;
+4. create and obtain approval for the separate GREEN Implementation Plan;
+5. during GREEN, require predecessor RED evidence, implement the minimum approved Java/Spring behavior, run focused and relevant regression tests, and stop;
+6. refactor only through a separately approved REFACTOR milestone from a verified GREEN baseline.
 
-Do not expand scope or mix unrelated cleanup into the behavior change.
+Do not expand scope, pull later dependencies forward, or mix unrelated cleanup into a behavior milestone. Do not advance to the next phase without its own reviewed Implementation Plan.
 
 ## Architecture Defaults
 

@@ -4,16 +4,19 @@ Guidance, a minimal configuration/build skeleton, and integration notes for Java
 
 ## Delivery Workflow
 
-Use the template only after approving:
+Use the template only after approving a Plan that defines scope, risks, success criteria, and the required PDD phase milestones. For behavior-changing work, RED and GREEN are separate milestones. REFACTOR is also separate when justified.
 
-1. a Plan defining scope, milestones, risks, and success criteria;
-2. an Implementation Plan defining exact files, tests, code approach, and exclusions.
+Execute one approved milestone at a time:
 
-Then add the first failing test, implement the minimum code for GREEN, and refactor separately.
+1. **RED milestone** — approve a RED-specific Implementation Plan, add only the approved tests/test support, confirm the expected RED, record evidence, and stop.
+2. **GREEN milestone** — after the predecessor RED evidence is approved, approve a GREEN-specific Implementation Plan, add only the minimum production changes required for GREEN, record evidence, and stop.
+3. **REFACTOR milestone (optional)** — after GREEN, create and approve a separate REFACTOR Implementation Plan only when structural cleanup is justified; preserve behavior and keep tests GREEN.
+
+Do not authorize RED, GREEN, and REFACTOR from one Implementation Plan, and do not advance into the next phase without its own reviewed plan.
 
 ## Base Template Status
 
-`project-template/` contains only the minimum Spring Boot build/configuration foundation. It is not a complete runnable service. Application source plus database, messaging, cache, storage, security, observability, vendor, and local-adapter dependencies must be added only when selected by the approved Implementation Plan.
+`project-template/` contains only the minimum Spring Boot build/configuration foundation. It is not a complete runnable service. Application source plus database, messaging, cache, storage, security, observability, vendor, and local-adapter dependencies must be added only when selected by the approved current phase-specific Implementation Plan.
 
 For an event-only service, do not add the web stack merely because it appears in another example. For a simple REST service, do not add Kafka, Redis, object storage, or managed-secret SDKs unless the service actually uses them.
 

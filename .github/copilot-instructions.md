@@ -8,14 +8,18 @@ For any task that changes production behavior, contracts, shared standards, reli
 
 > **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
+Apply that sequence through separate human-controlled Plan milestones:
+
 1. Create or update `docs/.ai/Plan.md` using the [Plan Template](../templates/docs/plan-template.md).
-2. Do not include complete production code in the Plan.
-3. After Plan approval, create a milestone-specific `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` using the [Implementation Plan Template](../templates/docs/implementation-plan-template.md).
-4. Do not edit production source until the Implementation Plan is approved.
-5. Write or update tests first and confirm RED for the expected missing behavior.
-6. Implement only enough production code to reach GREEN.
-7. Refactor separately while keeping all relevant tests GREEN.
-8. Complete final review and repository validation.
+2. Resolve material requirement ambiguity before Plan creation; do not invent missing behavior, controls, infrastructure, or non-functional requirements.
+3. For behavior-changing work, create separate `RED` and `GREEN` milestones. Add a separate `REFACTOR` milestone only when concrete refactoring is justified.
+4. After Plan approval, create one milestone-specific `docs/.ai/NNN_Implementation_Plan_<Milestone>.md` for the **current phase only** using the [Implementation Plan Template](../templates/docs/implementation-plan-template.md).
+5. Obtain human approval before executing that milestone.
+6. RED milestones modify tests/checks only, prove valid RED, record evidence, and stop.
+7. GREEN milestones require valid predecessor RED evidence plus their own approved GREEN Implementation Plan; implement only enough production behavior to reach GREEN, record evidence, and stop.
+8. REFACTOR milestones are optional, require a verified GREEN baseline plus their own approved REFACTOR Implementation Plan, preserve behavior, and stop.
+9. Do not automatically advance to the next milestone. An end-to-end request does not waive these review gates for behavior-changing work.
+10. Complete final review and repository validation after the required milestone chain is complete.
 
 Full workflow: [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md)
 
@@ -145,11 +149,11 @@ Do not call a rule “enforced” unless an executable mechanism blocks the viol
 
 - `/review-requirements` — analyze requirement completeness and ask only blocking clarification questions; no planning or implementation
 - `/create-plan` — create or update `docs/.ai/Plan.md` only after the requirements gate passes; no implementation
-- `/create-implementation-plan` — create the exact milestone implementation plan; no source changes
-- `/implement-approved-plan` — run RED → GREEN → REFACTOR from an approved implementation plan
-- `/scaffold-service` — orchestrate service creation through all planning and test gates
-- `/generate-tests` — create tests only and verify RED when behavior is not implemented
-- `/refactor-code` — refactor only from a GREEN baseline
+- `/create-implementation-plan` — create one phase-specific milestone Implementation Plan; no source/test changes
+- `/generate-tests` — execute one approved RED milestone only, verify valid RED, and stop
+- `/implement-approved-plan` — execute one approved GREEN or non-behavior milestone only; never RED or REFACTOR
+- `/refactor-code` — execute one approved REFACTOR milestone only from a verified GREEN baseline
+- `/scaffold-service` — orchestrate service creation while preserving Plan and per-milestone human review gates
 - `/review-code`, `/review-architecture`, `/review-distributed-systems`, `/review-production-readiness` — evidence-based reviews
 - `/compliance-review`, `/review-hipaa` — engineering control reviews, not legal certification
 

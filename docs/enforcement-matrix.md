@@ -12,6 +12,7 @@ A rule is described as **enforced** only when the automated-enforcement column n
 | Agent Skills use required structure and metadata | Requirements/review skills | Skill review | `validate_repository.py` and CI | Enforced |
 | Known placeholder implementations are rejected | Definition of Done | Code review | `validate_repository.py` and CI | Enforced |
 | Plan and Implementation Plan templates exist | PDD workflow | Planning review | Required-path validator | Enforced in this repository |
+| RED/GREEN/optional-REFACTOR remain separate phase milestones in active guidance | PDD workflow | Planning/code review | `test_pdd_workflow_semantics.py` and CI | Enforced in this repository |
 | Plan precedes Implementation Plan | PDD workflow | Human approval gate | Workflow/prompt behavior; project CI not yet implemented | Reviewed |
 | Tests precede production implementation | PDD workflow | Implementation review | Service-specific CI and commit history evidence | Project responsibility |
 | Python template local-only adapters cannot run in production | Local adapter strategy | Production-readiness review | `Settings` startup validation plus `test_settings.py` in CI | Enforced for Python template |

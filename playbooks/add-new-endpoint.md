@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Add an API endpoint through an approved contract and a test-first milestone without mixing unrelated implementation or refactoring.
+Add an API endpoint through approved requirements and small PDD milestones so tests, implementation, and optional refactoring remain independently reviewable.
 
 ## 1. Review Requirements and Current State
 
@@ -11,84 +11,73 @@ Read:
 - `docs/.ai/Plan.md` or source requirement
 - existing OpenAPI/API conventions
 - related controllers, DTOs, services, domain behavior, repositories, and tests
-- authorization and data-classification requirements
+- authorization/data-classification requirements when applicable
 
-Clarify only material gaps such as validation, status codes, idempotency, or authorization. Do not invent behavior.
+Clarify only material gaps such as validation, success/error behavior, status codes, idempotency, or authorization. Do not invent behavior.
 
 ## 2. Update and Review the Plan
 
-Add the endpoint milestone to `docs/.ai/Plan.md` with:
+Represent behavior-changing endpoint work as separate milestones, for example:
 
-- resource and business outcome
-- supported operation
-- validation and business rules
-- success and error behavior
-- explicit exclusions
+1. Endpoint Contract/Controller Tests — RED
+2. Endpoint Minimal Implementation — GREEN
+3. Endpoint Refactor — REFACTOR only when justified
 
-Obtain approval.
+If domain/application or persistence behavior is substantial enough to benefit from smaller control boundaries, split it into additional RED/GREEN pairs rather than creating one oversized endpoint milestone.
 
-## 3. Create the Endpoint Implementation Plan
+Each milestone must state its phase, outcome, predecessor, and explicit exclusions. Obtain Plan approval.
+
+## 3. Create the RED Implementation Plan
 
 Create:
 
 ```text
-docs/.ai/NNN_Implementation_Plan_<Endpoint>.md
+docs/.ai/NNN_Implementation_Plan_<Endpoint>_Tests.md
 ```
 
-Define exact changes for:
+Define only:
 
-- request/response or event contracts
-- controller/API tests
-- application/domain tests
-- persistence/adapter tests only if required
-- expected RED failures
-- minimal controller, service, domain, and repository changes
-- authorization, transaction, idempotency, error mapping, and observability decisions
-- refactoring allowed after GREEN
+- exact controller/contract/application/integration test files required by this RED milestone
+- approved request/response behavior, validation, error behavior, and authorization cases
+- persistence/adapter cases only when required by this milestone
+- focused command
+- expected RED failures and why they prove the endpoint behavior is missing
+- out-of-scope work
 
-Obtain approval before editing tests or production source.
+Obtain approval, then execute with `/generate-tests`. Confirm valid RED and stop.
 
-## 4. RED — Write Tests First
+## 4. Create the GREEN Implementation Plan
 
-Recommended order:
+After RED evidence exists, create a separate GREEN Implementation Plan defining only:
 
-1. contract/controller tests for validation, mapping, status codes, and authorization
-2. application/domain tests for positive and negative business behavior
-3. integration tests only for new persistence or adapter behavior
+- predecessor RED evidence
+- exact transport DTO/controller/handler changes
+- exact application/domain operation changes
+- repository/capability interaction only when required
+- approved error mapping, transaction, idempotency, authorization, and observability behavior
+- focused and regression commands
+- out-of-scope work
 
-Run the smallest relevant command. Confirm the failure is caused by the missing endpoint behavior, not invalid setup.
+Obtain approval, then execute with `/implement-approved-plan`.
 
-## 5. GREEN — Minimal Implementation
+Implement only enough approved production behavior to reach GREEN. Do not add unrelated fields, endpoints, infrastructure, tests, or cleanup. Stop after GREEN.
 
-Implement only what the approved tests require:
+## 5. Optional REFACTOR Milestone
 
-- transport DTOs and validation
-- thin controller/handler
-- application/domain operation
-- repository or capability interaction when required
-- explicit error mapping
+Create a separate REFACTOR milestone only when there is a concrete cleanup/design reason such as duplicated mapping, poor naming, mixed responsibility, or a justified extraction.
 
-Do not add unrelated fields, endpoints, infrastructure, or cleanup.
+Its Implementation Plan must name the verified GREEN baseline, exact structural changes, behavior/contracts that remain unchanged, and before/after test commands.
 
-Run focused tests and relevant regression tests.
+Execute with `/refactor-code` only after approval.
 
-## 6. REFACTOR
-
-After GREEN:
-
-- improve names and mapping boundaries
-- remove duplication
-- extract cohesive validation or domain concepts
-- preserve API, status codes, error payloads, and persistence behavior
-
-Run tests after each meaningful refactor.
-
-## 7. Review
+## 6. Review
 
 - [ ] Contract matches approved requirement
-- [ ] DTOs are separate from domain/persistence models where appropriate
-- [ ] Controller/handler contains no business policy
-- [ ] Authorization and validation are enforced at correct boundaries
+- [ ] RED and GREEN were separate milestones with separate approved Implementation Plans
+- [ ] RED evidence is valid and predates GREEN implementation
+- [ ] DTO/domain/persistence boundaries are appropriate to service complexity
+- [ ] Controller/handler contains no unapproved business policy
+- [ ] Authorization and validation are enforced at approved boundaries
 - [ ] Transaction/idempotency behavior is explicit where relevant
-- [ ] RED → GREEN → REFACTOR evidence is recorded
+- [ ] Any REFACTOR milestone was separate and preserved behavior
 - [ ] Existing API behavior remains compatible unless an approved breaking change exists

@@ -1,6 +1,6 @@
 ---
-description: "Create or update test files for an approved Implementation Plan. Tests only; establish RED before production implementation."
-argument-hint: "approved Implementation Plan path; optional focused test type"
+description: "Execute an approved RED milestone Implementation Plan. Tests/checks only; establish valid RED and stop before production implementation."
+argument-hint: "approved RED Implementation Plan path; optional focused test type"
 agent: "agent"
 tools:
   - codebase
@@ -12,14 +12,15 @@ tools:
   - problems
 ---
 
-You are the RED phase of the Prompt-Driven Development workflow.
+You are the RED milestone execution phase of the Prompt-Driven Development workflow.
 
 ## Preconditions
 
 - Read `docs/.ai/Plan.md`.
 - Read the approved milestone Implementation Plan.
-- Read the current source and existing test conventions.
-- If the Implementation Plan is missing or does not specify expected behavior and test files, stop without writing tests.
+- Verify the Plan milestone and Implementation Plan phase are `RED`.
+- Read current source and existing test conventions.
+- If the Implementation Plan is missing, unapproved, mixes GREEN/REFACTOR scope, or does not specify approved behavior, test/check files, and expected RED, stop without writing tests.
 
 References:
 
@@ -32,22 +33,27 @@ References:
 
 ## Rules
 
-1. Modify test files only. Do not change production code, production configuration, or contracts.
-2. Cover approved positive and negative cases. Do not invent requirements.
-3. Unit tests must avoid network, file-system, and real database dependencies.
-4. Integration tests must use isolated Testcontainers, official emulators, or explicit local adapters defined by the plan.
-5. Test behavior and public contracts, not private implementation details.
-6. Use Arrange → Act → Assert or Given → When → Then consistently.
-7. Run the smallest focused test command after writing tests.
-8. Confirm RED is caused by the missing approved behavior.
-9. Record unexpected passing tests or unrelated failures instead of changing production code.
+1. Modify only test, test-support, or executable-check files authorized by the RED Implementation Plan.
+2. Do not change production code, production configuration, or production contracts.
+3. Cover approved positive and negative cases. Add boundary cases only when required by the approved behavior or correctness.
+4. Do not invent requirements.
+5. Unit tests must avoid network, file-system, broker, and real-database dependencies unless those are the actual boundary under an approved integration test.
+6. Integration tests must use isolated Testcontainers, official emulators, or explicit local adapters selected by the approved plan.
+7. Test public/observable behavior rather than private implementation details.
+8. Run the smallest focused command after writing tests/checks.
+9. Confirm RED is caused by the expected missing approved behavior.
+10. If a test unexpectedly passes or failure is unrelated, record it and stop rather than changing production code.
+11. Record RED evidence in the Implementation Plan's Execution Evidence section without changing approved scope.
+12. **Stop after valid RED.** The next GREEN milestone requires its own Implementation Plan and human approval.
 
 ## Output
 
 Report:
 
-- test files created or updated
+- test/check files created or updated
 - approved behaviors covered
 - focused command run
 - expected failure observed
-- whether RED is valid and implementation may proceed
+- why RED is valid
+- whether the RED milestone is complete
+- explicit statement that production implementation was not performed

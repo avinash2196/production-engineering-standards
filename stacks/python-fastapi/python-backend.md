@@ -6,15 +6,17 @@ Provide practical Python 3.12+/FastAPI defaults for plan-driven delivery, test-f
 
 ## Required Workflow
 
-For non-trivial work:
+For non-trivial behavior-changing work:
 
-1. review requirements and current repository state;
-2. approve `docs/.ai/Plan.md`;
-3. approve a milestone-specific Implementation Plan with exact files/tests;
-4. add the focused test and confirm RED;
-5. implement the smallest change for GREEN;
-6. refactor while tests remain green;
-7. run the full applicable Definition of Done.
+1. review requirements and current repository state; if a material decision is missing or contradictory, ask the user and stop rather than inventing it;
+2. approve `docs/.ai/Plan.md`, with separate RED and GREEN milestones and an optional separate REFACTOR milestone when justified;
+3. for the current milestone only, approve a phase-specific Implementation Plan with exact files, allowed changes, verification commands, and exclusions;
+4. execute only that phase:
+   - RED: tests/test support only, confirm expected RED, record evidence, stop;
+   - GREEN: require approved predecessor RED evidence, implement the smallest production change for GREEN, record evidence, stop;
+   - REFACTOR: require approved predecessor GREEN evidence, change structure only, preserve behavior, remain GREEN, stop;
+5. do not advance to the next phase until its own Implementation Plan is approved;
+6. run the applicable Definition of Done for the completed milestone and the final capability review when the sequence is complete.
 
 ## Architecture
 

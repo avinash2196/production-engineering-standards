@@ -2,13 +2,15 @@
 
 ## Purpose
 
-This standard defines the required lifecycle for AI-assisted implementation work. It separates requirements, design decisions, tests, implementation, and refactoring so that each stage can be reviewed independently.
+This standard defines the required lifecycle for AI-assisted implementation work. It separates requirements, planning, tests, implementation, and refactoring into small human-controlled boundaries so each stage can be reviewed independently before the agent advances.
 
-The workflow is:
+The high-level workflow is:
 
 > **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
-A prompt is not approval to skip planning. A plan is not approval to generate code. Passing tests are not approval to combine unrelated refactoring with a feature.
+In this repository, that high-level sequence is implemented through **separate Plan milestones for RED, GREEN, and optional REFACTOR work**. Each repository-changing milestone receives its own Implementation Plan and human review before execution.
+
+A prompt is not approval to skip planning. A Plan is not approval to generate code. Approval of a RED milestone is not approval to implement GREEN. Passing tests are not approval to perform an unplanned refactor.
 
 ## When This Workflow Applies
 
@@ -21,18 +23,19 @@ Use the complete workflow when work does any of the following:
 - fixes a defect that could regress
 - changes reliability, security, compliance, or transaction behavior
 
-For a documentation-only or configuration-only change, use the same planning gates. The RED check may be a repository validator, linter, schema check, or configuration test instead of a unit test.
+For documentation-only or configuration-only work, use the same planning gates when the change is non-trivial. The executable RED/GREEN evidence may be a repository validator, linter, schema check, configuration test, or another relevant check instead of a unit test.
 
 ## Phase 0 — Review Requirements and Current State
 
-Before creating a plan:
+Before creating a Plan:
 
 1. Read the requirement or user request.
 2. Read relevant source, tests, contracts, configuration, and standards.
-3. Identify ambiguities that materially affect behavior.
-4. Do not invent API behavior, business rules, infrastructure, or non-functional requirements.
+3. Apply the repository requirements-analysis guidance when available.
+4. Identify ambiguities that materially affect behavior, contracts, data handling, security/compliance, persistence/integration behavior, testing, or milestone boundaries.
+5. Do not invent API behavior, business rules, infrastructure, compliance obligations, security mechanisms, or non-functional requirements.
 
-If a critical ambiguity remains, ask numbered clarification questions only. Otherwise continue.
+If a material ambiguity remains, ask numbered clarification questions only and do not create or update the Plan. Do not use framework defaults, common architecture practice, or industry assumptions to resolve a material requirement gap.
 
 ## Phase 1 — Create the Plan
 
@@ -42,77 +45,114 @@ Create:
 docs/.ai/Plan.md
 ```
 
-The Plan defines **what** will be delivered and in what milestones.
+The Plan defines **what** will be delivered and the human-controlled milestone sequence.
 
-Milestones describe delivery outcomes. RED, GREEN, and Refactor describe the execution lifecycle within each implementation milestone and must not
-be modeled as delivery milestones themselves.
+### Milestone Model
 
-Milestones should be small and independently reviewable.
+PDD milestones are intentionally small execution boundaries. For behavior-changing work:
 
-A milestone contains only the behavior or foundation required for its stated outcome.
+- **RED is a separate milestone** that creates or updates tests/checks only and proves the approved behavior is missing.
+- **GREEN is a separate milestone** that implements only the minimum approved production behavior required to satisfy the preceding RED milestone.
+- **REFACTOR is a separate milestone when refactoring is justified.** It is optional and must preserve the established GREEN behavior.
 
-Do not pull configuration, dependencies, abstractions, infrastructure, or behavior from a later milestone into an earlier milestone merely
-because later work will need it.
+A phase milestone must trace to an approved requirement or behavior. Do not create RED, GREEN, or REFACTOR milestones merely to add ceremony or independent scope.
 
-It must include:
+A Plan may also contain non-behavior milestones such as a project/test foundation or an approved contract artifact when those are real deliverables. Any milestone that changes repository files must still be independently planned and reviewed before execution.
+
+Example:
+
+```text
+Milestone 1 — Project and Test Foundation
+Milestone 2 — Document Validation Tests — RED
+Milestone 3 — Document Validation Implementation — GREEN
+Milestone 4 — Document Validation Refactor — REFACTOR   # only if justified
+Milestone 5 — Persistence Tests — RED
+Milestone 6 — Persistence Implementation — GREEN
+```
+
+Keep milestones small and independently reviewable. Do not pull configuration, dependencies, abstractions, infrastructure, tests, or behavior from a later milestone into an earlier milestone merely because later work may need it.
+
+The Plan must include:
 
 - objective and scope
 - current-state summary
 - requirements and constraints
-- milestone sequence
-- dependencies and risks
+- milestone sequence, including phase identity where applicable
+- dependencies and predecessor relationships
+- risks
 - items explicitly out of scope
 - success criteria
 
-The Plan must not contain complete production code. It may identify likely components, but exact code belongs in the Implementation Plan.
+The Plan must not contain complete production code. It may identify likely components, but exact repository changes belong in the milestone Implementation Plan.
 
 ### Gate 1 — Human Review
 
-Do not create an Implementation Plan until the Plan is reviewed and approved, unless the user explicitly requested end-to-end execution and already supplied the required decisions.
+Do not create the first milestone Implementation Plan until the Plan is reviewed and approved.
 
-## Phase 2 — Create the Implementation Plan
+An end-to-end implementation request does **not** waive this gate or the per-milestone review gates below for behavior-changing work.
 
-Create a milestone-specific file:
+## Phase 2 — Create One Milestone Implementation Plan
+
+For the next approved milestone, create:
 
 ```text
 docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
-The Implementation Plan defines **how** the approved milestone will be delivered.
+The Implementation Plan defines **how that one approved milestone will be executed**. It must identify the milestone phase and contain only work permitted for that phase.
 
-The Implementation Plan must remain within the boundary of the requested
-milestone.
+### RED Milestone Implementation Plan
 
-Include only files, tests, dependencies, configuration, and production
-changes required to satisfy that milestone.
+A RED Implementation Plan may define:
 
-Do not prepare for later milestones by introducing their dependencies,
-configuration, abstractions, adapters, or behavior early.
+- exact test/test-support files to create or update
+- approved positive, negative, and necessary boundary behavior
+- test fixtures, fakes, or test-only configuration required to execute the tests
+- focused command
+- expected failure and why it proves the approved behavior is missing
+- out-of-scope items and success criteria
 
-It must include:
+It must **not** define or authorize production implementation or future refactoring.
 
-- approved Plan milestone being implemented
-- current repository state
-- exact files to create or update
-- exact test cases, including positive and negative behavior
-- expected RED failure and why it proves the missing behavior
-- exact production-code changes
-- transaction, idempotency, dependency-failure/degradation, local-adapter, security, and observability decisions where applicable
-- explicit refactoring boundary
-- out-of-scope items
-- commands and success criteria
+### GREEN Milestone Implementation Plan
 
-The implementation plan must target real existing interfaces and components. It must not introduce placeholders merely to make the plan appear complete.
+A GREEN Implementation Plan may define:
+
+- predecessor RED milestone and recorded valid RED evidence
+- exact production files to create or update
+- minimum logic required to satisfy the approved behavior
+- applicable transaction, idempotency, dependency-failure/degradation, adapter, security, and observability decisions already supported by requirements/approved architecture
+- focused and regression verification commands
+- out-of-scope items and success criteria
+
+It must **not** authorize unrelated test expansion, speculative future architecture, or refactoring.
+
+### REFACTOR Milestone Implementation Plan
+
+A REFACTOR Implementation Plan may define:
+
+- predecessor GREEN milestone and GREEN baseline evidence
+- exact files and structural changes allowed
+- concrete smell, duplication, cohesion, readability, or boundary issue being addressed
+- behavior/contracts that must remain unchanged
+- focused and regression verification commands
+- out-of-scope items and success criteria
+
+It must **not** introduce new observable behavior, feature work, or defect fixes.
+
+### FOUNDATION / OTHER Milestones
+
+A non-behavior milestone must define only the files and executable checks needed for its approved outcome. It must not pull future RED, GREEN, or REFACTOR scope forward.
 
 ### Gate 2 — Human Review
 
-Do not edit production source until the Implementation Plan is reviewed and approved.
+Do not execute a milestone until its Implementation Plan is reviewed and approved.
 
-### Bootstrap Exception for a New Project
+Approval applies only to that milestone. Completing a RED milestone does not authorize GREEN until the GREEN Implementation Plan is separately created and approved. Completing GREEN does not authorize REFACTOR until a REFACTOR milestone exists, is justified, and its Implementation Plan is separately approved.
 
-When a repository does not yet have an executable build and test harness,
-the minimum infrastructure required to execute a meaningful test may be
-created before RED.
+## Bootstrap Exception for a New Project
+
+When a repository does not yet have an executable build and test harness, a **Project/Test Foundation** milestone may create the minimum infrastructure required to execute meaningful tests.
 
 Examples include:
 
@@ -121,65 +161,69 @@ Examples include:
 - test framework dependency
 - test source structure
 
-This exception is limited to build and test infrastructure.
+This foundation milestone must not implement application behavior or pre-install dependencies needed only by later milestones.
 
-It must not implement application behavior.
+A failure caused only by a missing or broken build harness does not count as valid RED.
 
-After the minimum test harness is executable, the normal RED → GREEN
-workflow applies.
+## Phase 3 — Execute a RED Milestone
 
-A failure caused only by a missing or broken build harness does not count
-as valid RED.
+For an approved RED milestone:
 
-## Phase 3 — RED: Write Tests First
+1. Modify only test/test-support files authorized by the RED Implementation Plan.
+2. Express only approved behavior.
+3. Run the smallest relevant test/check command.
+4. Confirm failure is caused by the expected missing behavior, not syntax, broken setup, unavailable unrelated infrastructure, or an incorrect test.
+5. Record the command, observed failure, and why RED is valid.
+6. Stop after RED. Do not edit production implementation.
 
-Create or update test files only.
+A test that unexpectedly passes does not establish RED. Determine whether the behavior already exists or the test is ineffective, and return to planning when scope or assumptions need to change.
 
-Tests must:
+## Phase 4 — Execute a GREEN Milestone
 
-- express approved behavior from the Implementation Plan
-- cover the primary positive and negative cases
-- avoid testing invented requirements
-- target real production boundaries
-- fail for the expected missing behavior, not because of syntax, broken setup, or unrelated defects
+A GREEN milestone may begin only when:
 
-Run the smallest relevant test command and record the expected failure.
+- its predecessor RED milestone is complete;
+- valid RED evidence is available; and
+- the GREEN Implementation Plan is separately reviewed and approved.
 
-A test that unexpectedly passes does not establish RED. Review whether the behavior already exists or the test is ineffective.
+Then:
 
-## Phase 4 — GREEN: Implement the Minimum Code
+1. Modify only production files authorized by the GREEN Implementation Plan.
+2. Implement the smallest behavior required to satisfy the approved tests/behavior.
+3. Do not add speculative abstractions, unrelated cleanup, new requirements, or future-milestone work.
+4. Run the focused tests/checks, then the broader relevant regression suite.
+5. Record commands and summarized results.
+6. Stop after GREEN. Do not refactor unless a separate approved REFACTOR milestone exists.
 
-After RED is established:
+GREEN means the approved behavior passes and relevant existing behavior has not regressed.
 
-1. Change only the production files listed in the approved Implementation Plan.
-2. Implement the smallest behavior required to make the new tests pass.
-3. Do not add speculative abstractions, unrelated cleanup, or new requirements.
-4. Run the focused tests, then the broader relevant suite.
+## Phase 5 — Execute a REFACTOR Milestone When Needed
 
-GREEN means the approved behavior passes and existing behavior has not regressed.
+Refactoring is optional. Create a separate REFACTOR milestone only when there is concrete cleanup or design improvement worth reviewing independently.
 
-## Phase 5 — REFACTOR: Improve Without Changing Behavior
-
-Refactoring begins only after GREEN.
+A REFACTOR milestone may begin only from a verified GREEN baseline and after its own Implementation Plan is approved.
 
 During refactoring:
 
 - preserve public behavior and contracts
-- remove duplication and improve naming or boundaries only where justified
+- perform only the structural changes listed in the approved REFACTOR Implementation Plan
+- remove duplication or improve naming/boundaries only where justified
 - keep each refactor small and reviewable
-- run tests after every meaningful refactor
-- do not add new feature behavior
+- run focused tests after every meaningful refactor and the broader relevant suite at the end
+- do not add feature behavior or defect fixes
 
-If refactoring exposes a missing behavior, return to the planning and RED phases rather than silently expanding scope.
+If refactoring exposes missing behavior, stop and return to Plan → RED milestone → GREEN milestone rather than silently expanding scope.
 
 ## Phase 6 — Final Review
 
 Complete all applicable checks:
 
-- Plan and Implementation Plan match the delivered scope
-- new tests were observed RED before implementation
-- focused and broader tests are GREEN
-- refactoring did not change behavior
+- Plan matches delivered scope and milestone order
+- every executed repository-changing milestone has its own approved Implementation Plan
+- GREEN milestones have predecessor valid RED evidence where behavior changed
+- REFACTOR milestones started from GREEN and preserved behavior
+- focused and broader relevant tests/checks are GREEN
+- implementation did not pull later-milestone scope forward
 - repository validators and static checks pass
 - documentation and enforcement matrix are updated when standards changed
 - remaining risks or deferred work are documented
@@ -189,36 +233,42 @@ Complete all applicable checks:
 For reviewable work, retain:
 
 - approved Plan
-- approved Implementation Plan
-- test names and RED command/result
+- approved phase-specific Implementation Plans
+- RED test/check names, command, and summarized expected failure
 - GREEN command/result
-- refactoring summary
-- final changed-file list
+- REFACTOR before/after GREEN evidence when a refactor milestone exists
+- final changed-file list for each milestone
+- deferred or out-of-scope work
 
 Do not retain private chain-of-thought. Preserve decisions, evidence, and outcomes only.
 
 ## LLM Instructions
 
 - Never collapse Plan and Implementation Plan into one artifact for qualifying work.
-- Never generate production implementation during the planning phases.
-- Write tests before production code and confirm that they fail for the intended reason.
-- Implement only enough code to reach GREEN, then refactor separately.
-- If the user changes scope, update the Plan and Implementation Plan before continuing.
-- For documentation or tooling changes, use the most relevant executable validator as the RED/GREEN check.
+- Never combine RED and GREEN authorization in one behavior-changing Implementation Plan.
+- Never treat approval of a RED milestone as approval to write production code.
+- Never refactor under a GREEN milestone; use a separate approved REFACTOR milestone when refactoring is justified.
+- Never generate production implementation during planning or RED.
+- Do not advance to the next phase milestone until its own Implementation Plan is approved.
+- If the user changes scope, update the Plan and the affected milestone Implementation Plan before continuing.
+- For documentation or tooling changes, use the most relevant executable validator as RED/GREEN evidence when ordinary unit tests are not applicable.
 
 ## Review Checklist
 
-- [ ] Requirements and current state were read before planning
+- [ ] Requirements and current state were reviewed before planning
+- [ ] Material ambiguity was clarified instead of guessed through
 - [ ] `docs/.ai/Plan.md` exists and was reviewed
-- [ ] A milestone-specific Implementation Plan exists and was reviewed
-- [ ] Tests or executable checks were created before production changes
+- [ ] Behavior-changing work uses separate RED and GREEN milestones
+- [ ] REFACTOR is a separate milestone only when justified
+- [ ] Each repository-changing milestone has its own approved Implementation Plan
+- [ ] RED Implementation Plans authorize tests/checks only
+- [ ] GREEN Implementation Plans reference valid predecessor RED evidence
 - [ ] RED failure was caused by the missing approved behavior
-- [ ] Minimal implementation reached GREEN
-- [ ] Refactoring occurred only after GREEN
-- [ ] Full relevant test and validation suite passes
-- [ ] No unapproved requirements or unrelated changes were added
-- [ ] Each milestone contains only work required for its stated outcome
-- [ ] Bootstrap infrastructure, when required, was limited to the minimum test-execution harness
+- [ ] Minimal GREEN implementation stayed inside its approved milestone
+- [ ] REFACTOR work, when present, started from GREEN and preserved behavior
+- [ ] Full relevant test/validation suite passes
+- [ ] No unapproved requirements or later-milestone work were added early
+- [ ] Bootstrap work, when required, was limited to the minimum build/test foundation
 
 ## References
 

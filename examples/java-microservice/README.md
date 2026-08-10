@@ -2,15 +2,15 @@
 
 This directory is a documentation-only reference for how a Java/Spring Boot service can organize API, application, domain, ports, persistence, and infrastructure adapter concerns.
 
-It is **not an executable project**: no Maven wrapper, build file, or source tree is included here. Use the Java stack template and an approved implementation plan when creating a runnable service.
+It is **not an executable project**: no Maven wrapper, build file, or source tree is included here. Use the Java stack template only after the service Plan and the current phase-specific Implementation Plan are approved.
 
 ## Intended Workflow
 
-1. Create and approve a service plan.
-2. Inspect the target repository and approve an implementation plan with exact files and tests.
-3. Add tests for the first behavior and confirm the expected failure.
-4. implement the smallest Spring Boot change required for green.
-5. Refactor only while tests remain green.
+1. Create and approve a service Plan with separate RED and GREEN milestones and an optional REFACTOR milestone when justified.
+2. Inspect the target repository and approve the RED milestone Implementation Plan; add only the approved tests/checks, confirm valid RED, record evidence, and stop.
+3. Approve the GREEN milestone Implementation Plan only after the predecessor RED evidence is reviewed; implement the smallest Spring Boot change required for GREEN, run regression checks, record evidence, and stop.
+4. When concrete cleanup is justified, approve a separate REFACTOR milestone Implementation Plan, preserve behavior, keep tests GREEN, and stop.
+5. Do not auto-advance between phase milestones or authorize multiple phases from one Implementation Plan.
 
 ## Suggested Structure
 

@@ -41,13 +41,18 @@ Every local-only implementation should:
 ## Illustrative Flow
 
 ```text
-approved plan
-  -> approved implementation plan
+approved Plan
+  -> RED milestone + approved RED Implementation Plan
   -> failing adapter-selection/guard tests
+  -> valid RED evidence + stop
+  -> GREEN milestone + approved GREEN Implementation Plan
   -> smallest provider and adapter implementation
-  -> green tests
-  -> refactor with no behavior change
+  -> GREEN evidence + stop
+  -> optional REFACTOR milestone + approved REFACTOR Implementation Plan
+  -> behavior-preserving refactor + remain GREEN
 ```
+
+Each phase is separately planned and reviewed. Do not authorize adapter tests, implementation, and refactoring from one Implementation Plan.
 
 ## What This Walkthrough Does Not Claim
 

@@ -4,11 +4,15 @@ Guidance, an executable reference template, and integration notes for Python 3.1
 
 ## Delivery Workflow
 
-Do not copy the template and immediately generate production behavior. Follow:
+Do not copy the template and immediately generate production behavior. The approved Plan defines the required phase milestones, and each repository-changing milestone receives its own reviewed Implementation Plan.
 
-> Plan -> Implementation Plan -> RED Test -> GREEN Code -> Refactor
+For behavior-changing work:
 
-The approved implementation plan selects the required endpoints, persistence, production adapters, local adapters, and verification commands. The template demonstrates the shared local-adapter strategy; it is not a mandate to carry every demonstrated capability into every real service.
+> Plan -> RED milestone + RED Implementation Plan -> Human Review -> valid RED -> GREEN milestone + GREEN Implementation Plan -> Human Review -> GREEN -> optional REFACTOR milestone + REFACTOR Implementation Plan -> Human Review -> remain GREEN
+
+A RED Implementation Plan authorizes tests/test support only. A GREEN Implementation Plan is created only after approved RED evidence and authorizes only the minimum production changes required for GREEN. Refactoring is separately planned only when justified and must preserve behavior. Do not combine these phases into one Implementation Plan or auto-advance between them.
+
+The current phase-specific Implementation Plan selects only the endpoints, persistence, production adapters, local adapters, files, and verification commands required for that milestone. The template demonstrates the shared local-adapter strategy; it is not a mandate to carry every demonstrated capability into every real service.
 
 ## Base Template
 
@@ -21,7 +25,7 @@ The approved implementation plan selects the required endpoints, persistence, pr
 - local filesystem storage and environment secret adapters;
 - behavior-focused tests for selection, persistence, TTL, and production guards.
 
-Production Kafka, Pub/Sub, Redis, S3, GCS, Vault, or Secret Manager adapters and their SDK dependencies are added only when selected by an approved implementation plan. Requesting a missing adapter produces an actionable error rather than silently choosing a local substitute.
+Production Kafka, Pub/Sub, Redis, S3, GCS, Vault, or Secret Manager adapters and their SDK dependencies are added only when selected by the approved current phase-specific Implementation Plan. Requesting a missing adapter produces an actionable error rather than silently choosing a local substitute.
 
 Metrics, distributed tracing, authentication, and other optional production mechanisms are also added only when selected by the approved service design. Structured startup/shutdown logging remains part of the reference template.
 

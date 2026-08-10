@@ -2,13 +2,15 @@
 
 ## Purpose
 
-This standard controls how AI agents plan, implement, test, and review multi-step engineering work. It exists to keep scope visible, separate design from code generation, and make every meaningful change reviewable.
+This standard controls how AI agents plan, implement, test, and review multi-step engineering work. It keeps scope visible, separates design from code generation, and makes each meaningful phase independently reviewable.
 
 ## Required Workflow
 
-For qualifying implementation work, agents must follow:
+For qualifying implementation work, agents follow:
 
 > **Review context → Plan → Human review → Implementation Plan → Human review → RED tests → GREEN code → Refactor → Final review**
+
+The lifecycle line is a summary. In execution, RED, GREEN, and optional REFACTOR work are separate Plan milestones with separate milestone-specific Implementation Plans and review gates.
 
 Full lifecycle: [Prompt-Driven Development Workflow](prompt-driven-development-workflow.md)
 
@@ -37,7 +39,9 @@ Location:
 docs/.ai/Plan.md
 ```
 
-The Plan defines scope, requirements, milestones, dependencies, risks, exclusions, and success criteria. It must not contain complete production code.
+The Plan defines scope, requirements, phase-specific milestones, predecessor relationships, dependencies, risks, exclusions, and success criteria. It must not contain complete production code.
+
+For behavior-changing work, RED and GREEN are separate milestones. REFACTOR is a separate optional milestone only when justified.
 
 Template: [Plan Template](../templates/docs/plan-template.md)
 
@@ -49,28 +53,37 @@ Location:
 docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
-The Implementation Plan defines exact files, tests, expected RED behavior, production changes, refactoring boundaries, commands, exclusions, and success criteria.
+Each repository-changing Plan milestone has its own Implementation Plan. The plan declares its phase and authorizes only that phase:
+
+- RED: tests/checks and valid RED evidence only
+- GREEN: minimum production behavior and GREEN verification only
+- REFACTOR: behavior-preserving structural changes only
+- FOUNDATION/OTHER: only the approved non-behavior outcome
 
 Template: [Implementation Plan Template](../templates/docs/implementation-plan-template.md)
 
 ## Approval Gates
 
-1. Do not create an Implementation Plan until the Plan is approved.
-2. Do not edit production code until the milestone Implementation Plan is approved.
-3. Do not write production code before the new or updated tests demonstrate RED.
-4. Do not refactor until the minimal implementation is GREEN.
+1. Do not create a milestone Implementation Plan until the Plan is approved.
+2. Do not execute a milestone until that milestone's Implementation Plan is reviewed and approved.
+3. Do not write production behavior during a RED milestone.
+4. Do not begin a GREEN milestone until valid predecessor RED evidence exists and the GREEN Implementation Plan is separately approved.
+5. Do not refactor during GREEN. A REFACTOR milestone must exist, be justified, start from a verified GREEN baseline, and have its own approved Implementation Plan.
+6. Do not automatically advance to the next milestone after completing the current one.
 
-When a user explicitly requests an end-to-end repository update and provides all required decisions, the request may serve as approval to proceed through the documented phases. The agent must still create and follow both artifacts.
+**An end-to-end request does not waive these human review gates for behavior-changing work.** It may define the overall requested scope, but the agent must still stop at the documented Plan and per-milestone approval boundaries.
 
 ## Execution Rules
 
-- **Read before writing.** Read every existing file you intend to modify, plus enough adjacent source, tests, contracts, configuration, and call-path context to understand the change.
-- **Scope-lock.** Update both planning artifacts before expanding scope.
-- **Tests first.** Test files or executable checks are changed before production implementation.
-- **Prove RED.** The failure must be caused by missing behavior, not invalid setup.
-- **Minimal GREEN.** Avoid speculative abstractions or unrelated improvements.
-- **Refactor separately.** Preserve behavior and rerun tests after each meaningful cleanup.
-- **One logical concern per step.** Group files only when they form one coherent change.
+- **Read before writing.** Read every existing file you intend to modify, plus enough adjacent source, tests, contracts, configuration, and call-path context to understand the current phase.
+- **Scope-lock.** Update the Plan and affected milestone Implementation Plan before expanding scope.
+- **One phase per milestone.** Do not combine RED, GREEN, and REFACTOR authorization for behavior-changing work.
+- **Tests first.** RED milestones create/update tests or executable checks before corresponding production implementation.
+- **Prove RED.** The failure must be caused by missing approved behavior, not invalid setup.
+- **Minimal GREEN.** GREEN milestones implement only enough approved production behavior to satisfy the preceding RED behavior.
+- **Refactor separately and optionally.** Perform cleanup only through an approved REFACTOR milestone and preserve behavior.
+- **One logical concern per step.** Group files only when they form one coherent approved change.
+- **No later-milestone preparation.** Do not pull future dependencies, infrastructure, abstractions, tests, or behavior forward merely because later work may need them.
 - **Surface blockers.** Record missing information or unsupported assumptions rather than inventing details.
 - **Preserve evidence.** Record commands and summarized outcomes, not private reasoning.
 
@@ -82,40 +95,46 @@ Before creating a new document:
 2. Prefer updating an existing document over creating a duplicate.
 3. Use the closest template under `templates/docs/`.
 4. Add inbound and outbound links where they improve navigation.
-5. Agent-facing standards must contain `## LLM Instructions` and `## Review Checklist`.
+5. Agent-facing standards must contain `## LLM Instructions` and `## Review Checklist` when the repository convention requires them.
 
-Do not force redundant clarification questions when type, audience, scope, inputs, and cross-links are already clear from the request and repository context.
+Do not force redundant clarification questions when the required type, audience, scope, inputs, and cross-links are already clear from the request and repository context.
 
-## Completion Record
+## Milestone Completion Record
 
-At the end of qualifying work, update the Implementation Plan with:
+At the end of the current milestone, update only its Implementation Plan Execution Evidence section with applicable evidence:
 
-- files created and modified
-- RED command and summarized failure
-- GREEN commands and summarized results
-- refactoring performed
-- deferred or out-of-scope work
+- files created/modified
+- RED command and summarized expected failure for RED
+- GREEN commands/results for GREEN
+- before/after GREEN verification for REFACTOR
+- validation result for FOUNDATION/OTHER
+- deferred/out-of-scope work
+
+Do not rewrite the approved scope after execution merely to make the implementation appear compliant.
 
 ## LLM Instructions
 
-- Create and follow both Plan and Implementation Plan for qualifying work.
-- Never write implementation code in either planning artifact.
-- Modify tests before production code and verify RED before GREEN.
-- Refactor only after tests pass and keep behavior unchanged.
+- Create and follow the approved Plan and a separate Implementation Plan for each repository-changing milestone.
+- Never write implementation code in planning artifacts.
+- Never write production behavior during RED.
+- Never advance from RED to GREEN without a separately approved GREEN Implementation Plan.
+- Never combine refactor work with GREEN; use a separate approved REFACTOR milestone when justified.
 - Do not silently broaden scope or invent missing requirements.
-- Use repository validators for documentation, prompt, and tooling changes.
+- Use repository validators for documentation, prompt, and tooling changes when applicable.
 
 ## Review Checklist
 
 - [ ] Current state and relevant files were reviewed
 - [ ] Plan exists and matches requested scope
-- [ ] Implementation Plan exists and names exact tests and files
+- [ ] RED/GREEN milestones are separate for behavior-changing work
+- [ ] REFACTOR is separate and justified when present
+- [ ] Current milestone has its own approved phase-specific Implementation Plan
 - [ ] Approval gates were respected
-- [ ] RED was verified for the intended reason
-- [ ] Minimal implementation reached GREEN
-- [ ] Refactoring preserved GREEN
-- [ ] Final validation and changed-file summary were recorded
-- [ ] New agent-facing documents contain required instruction sections
+- [ ] RED was verified for the intended reason before the corresponding GREEN milestone
+- [ ] Minimal GREEN implementation stayed within approved scope
+- [ ] REFACTOR, when used, preserved GREEN behavior
+- [ ] Later-milestone work was not pulled forward
+- [ ] Final validation and changed-file summary were recorded honestly
 
 ## References
 

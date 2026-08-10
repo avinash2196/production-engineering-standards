@@ -32,9 +32,17 @@ When available, read and follow:
 
 ## PDD/TDD Integrity
 
-When the project has adopted this workflow, verify that changed behavior is traceable through:
+When the project has adopted this workflow, verify the high-level lifecycle:
 
 **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
+
+For behavior-changing work, also verify the repository's phase-specific control model:
+
+- RED and GREEN are separate Plan milestones.
+- The RED milestone has its own approved Implementation Plan and valid RED evidence.
+- The GREEN milestone has its own separately approved Implementation Plan and references the predecessor RED evidence.
+- Refactoring, when present, is a separate justified REFACTOR milestone with its own approved Implementation Plan and a verified GREEN baseline.
+- Completion of one phase did not automatically authorize the next phase.
 
 A missing artifact is a finding only when the project has adopted the workflow for the reviewed change.
 
