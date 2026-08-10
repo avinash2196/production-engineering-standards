@@ -117,8 +117,6 @@ Local adapters must be explicit, observable, document reduced guarantees, and be
 
 ## Reusable Prompt Workflow
 
-## Reusable Prompt Workflow
-
 For explicit phase-by-phase execution:
 
 1. `/create-plan`
