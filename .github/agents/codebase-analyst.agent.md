@@ -1,3 +1,14 @@
+---
+name: codebase-analyst
+description: "Analyzes an existing repository against applicable production-engineering standards and produces a prioritized evidence-based gap assessment."
+tools:
+  - read
+  - search
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Codebase Analyst
 
 ## Identity

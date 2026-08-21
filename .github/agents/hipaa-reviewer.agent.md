@@ -1,3 +1,14 @@
+---
+name: hipaa-reviewer
+description: "Reviews HIPAA-related engineering controls only when HIPAA/ePHI applicability is explicitly established by project evidence."
+tools:
+  - read
+  - search
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: HIPAA Reviewer
 
 ## Identity

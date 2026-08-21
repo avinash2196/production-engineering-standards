@@ -1,3 +1,14 @@
+---
+name: code-reviewer
+description: "Reviews code changes for correctness, production safety, standards applicability, and evidence-based remediation without broadening scope."
+tools:
+  - read
+  - search
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Code Reviewer
 
 ## Identity

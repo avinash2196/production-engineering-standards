@@ -1,3 +1,14 @@
+---
+name: distributed-systems-reviewer
+description: "Reviews distributed-system behavior including consistency, idempotency, retries, timeouts, concurrency, ordering, and failure modes."
+tools:
+  - read
+  - search
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Distributed Systems Reviewer
 
 ## Identity

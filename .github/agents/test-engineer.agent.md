@@ -1,3 +1,15 @@
+---
+name: test-engineer
+description: "Implements approved RED test/check milestones, proves the intended failure, records evidence, and stops before production implementation."
+tools:
+  - read
+  - search
+  - edit
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Test Engineer
 
 ## Identity

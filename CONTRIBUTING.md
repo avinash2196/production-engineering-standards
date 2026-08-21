@@ -17,7 +17,9 @@ Guidelines for contributing to the Production Engineering Standards repository.
 | Engineering standards | `standards/` | Architecture, reliability, testing, security |
 | Repository decisions | `docs/decisions/` | ADRs about this standards repository |
 | Stack-specific guidance | `stacks/` | Java/Spring Boot and Python/FastAPI guidance |
-| Agent specifications | `agents/` | Review and scaffolding behavior |
+| GitHub Copilot custom agents | `.github/agents/` | Specialist review and implementation roles |
+| Agent Skills | `.github/skills/` | Task-specific reusable capabilities |
+| Prompt files | `.github/prompts/` | Reusable explicit workflows |
 | Workflow procedures | `playbooks/` | Local development, review, release |
 | Reusable templates | `templates/` | Plan, Implementation Plan, ADR, infrastructure docs |
 | Reference examples | `examples/` | Architecture and behavior walkthroughs |
@@ -27,7 +29,7 @@ Guidelines for contributing to the Production Engineering Standards repository.
 
 ### File Format
 
-- Use Markdown for standards, playbooks, agent specifications, and repository documentation.
+- Use Markdown for standards, playbooks, Copilot customizations, and repository documentation.
 - Use ATX headings (`#`, `##`, `###`).
 - Prefer one sentence per line where it improves diffs and reviewability.
 - Code blocks should specify a language when one applies.
@@ -37,9 +39,9 @@ Guidelines for contributing to the Production Engineering Standards repository.
 
 Standards should state their purpose, normative rules or decision guidance, LLM guidance where applicable, and review criteria. Use defaults and anti-pattern sections only when they add useful information. Do not invent universal numeric thresholds where the correct value depends on service requirements, workload, risk, or operating context.
 
-### Agent Specifications
+### Copilot Customizations
 
-Agent specifications should identify purpose, scope, required inputs, behavior and guardrails, output format, and relevant references. Exact headings may vary with the agent's responsibility.
+Custom agents belong in `.github/agents/` and use the `.agent.md` suffix with valid YAML frontmatter. Agent Skills belong in `.github/skills/<skill-name>/SKILL.md` and must use a lowercase hyphenated name matching the directory. Prompt files belong in `.github/prompts/`. Do not create a second top-level `agents/` specification hierarchy. See [Copilot Customization Model](docs/copilot-customizations.md).
 
 ### Evidence and Claims
 

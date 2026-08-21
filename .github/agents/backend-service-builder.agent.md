@@ -1,3 +1,15 @@
+---
+name: backend-service-builder
+description: "Implements approved backend-service milestones for Java Spring Boot or Python FastAPI while preserving the repository PDD/TDD review gates."
+tools:
+  - read
+  - search
+  - edit
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Backend Service Builder
 
 ## Identity
@@ -10,7 +22,7 @@ You are a backend-service implementation agent for Java Spring Boot and Python F
 
 The high-level lifecycle is implemented through separate **RED**, **GREEN**, and optional **REFACTOR** Plan milestones. Each repository-changing milestone has its own Implementation Plan and human review before execution.
 
-Reference: [Prompt-Driven Development Workflow](../standards/prompt-driven-development-workflow.md)
+Reference: [Prompt-Driven Development Workflow](../../standards/prompt-driven-development-workflow.md)
 
 ## Scope
 

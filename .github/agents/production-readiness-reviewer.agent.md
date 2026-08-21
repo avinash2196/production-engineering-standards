@@ -1,3 +1,14 @@
+---
+name: production-readiness-reviewer
+description: "Evaluates production readiness using applicable evidence for configuration, security, observability, resilience, operations, and release safety."
+tools:
+  - read
+  - search
+  - execute
+disable-model-invocation: true
+user-invocable: true
+---
+
 # Agent: Production Readiness Reviewer
 
 ## Identity

@@ -2,115 +2,68 @@
 
 ## Purpose
 
-Define the capability interface for resolving configuration values with an explicit precedence hierarchy, refresh semantics, and observability. Services depend on this abstraction for all non-secret configuration.
+Optional capability contract for projects that need an application-owned configuration boundary—for example because multiple sources, runtime refresh, portability, or testability justify it.
 
-## Interface Contract
+**Do not introduce `ConfigProvider` when framework/platform-native typed configuration is sufficient.** The canonical policy is [Configuration Management](../standards/configuration-management.md).
 
-- `get(key)` → returns the current value for the key, or `null`/`None` if not found.
-- `get(key, defaultValue)` → returns the value or the provided default.
-- `getRequired(key)` → returns the value or throws `ConfigNotFoundException`. Use for mandatory configuration.
-- `getAs(key, type)` → returns the value cast to the specified type (int, bool, duration, list).
-- `addChangeListener(key, callback)` → registers a listener invoked when the value changes (dynamic config support).
+## Contract Shape
 
-## Configuration Precedence
+A project that adopts this capability may need operations such as:
 
-Values are resolved in this order. First match wins:
+- read an optional value;
+- read a required value;
+- bind/convert to an expected type;
+- expose refresh/change behavior **only if runtime mutation is actually supported**.
 
-| Priority | Source | Example | Mutable at Runtime |
-|----------|--------|---------|-------------------|
-| 1 (highest) | Operator overrides | Feature flags, kill switches | Yes |
-| 2 | Dynamic config | Config service, database-backed config | Yes |
-| 3 | Environment variables | `DATABASE_URL`, `LOG_LEVEL` | No (restart required) |
-| 4 | Local config files | `application.yml`, `.env` | No (restart required) |
-| 5 (lowest) | Build defaults | Hardcoded in code | No |
+The exact API belongs to the target language/framework and approved requirements. A minimal boundary may be smaller than the examples historically used by this repository.
 
-## Required Semantics
+## Source Model
 
-- **Precedence is strict.** A value from a higher-priority source always overrides a lower one.
-- **Dynamic refresh:** sources at priority 1-2 may change at runtime. The provider must poll or subscribe for changes and notify registered listeners.
-- **Refresh interval:** configurable, default 30 seconds for polled sources.
-- **Type safety:** the provider must support type coercion for common types (string, int, boolean, duration, list) with clear error messages on coercion failure.
-- **Namespace isolation:** keys should be prefixed by service name to avoid collisions in shared config stores (e.g., `order-service.max-retries`).
+`ConfigProvider` does not define a universal source list or precedence. If multiple sources are used:
 
-## Error Handling
+- use framework/platform precedence where appropriate;
+- otherwise document and test the chosen order;
+- define which sources can mutate at runtime;
+- define source-unavailable and invalid-value behavior;
+- avoid silent fallback when it would change correctness/security behavior.
 
-- `ConfigNotFoundException` on `getRequired` when key is missing → fail fast at startup for mandatory config.
-- Type coercion failure → throw `ConfigTypeMismatchException` with key name, expected type, and actual value.
-- Config source unavailable → fall through to next source in precedence. Log a WARNING. Never silently use defaults without logging.
+Do not assume operator → dynamic → environment → file → build defaults, a 30-second refresh, or centralized dynamic configuration.
 
-## Observability
+## Secrets
 
-- Metrics: `<service>_config_access_total`, `<service>_config_refresh_total`, `<service>_config_errors_total`, `<service>_config_change_events_total`.
-- Log config changes at INFO level: key name, old value, new value (redact if the value looks sensitive).
-- Emit a metric on each dynamic refresh cycle, even if no values changed.
+Keep secret handling separate from ordinary non-sensitive configuration according to the project's approved security/platform model. If the project adopts the optional [`SecretProvider`](SecretProvider.md) boundary, use it for the secret values that boundary owns. Native secret injection/binding is also valid when that is the approved design.
 
-## Production vs Local Differences
+Do not classify a value as a secret solely from a substring in its key; use the project data/security model while treating suspicious names as a review signal.
 
-- **Production:** all 5 precedence levels active. Dynamic config via centralized config service (Spring Cloud Config, Consul, Azure App Configuration, etc.).
-- **Local:** environment variables and local config files only (levels 3-5). Operator overrides and dynamic config typically not available locally.
-- No separate local-adapter toggle for config — it works the same way everywhere, just with fewer sources locally.
+## Failure and Validation
 
-## Java Example
+- Validate required values early enough to fail clearly and safely.
+- Do not expose sensitive values in validation errors or logs.
+- Use defaults only when they are semantically safe and intentional.
+- Runtime refresh/change listeners are optional and require explicit dynamic-config requirements.
+
+## Example Boundary
 
 ```java
 public interface ConfigProvider {
-    String get(String key);
-    String get(String key, String defaultValue);
+    Optional<String> get(String key);
     String getRequired(String key);
-    <T> T getAs(String key, Class<T> type);
-    void addChangeListener(String key, Consumer<ConfigChangeEvent> listener);
-}
-
-@Component
-public class HierarchicalConfigProvider implements ConfigProvider {
-    private final List<ConfigSource> sources; // ordered by precedence
-    
-    @Override
-    public String get(String key) {
-        return sources.stream()
-            .map(source -> source.get(key))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(null);
-    }
 }
 ```
 
-## Python Example
-
-```python
-class ConfigProvider(Protocol):
-    def get(self, key: str, default: str | None = None) -> str | None: ...
-    def get_required(self, key: str) -> str: ...
-    def get_as(self, key: str, type_: type[T]) -> T: ...
-    def add_change_listener(self, key: str, callback: Callable[[ConfigChangeEvent], None]) -> None: ...
-```
-
-## Relationship to SecretProvider
-
-- `ConfigProvider` handles non-sensitive configuration. Secrets (credentials, API keys, encryption keys) must use `SecretProvider`.
-- A config value that looks like a secret (contains "password", "key", "token") should trigger a warning in code review.
-- See [SecretProvider.md](SecretProvider.md).
-
-## Anti-Patterns
-
-- **Hardcoded config in business logic:** all tuneable values must come from `ConfigProvider`.
-- **Secrets in ConfigProvider:** use `SecretProvider` for sensitive values.
-- **No default for optional config:** optional config should always have a sensible default.
-- **Ignoring precedence:** never skip the precedence hierarchy by reading environment variables directly.
+This is illustrative, not mandatory. Prefer typed framework configuration when it provides a clearer API.
 
 ## LLM Instructions
 
-- When a service needs a configurable value, use `ConfigProvider.get()` or `getRequired()`, never hardcode.
-- Ask the user if the value is a secret before choosing ConfigProvider vs SecretProvider.
-- Generate change listeners for values that may be toggled at runtime (feature flags, rate limits).
-- Document the expected config keys in the service README.
+- First inspect whether the target project already has an established configuration mechanism.
+- Do not create `ConfigProvider`, custom source classes, dynamic refresh, or precedence logic unless justified.
+- If the project adopts this contract, keep its API no larger than the approved use cases require.
+- Document source/precedence/failure decisions that materially affect runtime behavior.
 
 ## Review Checklist
 
-- [ ] All configurable values resolved via `ConfigProvider`, not hardcoded.
-- [ ] Mandatory config uses `getRequired` with fail-fast at startup.
-- [ ] Sensitive values use `SecretProvider`, not `ConfigProvider`.
-- [ ] Dynamic config values have change listeners where appropriate.
-- [ ] Config keys namespaced by service name.
-- [ ] Type coercion used instead of manual string parsing.
+- [ ] A custom configuration boundary is actually justified.
+- [ ] Active sources and precedence come from the real stack/design.
+- [ ] Required/default behavior is explicit and safe.
+- [ ] Dynamic refresh exists only when required.
+- [ ] Secret values follow the approved secret-management design.

@@ -2,65 +2,63 @@
 
 ## Purpose
 
-Define controlled secret access without spreading Vault, Secret Manager, or direct environment-variable reads through business code.
+Optional capability boundary for projects that benefit from isolating secret retrieval from business/application logic—for example to contain vendor SDKs, support test doubles/local adapters, or enforce a stable policy boundary.
 
-## Selection
-
-Secret providers are selected explicitly:
-
-| Selection | Environment | Behavior |
-|---|---|---|
-| `vault` / `secretmanager` | production/staging as approved | managed access policy, audit, and rotation capabilities |
-| `env` | local development/tests | no managed rotation, centralized policy, or provider audit trail |
-
-Do not dynamically choose the "most secure available" source. Explicit selection avoids silent security degradation. Production startup rejects `env`.
+A project may instead use its framework/platform's native secret injection/binding when that is simpler and meets the security requirements. See [Secrets Handling](../standards/security/secrets-handling.md).
 
 ## Contract Decisions
 
-- secret name and expected format;
-- current versus versioned access;
+If this boundary is adopted, define only the behavior the project needs:
+
+- secret identifier/name mapping;
+- value type/format;
+- current versus versioned access where relevant;
 - bootstrap timing;
-- cache TTL, if any;
-- rotation behavior;
-- unavailable-provider behavior;
+- caching, if allowed;
+- rotation/refresh behavior supported by the selected backend;
+- unavailable/not-found/authentication behavior;
 - audit and least-privilege requirements.
 
-Security-sensitive secret resolution normally fails closed. Returning stale cached credentials is allowed only when the approved security design defines validity and revocation behavior.
+Do not invent cache TTLs, stale-value fallback, rotation intervals, or backend behavior.
+
+## Local Adapter
+
+The repository includes an environment-backed local reference adapter selected with `SECRET_ADAPTER=env`. Use it only when the adopting project explicitly chooses that local strategy and documents its reduced guarantees. It is not an automatic fallback when a production secret service fails.
+
+Production startup should reject a local-only selector **when that selector exists in the project and the production model prohibits it**.
 
 ## Rules
 
-- Never log, return, or include secret values in metrics/errors.
-- Keep direct environment reads inside the local `EnvSecretProvider` or typed bootstrap configuration.
-- Do not add mandatory caching or rotation behavior unless the provider and requirement support it.
-- Use workload identity/service identity rather than embedded provider credentials.
+- Never log, trace, return in errors, or emit secret values in metrics.
+- Keep provider/backend details out of business logic when this boundary is used.
+- Use the authentication mechanism approved by the selected platform/security architecture; prefer short-lived/workload identity where that is the platform standard.
+- Fail closed for security-sensitive resolution unless an explicitly approved design defines another safe behavior.
 
-## Composition
+## Example
 
 ```java
-@Bean
-@ConditionalOnProperty(name = "adapters.secrets", havingValue = "env")
-SecretProvider envSecretProvider() {
-    return new EnvSecretProvider(System.getenv());
+public interface SecretProvider {
+    String getSecret(String name);
 }
 ```
 
-```python
-if settings.secret_adapter is SecretAdapter.ENV:
-    return EnvSecretProvider()
-```
+The interface is illustrative. Do not add version/caching APIs that current requirements do not need.
 
-## Test-First Requirements
+## Test-First Concerns
 
-- name mapping and missing-secret behavior;
-- no secret value in logs/errors;
-- selection and production rejection;
-- managed-provider error translation;
-- rotation/cache behavior only when part of approved scope.
+When applicable, test:
+
+- identifier mapping and missing-secret behavior;
+- absence of secret values from logs/errors;
+- provider/local-adapter selection rules actually adopted by the project;
+- production rejection of local-only selection when required;
+- backend error translation;
+- cache/rotation behavior only when in approved scope.
 
 ## Review Checklist
 
-- [ ] Provider selection is explicit
-- [ ] `env` is rejected in production
-- [ ] Secret values cannot leak through logs/errors
-- [ ] Access/rotation requirements are grounded in the plan
-- [ ] Local and managed provider tests cover selected behavior
+- [ ] The boundary is justified or already adopted.
+- [ ] Secret values cannot leak through diagnostics.
+- [ ] Backend/authentication choice comes from the deployment/security model.
+- [ ] Local-only behavior cannot become an unapproved production fallback.
+- [ ] Cache/rotation/failure behavior is grounded in provider semantics and requirements.
