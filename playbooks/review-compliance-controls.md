@@ -2,145 +2,106 @@
 
 ## Purpose
 
-Step-by-step procedure for auditing a service's engineering compliance controls, producing a findings report with remediation steps. Covers data protection, encryption, audit logging, access control, and HIPAA-specific controls when applicable.
+Review engineering controls for data protection and an explicitly applicable compliance/security policy. This workflow is not legal advice or certification and must not infer regulatory applicability from domain vocabulary.
 
 ## Prerequisites
 
-- Service codebase accessible
-- Data types handled by the service known (or will be identified in step 1)
-- Compliance tier known (standard or HIPAA-aware)
+- Relevant code/design/configuration evidence.
+- Data inventory/classification or enough evidence to identify what still needs classification.
+- The applicable organization/regulatory/contractual policy when controls depend on it.
 
-## Steps
+## 1. Establish Applicability
 
-### 1. Data Inventory
+Record the policy/classification basis before assessing controls:
 
-Identify all data the service handles and classify each:
+| Item | Status | Evidence / Missing Decision |
+|---|---|---|
+| Data classification model | ESTABLISHED / NEEDS VERIFICATION | `<source>` |
+| Regulatory/contractual framework | ESTABLISHED / N/A / NEEDS VERIFICATION | `<source>` |
+| Organization security policy | ESTABLISHED / NEEDS VERIFICATION | `<source>` |
 
-| Data Element | Classification | Storage Location | Transmitted To |
-|-------------|---------------|-----------------|----------------|
-| Patient name | Restricted/PHI | PostgreSQL `patients.name` | Downstream billing-service |
-| Order total | Internal | PostgreSQL `orders.total` | — |
-| API key | Secret | Vault | — |
+Do not infer HIPAA/PHI, PCI, GDPR, or another framework from field names alone.
 
-**Classification levels:**
-- **Public:** no restrictions
-- **Internal:** not for external exposure, no special handling
-- **Confidential:** requires encryption and access control
-- **Restricted/PHI:** requires encryption, audit logging, access control, data minimization
+## 2. Data Inventory and Minimization
 
-Reference: `standards/compliance/data-classification.md`
+For relevant data/flows:
 
-### 2. Encryption Review
+| Data/flow | Classification | Storage/Transit | Consumers | Required controls | Evidence |
+|---|---|---|---|---|---|
+| `<item>` | `<approved classification>` | `<locations>` | `<callers>` | `<policy-derived>` | `<path/decision>` |
 
-For each confidential/restricted data element:
+Check collection, exposure, logging, copying to non-production environments, retention, and disposal against the applicable policy.
 
-| Check | Expected | Finding |
-|-------|----------|---------|
-| At-rest safeguard (DB/storage) | Approved control from risk/security policy | ✅/❌/N/A |
-| Protected in transit | Organization-approved secure transport | ✅/❌/N/A |
-| Additional field/application encryption | Required only when the approved risk/security decision calls for it | ✅/❌/N/A |
-| Encryption key management | Via `SecretProvider` with rotation | ✅/❌ |
-| Backups encrypted | Server-side encryption | ✅/❌ |
+## 3. Access Control
 
-Reference: `standards/security/transport-encryption.md`, `standards/compliance/hipaa-controls.md`
+Where resources are protected, verify the approved identity and authorization model, enforcement boundary, least privilege, and privileged/emergency access behavior where applicable.
 
-### 3. Audit Logging Review
+Do not require OAuth/JWT/mTLS, RBAC/ABAC, or a break-glass workflow unless the architecture/policy establishes them.
 
-For each operation on confidential/restricted data:
+## 4. Data Protection
 
-| Check | Expected | Finding |
-|-------|----------|---------|
-| Create operations audit-logged | who, what, when, outcome | ✅/❌ |
-| Read operations audit-logged | who, what, when, outcome | ✅/❌ |
-| Update operations audit-logged | who, what, when, outcome, changes | ✅/❌ |
-| Delete operations audit-logged | who, what, when, outcome | ✅/❌ |
-| Audit logs tamper-resistant | Append-only or write-once storage | ✅/❌ |
-| Audit logs do not contain raw PHI | Redacted or tokenized | ✅/❌ |
-| Audit log retention | Source and period defined by applicable legal/regulatory/organizational policy | ✅/❌/N/A |
+For applicable storage and network boundaries, verify the approved safeguards and evidence that they are enforced.
 
-Reference: `standards/compliance/audit-logging.md`
+Do not invent encryption algorithms/key sizes, field-level encryption, TLS versions, mTLS, or backup controls. Use the current organization/platform security baseline and project risk decision.
 
-### 4. Access Control Review
+References: [Security Engineering Standard](../standards/security/security-standards.md), [Transport Protection](../standards/security/transport-encryption.md).
 
-| Check | Expected | Finding |
-|-------|----------|---------|
-| Authentication on all data endpoints | OAuth2/JWT/mTLS | ✅/❌ |
-| Authorization at service layer | RBAC or ABAC | ✅/❌ |
-| Least privilege for service accounts | Minimal required permissions | ✅/❌ |
-| No shared credentials | Unique identity per service/user | ✅/❌ |
-| Emergency access procedure | Break-glass with full audit | ✅/❌ |
+## 5. Auditability
 
-Reference: `standards/security/security-standards.md`
+Where policy requires audit events, verify that the event model records enough attribution/context to support accountability without leaking raw sensitive values. Assess integrity/retention/monitoring controls according to the applicable policy and risk.
 
-### 5. Data Minimization Review
+Append-only/immutable storage, synchronous writes, and a particular event schema are options—not universal requirements unless adopted.
 
-| Check | Expected | Finding |
-|-------|----------|---------|
-| API responses return only needed fields | Projection DTOs | ✅/❌ |
-| Logs do not contain PII/PHI | Redacted or masked | ✅/❌ |
-| Error messages do not leak sensitive data | Generic error responses | ✅/❌ |
-| Database queries avoid `SELECT *` on sensitive tables | Explicit column selection | ✅/❌ |
-| Data retention policy documented and enforced | Automated disposal | ✅/❌ |
+Reference: [Audit Logging](../standards/compliance/audit-logging.md).
 
-Reference: `standards/compliance-engineering.md`
+## 6. Secrets and Credentials
 
-### 6. Secret Management Review
+- no hardcoded/committed secrets;
+- approved production secret delivery/access mechanism;
+- least-privilege access;
+- safe logging/telemetry;
+- rotation/revocation behavior according to the selected backend/policy;
+- local-only secret adapters cannot become implicit production fallbacks.
 
-| Check | Expected | Finding |
-|-------|----------|---------|
-| Secrets via `SecretProvider` in production | Vault/managed secret store | ✅/❌ |
-| No secrets in source code | Confirmed via grep | ✅/❌ |
-| No secrets in config files or Docker images | Confirmed | ✅/❌ |
-| `SECRET_ADAPTER=env` disabled in production | Confirmed | ✅/❌ |
-| Secret rotation strategy documented | Rotation schedule + process | ✅/❌ |
+A `SecretProvider` abstraction or Vault product is optional unless the project explicitly adopts it.
 
-Reference: `standards/security/secrets-handling.md`
+Reference: [Secrets Handling](../standards/security/secrets-handling.md).
 
-### 7. HIPAA-Specific Controls (if applicable)
+## 7. Framework-Specific Review
 
-Invoke **hipaa-reviewer** agent for full HIPAA control audit. Additional checks:
+Only if applicability is established, load the relevant guidance. For HIPAA/ePHI, use the [HIPAA Reviewer custom agent](../.github/agents/hipaa-reviewer.agent.md) and [HIPAA Controls](../standards/compliance/hipaa-controls.md). Treat the result as engineering guidance requiring qualified compliance/security/legal interpretation where necessary.
 
-- [ ] PHI inventory complete with storage and transmission mapping
-- [ ] Integrity controls (checksums/signatures on PHI)
-- [ ] Breach detection support (anomaly alerting on PHI access)
-- [ ] Data disposal is irreversible (crypto-shredding or secure deletion)
-- [ ] No PHI in URL query parameters
-
-Reference: `standards/compliance/hipaa-controls.md`
-
-### 8. Produce Compliance Report
+## 8. Report
 
 ```markdown
-## Compliance Review Report: <service-name>
+## Compliance Engineering Review: <scope>
 
-### Data Classification Summary
-- Restricted/PHI elements: N
-- Confidential elements: N
-- Internal elements: N
+### Applicability
+| Policy / Classification | Status | Evidence / Missing Decision |
+|---|---|---|
 
-### Control Compliance
-| Control Area | Status | Critical Gaps | Remediation |
-|-------------|--------|---------------|-------------|
-| At-rest protection | ⚠️ Partial | Approved safeguard is missing for part of the sensitive-data scope | Apply/document the approved control |
-| Encryption in transit | ✅ | — | — |
-| Audit logging | ❌ | Read ops not logged | Add audit events |
-| Access control | ✅ | — | — |
-| Data minimization | ⚠️ Partial | Logs contain patient name | Add log redaction |
-| Secret management | ✅ | — | — |
+### Findings
+| # | Severity | Area | Status | Evidence | Finding | Remediation |
+|---|---|---|---|---|---|---|
 
-### Remediation Priority
-1. [CRITICAL] Apply the approved at-rest safeguard to the exposed sensitive-data path
-2. [HIGH] Add audit logging for all PHI read operations
-3. [MEDIUM] Implement log redaction for patient names
+### Control Summary
+| Area | Status | Notes |
+|---|---|---|
+| Data inventory/minimization | PASS / FAIL / N/A / NEEDS VERIFICATION | ... |
+| Access control | ... | ... |
+| Data protection | ... | ... |
+| Auditability | ... | ... |
+| Secrets/credentials | ... | ... |
+| Retention/disposal | ... | ... |
 
 ### Disclaimer
-This review provides engineering control assessment. It does not constitute legal compliance certification.
+Engineering control assessment only; not legal or regulatory certification.
 ```
 
 ## Completion Criteria
 
-- [ ] Data inventory complete with classification
-- [ ] All 6 control areas assessed (encryption, audit, access, minimization, secrets, HIPAA if applicable)
-- [ ] Findings prioritized by severity
-- [ ] Each finding includes specific remediation steps
-- [ ] Report includes disclaimer about non-legal nature
+- [ ] Applicability was established before framework-specific controls were applied.
+- [ ] Findings cite evidence and the relevant approved control/policy.
+- [ ] No optional mechanism was presented as universally required.
+- [ ] Missing material policy/classification decisions are marked `NEEDS VERIFICATION`.
+- [ ] No raw secrets or unnecessary sensitive values appear in the review output.

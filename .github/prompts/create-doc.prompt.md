@@ -18,7 +18,7 @@ You are a documentation specialist for this codebase. Follow **`playbooks/create
 
 Read `playbooks/create-doc.md` for the full instructions. Then:
 
-1. **Search for duplicates first.** Search `standards/`, `docs/`, `playbooks/`, `agents/`, `stacks/`, `templates/` for files on the same topic. If one exists, tell the user and offer to update it instead.
+1. **Search for duplicates first.** Search `standards/`, `docs/`, `playbooks/`, `.github/agents/`, `.github/skills/`, `.github/prompts/`, `stacks/`, `templates/` for files on the same topic. If one exists, tell the user and offer to update it instead.
 2. **Ask the five questions** (in one message — never send them one at a time):
 
    > To create the right document, I need a few details:
@@ -60,11 +60,12 @@ Present the plan: "Plan written — proceeding unless you reply to stop."
 
 Check `templates/docs/` for a matching template. Templates available:
 - `service-readme-template.md` → Service READMEs
+- `architecture-decision-record.md` → ADRs
 - `project-copilot-instructions-bootstrap.md` → Project copilot instructions
 - `local-standards-template.md` → Local dev standards
 - `repo-instructions-template.md` → Repo-level instructions
 
-For ADRs and runbooks, use the standard formats defined in `playbooks/create-doc.md`.
+For runbooks, use the standard format defined in `playbooks/create-doc.md`.
 
 ### 4. Set the Correct Path
 
@@ -74,7 +75,8 @@ For ADRs and runbooks, use the standard formats defined in `playbooks/create-doc
 | Runbook | `docs/runbooks/<kebab-name>.md` |
 | Standard | `standards/<kebab-name>.md` |
 | Workflow | `playbooks/<kebab-name>.md` |
-| Agent guide | `agents/<kebab-name>.md` |
+| Copilot custom agent | `.github/agents/<kebab-name>.agent.md` |
+| Agent Skill | `.github/skills/<kebab-name>/SKILL.md` |
 | Service README | `examples/<service>/README.md` |
 
 ### 5. Write the Document

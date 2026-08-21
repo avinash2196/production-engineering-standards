@@ -1,24 +1,36 @@
 # Unit Testing
 
-Purpose
-- Define expectations for fast, isolated unit tests that exercise business logic without external infra.
+## Purpose
 
-Mandatory Rules
-- Tests must run in-memory and not rely on networked services.
-- Use mocks/stubs for `MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, and `ConfigProvider`.
-- Target high coverage for business logic; focus on behavior rather than implementation details.
+Define fast, isolated tests for business/application logic without loading unnecessary infrastructure.
 
-Defaults
-- Use stack-native test frameworks (`JUnit`/`Mockito` for Java, `pytest`/`pytest-mock` for Python).
+## Required Outcomes
 
-Anti-patterns
-- Integration-like tests that hit external services in unit test suites.
+- Unit tests are deterministic and do not depend on shared/networked production services.
+- Test behavior and externally meaningful outcomes rather than private implementation detail.
+- Replace only the external collaborators the unit actually uses with fakes/stubs/mocks as appropriate.
+- Cover approved positive, negative, boundary, and error behavior without inventing requirements.
 
-LLM instructions
-- When generating tests, create mocks for capability abstractions and assert on interactions and returned values.
-- Ask the user only if they want to include property-based tests or fuzzing for critical parsing logic.
+Do not create mocks for every repository capability contract when the code under test does not use those capabilities.
 
-Review checklist
-- [ ] Unit tests run independently of network.
-- [ ] Mocks used for external capabilities.
-- [ ] Business logic behavior assertions present.
+## Defaults
+
+Use the stack-native test framework unless the project has selected another tool. Prefer simple fakes/stubs where they make tests clearer; use interaction mocks when the interaction itself is part of the behavior being verified.
+
+## Anti-Patterns
+
+- Network/shared-service dependence in a unit suite.
+- Mocking internal implementation details until refactoring breaks otherwise valid tests.
+- Asserting tests for behavior not established by requirements or current code contract.
+
+## LLM Instructions
+
+- During an approved RED milestone, add only tests/checks for approved behavior and prove the intended RED reason.
+- Mock/fake only collaborators involved in the tested path.
+
+## Review Checklist
+
+- [ ] Tests run deterministically without shared infrastructure.
+- [ ] Assertions focus on behavior.
+- [ ] External collaborators are isolated only where needed.
+- [ ] RED failures, when applicable, are caused by missing approved behavior.

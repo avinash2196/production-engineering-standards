@@ -1,125 +1,99 @@
 # Configuration Model
 
+> Parent standard: [Configuration Management](../configuration-management.md)
+
 ## Purpose
 
-Define the three categories of configuration, their resolution order, and the boundaries between them. Every configurable value in a service falls into exactly one category. This model drives which provider is used and which security controls apply.
+Provide a decision model for configuration without requiring every service to use the same sources, provider abstraction, precedence chain, or dynamic-configuration infrastructure.
 
 ## Configuration Categories
 
-| Category | Description | Provider | Mutable at Runtime | Examples |
-|----------|-------------|----------|-------------------|----------|
-| **Static config** | Values fixed per deployment. Change requires restart or redeployment. | `ConfigProvider` (env, file, build defaults) | No | Database host, service port, log level, feature toggles (static) |
-| **Dynamic config** | Values that may change at runtime without restart. Polled or pushed from a config service. | `ConfigProvider` (dynamic-db, operator overrides) | Yes | Rate limits, circuit breaker thresholds, feature flags (dynamic), kill switches |
-| **Secrets** | Credentials, API keys, encryption keys, tokens. Highest security controls. | `SecretProvider` | Yes (rotation) | DB password, API key, JWT signing key, TLS certificates |
+A service may have one or more of these categories:
 
-## Resolution Order
+| Category | Description | Typical examples |
+|---|---|---|
+| Static/deployment configuration | Values selected for a deployment and normally changed through restart/redeploy | endpoints, ports, pool bounds, feature settings |
+| Dynamic/runtime configuration | Values intentionally changeable without restart because an approved use case requires it | kill switches, selected runtime tuning, feature flags |
+| Secrets/credentials | Sensitive values or credentials requiring protected delivery/access | passwords, API credentials, private keys, tokens |
 
-When `ConfigProvider.get(key)` is called, sources are checked in this order. First match wins:
+The categories help reason about validation and ownership; they do not require a `ConfigProvider` or `SecretProvider` interface in every adopting service.
 
-```
-1. Operator overrides      (dynamic, highest priority)
-2. Dynamic config service   (dynamic)
-3. Environment variables    (static, per-deployment)
-4. Local config files       (static, per-environment)
-5. Build defaults           (static, compiled in)
-```
+## Source Selection
 
-Secrets are **never** resolved through `ConfigProvider`. If a key is a secret, use `SecretProvider` exclusively.
+Use only sources the approved project/runtime actually needs. Examples include:
 
-See [ConfigProvider.md](../../contracts/ConfigProvider.md) for the full interface contract.
+- framework configuration;
+- environment variables or platform-injected values;
+- command-line/operator overrides;
+- configuration files;
+- remote/dynamic configuration;
+- managed secret injection/access;
+- safe code defaults.
 
-## Static Configuration
+When multiple sources exist, document and test the actual precedence. There is no repository-wide mandatory precedence order.
 
-### Characteristics
-- Set at deployment time via environment variables, config files, or build defaults.
-- Requires process restart to change.
-- Validated at startup — missing required static config fails startup immediately.
+## Typed Validation
 
-### Provider Chain
-```
-env-provider → file-provider → build defaults
-```
+Validate configuration that can affect correctness, security, dependency behavior, or startup safety before it is used.
 
-### Guidelines
-- Use environment variables for per-deployment values (database URL, external service endpoints).
-- Use config files for structured configuration (logging format, connection pool sizes).
-- Use build defaults for sensible fallbacks that rarely change.
+Applicable checks may include required values, enums, ranges, URI shape, mutually exclusive settings, required combinations, and environment guards for local-only adapters.
 
-See: [env-provider.md](providers/env-provider.md), [file-provider.md](providers/file-provider.md)
+Do not hide a required business/security choice behind an undocumented default.
+
+## Optional Capability Boundaries
+
+The repository provides [ConfigProvider](../../contracts/ConfigProvider.md) and [SecretProvider](../../contracts/SecretProvider.md) as reference capability boundaries.
+
+Adopt them when they create a real boundary, such as multiple backends, portability, runtime refresh, policy-controlled retrieval, or testing needs. A simple service may instead use a framework-native typed configuration object and an approved runtime secret mechanism.
 
 ## Dynamic Configuration
 
-### Characteristics
-- Changeable at runtime without restart or redeployment.
-- Polled from a config service or database at a regular interval (default: 30s).
-- Change listeners notify the application when a value updates.
-- Used for operational controls: rate limits, feature flags, kill switches, circuit breaker tuning.
+Dynamic configuration is optional. Introduce it only when an approved requirement justifies runtime changes without redeploy/restart.
 
-### Provider
-```
-operator overrides → dynamic-db-provider
-```
+When used, define:
 
-### Guidelines
-- Only values that genuinely need runtime change should be dynamic. Don't make everything dynamic.
-- For each dynamic config key, explicitly decide whether startup/runtime may use a safe static default or must fail/disable the affected capability when the dynamic source is unavailable. Do not invent a default for security- or correctness-critical values.
-- Log every dynamic config change at INFO level with old and new values.
-- Emit `<service>_config_change_events_total` metric on each change.
+- authoritative source;
+- validation before activation;
+- propagation/consistency semantics;
+- unavailable-source behavior;
+- rollback/reversion behavior where required;
+- auditability for material changes.
 
-See: [dynamic-db-provider.md](providers/dynamic-db-provider.md)
+A polling interval, storage technology, or push mechanism is an implementation decision, not a repository-wide default.
 
 ## Secrets
 
-### Characteristics
-- Resolved exclusively via `SecretProvider`, never via `ConfigProvider` or environment variables in production.
-- Cached with short TTL (default 5 min). Rotation supported without restart.
-- Never logged, never in error messages, never in metrics.
-- In local development, `SECRET_ADAPTER=env` allows env-var resolution.
+Secrets are not ordinary configuration. Production credentials must use the project's approved secure delivery/access mechanism and must never be committed, logged, or exposed through diagnostics.
 
-See: [SecretProvider.md](../../contracts/SecretProvider.md), [vault-provider.md](providers/vault-provider.md)
+If a project adopts this repository's `SecretProvider` capability, use that boundary consistently. The `SECRET_ADAPTER=env` local reference is local-only and must not silently activate in production.
 
-## Deciding the Category
+## Local Development
 
-```
-Is the value a credential, key, or token?
-  → Yes → Secret (use SecretProvider)
-  → No →
-      Does it need to change at runtime without restart?
-        → Yes → Dynamic config
-        → No → Static config
-```
+Use the smallest local configuration mechanism that preserves the intended boundary. Stack-specific examples may include `.env.local`, Spring `application-local.yml`, container configuration, or explicit local-adapter selectors.
 
-## Environment-Specific Config Structure
-
-Each environment has its own config layer:
-
-| Environment | Static Sources | Dynamic Sources | Secrets Source |
-|-------------|---------------|----------------|----------------|
-| Local dev | `.env.local`, `application-local.yml` | None (static defaults used) | `SECRET_ADAPTER=env` |
-| Staging | Env vars from deployment | Config service (staging) | Vault (staging) |
-| Production | Env vars from deployment | Config service (production) | Vault (production) |
-
-See: [config-per-env patterns](#) (documented per stack guide)
+Do not copy production credentials or sensitive production data into local configuration.
 
 ## Anti-Patterns
 
-- **Secrets in ConfigProvider:** credentials must use `SecretProvider`.
-- **Everything dynamic:** only operational controls need runtime change. Over-dynamism adds complexity.
-- **No defaults:** every optional config should have a sensible build default.
-- **Config scattered in code:** all configurable values centralized through `ConfigProvider`.
-- **Environment-specific logic in code:** use per-environment config files, not `if (env == "prod")`.
+- Introducing a dynamic configuration service without a requirement.
+- Requiring `ConfigProvider` only for architectural symmetry.
+- Scattering duplicate parsing/default logic across the codebase.
+- Undocumented precedence between multiple sources.
+- Treating secrets as ordinary committed configuration.
+- Letting local-only selectors become production fallbacks.
 
 ## LLM Instructions
 
-- When generating configurable values, classify each as static, dynamic, or secret.
-- Use `ConfigProvider.get()` for static and dynamic config. Use `SecretProvider.getSecret()` for secrets.
-- Generate startup validation for all required static config.
-- Ask the user whether a value needs runtime change before making it dynamic.
+- Determine which configuration categories and sources the service actually uses before proposing a mechanism.
+- Do not invent dynamic configuration, provider chains, refresh intervals, or precedence rules.
+- Prefer typed validation for risk-bearing values.
+- Use `ConfigProvider`/`SecretProvider` only when the project has adopted those capability boundaries or the current design justifies them.
 
 ## Review Checklist
 
-- [ ] Every configurable value classified as static, dynamic, or secret.
-- [ ] Secrets resolved via `SecretProvider`, not `ConfigProvider`.
-- [ ] Required static config validated at startup with fail-fast.
-- [ ] Dynamic config source failure behavior is explicit; safe defaults exist only where justified.
-- [ ] No environment-specific branching in code — config files per environment instead.
+- [ ] Only required configuration sources are present.
+- [ ] Risk-bearing values are validated before use.
+- [ ] Multi-source precedence is explicit and deterministic where applicable.
+- [ ] Dynamic configuration exists only for an approved need.
+- [ ] Secret handling uses the approved secure mechanism.
+- [ ] Local-only configuration cannot silently weaken production behavior.

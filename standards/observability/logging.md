@@ -1,32 +1,52 @@
 # Logging
 
-> Parent overview: [standards/observability.md](../observability.md)
+> Parent overview: [Observability](../observability.md)
 
-Purpose
-- Provide structured, machine-parseable log output that supports correlation, audit, and diagnostics across distributed services.
+## Purpose
 
-Mandatory Rules
-- All log output must be JSON-structured with fields: `timestamp`, `level`, `service`, `traceId`, `spanId`, `message`.
-- Include `correlationId` (from `X-Correlation-ID` header) in every request-scoped log line.
-- Log levels must follow: `ERROR` (actionable failures), `WARN` (degraded but operational), `INFO` (key business events), `DEBUG` (development only, never enabled in production by default).
-- Never log secrets, tokens, passwords, or full PII. Redact or mask sensitive fields before writing.
-- Audit-sensitive operations (data access, permission changes, authentication events) must be logged to an audit-specific channel or tagged with `audit: true`.
+Provide operationally useful, machine-searchable logs without forcing one serialization format, logging library, or correlation mechanism into every service.
 
-Defaults
-- Java: SLF4J + Logback with JSON encoder. Inject MDC values for `traceId`, `spanId`, `correlationId`.
-- Python: `structlog` or stdlib `logging` with `python-json-logger`. Attach context via contextvars or middleware.
+## Required Outcomes
 
-Anti-patterns
-- Unstructured `print()` or `System.out.println()` in production code.
-- Logging request/response bodies that may contain PHI/PII without classification check.
-- Using `DEBUG` level in production without dynamic level control.
+Production logging must:
 
-LLM instructions
-- When adding logging, always use structured logger (never raw print). Include correlationId from request context.
-- For audit events, add `"audit": true` field and ensure the event includes who, what, when, and outcome.
+- use the runtime/platform's supported logging mechanism rather than ad-hoc console printing for operational events;
+- provide stable, searchable context for important events;
+- use levels consistently;
+- avoid secrets, credentials, tokens, and unnecessary sensitive payloads;
+- include safe correlation/operation context when that context materially improves diagnosis;
+- distinguish application diagnostics from formal audit logging when the project requires an audit trail.
 
-Review checklist
-- [ ] All logs are JSON-structured with required fields.
-- [ ] Correlation ID present in request-scoped logs.
-- [ ] No secrets or unredacted PII in log output.
-- [ ] Audit events tagged and include who/what/when/outcome.
+Structured logging is preferred when the target platform benefits from it, but JSON and a fixed field schema are not universal requirements.
+
+## Context
+
+Useful context may include service/component, operation, request/trace/job/message identifiers, dependency, outcome, and error category. Include only fields that are safe, bounded, and useful.
+
+Do not require a custom `X-Correlation-ID` when W3C trace context, a platform request ID, message ID, or another approved mechanism already provides correlation.
+
+## Audit Logging
+
+Security/compliance audit events are required only when the project's threat model, data classification, compliance framework, or policy establishes them. Use the dedicated [Audit Logging](../compliance/audit-logging.md) standard when applicable.
+
+## Anti-Patterns
+
+- `print()`/`System.out.println()` as production operational logging.
+- Logging full request/response bodies without data-classification review.
+- Logging secrets or high-risk personal data for convenience.
+- Requiring the same fields in every event even when they have no meaning.
+- Treating normal application logs as sufficient evidence for an audit control without checking the applicable policy.
+
+## LLM Instructions
+
+- Select logging structure and context from the service's runtime, platform, failure modes, and support needs.
+- Reuse an established trace/request/job/message identifier when one exists.
+- Never invent audit obligations or sensitive fields.
+
+## Review Checklist
+
+- [ ] Important operational events are searchable and diagnosable.
+- [ ] Levels/context are used consistently.
+- [ ] Sensitive values are excluded or protected.
+- [ ] Correlation uses the project's established mechanism where needed.
+- [ ] Audit requirements are handled separately when applicable.

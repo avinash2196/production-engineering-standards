@@ -1,21 +1,35 @@
 # Local Standards Template
 
-Purpose
-- Define local development standards and constraints that complement central `standards/` — e.g., linting, formatters, and fallbacks allowed for dev.
+## Purpose
 
-Placeholders
-- Local toolchain: e.g., Java 17, Python 3.11, Docker Desktop
-- Formatters: e.g., `mvn fmt`, `black`, `ruff`
+Define local-development constraints that complement central standards without creating production requirements.
 
-Fallback definitions
-- Explicitly list which fallbacks are acceptable for local dev and their env toggles (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
-- Local storage paths and cleanup guidance.
+## Local Toolchain
 
-Config sources in local dev
-- Local config files allowed: `application.local.yml`, `settings.local.yaml` (must be gitignored and excluded from builds).
+- Runtime(s): <versions>
+- Formatter/linter: <commands>
+- Test command: <command>
 
-Infra dependencies
-- List local-only dependencies and how to start them (docker-compose commands). Provide alternatives using fallbacks.
+## Local Dependency Strategy
 
-Validation
-- Local dev must run `tooling/scripts/validate-repo-structure.ps1` and `pytest`/`mvn test` before committing.
+For each external capability needed locally, document the selected approach and why it is appropriate:
+
+| Capability | Local approach | Selection/config | Reduced guarantees |
+|---|---|---|---|
+| <messaging/cache/storage/etc.> | <container/emulator/fake/local adapter> | <setting> | <differences> |
+
+Do not create a local adapter merely because the standards repository contains one.
+
+## Local Configuration
+
+Document the convention actually used by the stack/project. Examples include Spring `application-local.yml`, `.env.local`, or another project-defined settings source. Local files containing credentials must be ignored by version control and excluded from production artifacts.
+
+## Validation
+
+List the real local commands developers should run before committing, for example:
+
+```text
+<unit-test command>
+<integration-test command when applicable>
+<repository validation command when available>
+```

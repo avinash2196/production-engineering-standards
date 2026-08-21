@@ -1,132 +1,125 @@
 # Design Doc Template
 
-High-level design doc template for new services. Copy this file and fill in all sections before starting implementation.
+Use this template for a service or material feature when a design document is justified. Remove sections that are genuinely not applicable and record important assumptions/open decisions instead of inventing infrastructure.
 
 ---
 
 ## [Service / Feature Name] — Design Doc
 
-**Status:** Draft | In Review | Approved | Implemented
-
-**Authors:** [Names]
-
-**Date:** YYYY-MM-DD
-
-**Reviewers:** [Names]
+**Status:** Draft | In Review | Approved | Implemented  
+**Authors:** [Names]  
+**Date:** YYYY-MM-DD  
+**Reviewers:** [Names / required review roles if defined]
 
 ### 1. Overview
 
-One paragraph describing what this service/feature does and why it exists.
+What is being built or changed, why it is needed, and who/what consumes it?
 
 ### 2. Goals and Non-Goals
 
 #### Goals
 
-- [Goal 1: measurable outcome]
-- [Goal 2: measurable outcome]
+- [Measurable outcome]
 
 #### Non-Goals
 
 - [Explicitly excluded scope]
 
-### 3. Background
+### 3. Requirements and Constraints
 
-Context and prior art. Link to relevant ADRs, existing services, or business requirements.
+- Functional requirements: [links / summary]
+- NFRs/SLOs that actually apply: [latency, availability, throughput, durability, privacy, etc.]
+- Platform/stack constraints: [known choices]
+- Compliance/security policies: [only established requirements]
+- Unresolved material decisions: [questions]
 
 ### 4. High-Level Design
 
-Include a diagram (Mermaid, ASCII, or image link) showing:
-
-- Service boundaries and API surface
-- Data flow between components
-- External dependencies
+Show only components that actually exist in the proposed design. Include boundaries, important data flows, and external dependencies.
 
 ```mermaid
 graph LR
-  Client --> API[Service API]
-  API --> DB[(Database)]
-  API --> Queue[Message Broker]
-  API --> Cache[(Cache)]
+  Caller --> Component[Service / Feature]
+  Component --> Dependency[(Required Dependency)]
 ```
 
 ### 5. Detailed Design
 
-#### 5.1 API Design
+#### 5.1 Interfaces / Contracts
 
-| Method | Path | Request | Response | Description |
-|--------|------|---------|----------|-------------|
+| Interface | Direction | Request/Event | Response/Outcome | Compatibility Notes |
+|---|---|---|---|---|
 | | | | | |
 
-#### 5.2 Data Model
+#### 5.2 Data Model and Ownership
 
-Describe entities, relationships, and storage strategy.
+Describe owned state, relationships, transaction boundaries, consistency assumptions, retention, and migration needs that actually apply.
 
-#### 5.3 Key Algorithms / Business Logic
+#### 5.3 Business / Processing Logic
 
-Detail non-trivial logic, state machines, or processing pipelines.
+Describe non-trivial rules, state transitions, concurrency/ordering/idempotency decisions, or algorithms.
 
-#### 5.4 Infrastructure Dependencies
+#### 5.4 Dependencies and Boundaries
 
-List capability interfaces used:
+| Dependency / Capability | Why needed | Boundary / Integration | Failure behavior | Local-development approach if needed |
+|---|---|---|---|---|
+| | | | | |
 
-- [ ] MessagePublisher / MessageSubscriber
-- [ ] CacheProvider
-- [ ] ObjectStorageProvider
-- [ ] SecretProvider
-- [ ] ConfigProvider
+Use shared capability interfaces such as `MessagePublisher`, `CacheProvider`, `ObjectStorageProvider`, `SecretProvider`, or `ConfigProvider` **only when the project adopts them or a real boundary is justified**.
 
-### 6. Data Classification
+### 6. Data, Security, and Compliance
 
-| Data Element | Classification | Storage | Encryption |
-|-------------|---------------|---------|------------|
-| | PHI / PII / Internal / Public | | At-rest + in-transit |
+| Data / Resource | Classification / Sensitivity | Protection / Access Requirement | Evidence / Policy Source |
+|---|---|---|---|
+| | | | |
 
-### 7. Security Considerations
+Document only applicable authentication, authorization, secret-management, transport/storage protection, audit, retention, and disposal decisions. Do not preselect RBAC/ABAC, Vault, mTLS, field encryption, or a compliance framework without requirements.
 
-- Authentication: [mechanism]
-- Authorization: [RBAC / ABAC / scope-based]
-- Data encryption: [at-rest + in-transit strategy]
-- Secrets management: [vault / env]
+### 7. Operability
 
-### 8. Observability
+Describe the evidence needed to operate the critical paths:
 
-- **Metrics:** [key business + technical metrics]
-- **Logs:** [structured logging with correlation IDs]
-- **Traces:** [distributed tracing propagation]
-- **Alerts:** [SLO-based alerting thresholds]
+- logs/events;
+- metrics/health signals;
+- tracing/correlation when useful;
+- alerts/SLOs/runbook/recovery;
+- production dependency-failure behavior.
 
-### 9. Testing Strategy
+Do not require a specific observability product or every signal type when it adds no value.
 
-| Level | Scope | Tools |
-|-------|-------|-------|
-| Unit | Service + domain logic | JUnit/pytest + mocks |
-| Integration | DB + external services | Testcontainers |
-| Contract | API consumers | Pact |
-| E2E | Full request flow | Staging environment |
+### 8. Testing and Verification
 
-### 10. Rollout Plan
+| Risk / Behavior | Test or Check Level | Tool / Environment | Evidence Expected |
+|---|---|---|---|
+| | | | |
 
-- [ ] Feature flag name: `[flag-name]`
-- [ ] Canary percentage: [X%]
-- [ ] Rollback trigger: [metric threshold]
-- [ ] DB migration strategy: [expand-then-contract]
+Choose unit, integration, contract/schema, end-to-end, load, security, or startup checks based on risk. Do not mandate mocks, Testcontainers, Pact, or staging for every design.
+
+### 9. Delivery / Rollout / Migration
+
+Document only strategies the change needs—for example feature control, compatibility migration, canary/phased rollout, data migration, rollback/recovery, or one-time operational steps.
+
+### 10. Alternatives and Trade-offs
+
+| Option | Benefits | Costs/Risks | Decision |
+|---|---|---|---|
+| | | | |
 
 ### 11. Open Questions
 
-- [ ] [Question 1]
-- [ ] [Question 2]
+- [ ] [Question]
 
 ### 12. References
 
-- [Architecture](../../standards/architecture.md)
+- Requirements / Plan: [link]
+- [Architecture standard](../../standards/architecture.md)
 - [Engineering principles](../../standards/engineering-principles.md)
-- Related ADRs: `docs/adr/ADR-NNN.md` *(create `docs/adr/` when the first ADR is recorded; add a link after the file exists)*
+- Related ADRs: `docs/decisions/ADR-NNN-<title>.md` when applicable
 
 ---
 
 ## Usage Instructions
 
-1. Copy this template for each new service or major feature.
-2. Sections 1-6 are **mandatory** before implementation begins.
-3. Sections 7-10 must be complete before production deployment.
-4. Submit as a PR for review. Minimum 2 approvals required.
+1. Keep the document proportional to the change; do not fill sections with hypothetical mechanisms.
+2. Resolve decisions that materially affect the approved implementation before the relevant PDD milestone.
+3. Use the project's actual review/approval policy; this template does not impose an arbitrary reviewer count.

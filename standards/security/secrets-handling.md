@@ -1,152 +1,88 @@
 # Secrets Handling
 
+> Parent standard: [Security Engineering](security-standards.md)
+
 ## Purpose
 
-Standards for storing, accessing, rotating, and disposing of secrets across all services. Secrets include database credentials, API keys, encryption keys, JWT signing keys, TLS certificates/keys, and service account tokens.
+Define safe outcomes for storing, delivering, accessing, rotating, and disposing of credentials and other secrets without mandating one vendor, injection method, rotation interval, or abstraction for every service.
 
-## Mandatory Rules
+## Mandatory Outcomes
 
-### 1. No Secrets in Source Code
+### No Secrets in Source or Artifacts
 
-| Forbidden Location | Why | What to Do Instead |
-|-------------------|-----|-------------------|
-| Source files (hardcoded strings) | Committed to VCS, visible to all developers | Use `SecretProvider` |
-| Config files (`application.yml`, `.env`) | Committed to VCS | Use `SecretProvider` for secrets, `ConfigProvider` for non-secret config |
-| Docker images / Dockerfiles | Visible via `docker inspect`, layer history | Inject at runtime via env or vault |
-| CI/CD pipeline definitions | Visible in pipeline config | Use CI/CD secret variables or vault integration |
-| Log files | Accessible to operators and log aggregation | Never log secret values |
-| Error messages / stack traces | Returned to clients, stored in error tracking | Redact or omit |
-| URL query parameters | Logged by proxies, browsers, CDNs | Use headers or request body |
+Do not place real secrets in:
 
-**Detection:** run `gitleaks`, `trufflehog`, or equivalent scanner in CI. Block merges when secrets detected.
+- source code;
+- committed configuration/examples;
+- container image layers or build arguments;
+- logs, metrics, traces, error responses, or URLs;
+- documentation/screenshots/test fixtures that are shared broadly.
 
-### 2. Use SecretProvider Exclusively
+CI/CD definitions should reference the platform's protected secret mechanism rather than contain values directly.
 
-All production secret access must go through `SecretProvider`:
+### Approved Production Delivery/Access
 
-```java
-// Correct
-String dbPassword = secretProvider.getSecret("db-password");
+Production credentials must come from an approved secure mechanism appropriate to the platform and threat model. Examples include managed secret stores, workload identity, injected secret files, protected environment injection, certificate/key services, or another approved mechanism.
 
-// WRONG — never do this in production code
-String dbPassword = System.getenv("DB_PASSWORD");         // bypasses SecretProvider
-String dbPassword = config.get("database.password");      // wrong provider (ConfigProvider)
-String dbPassword = "hardcoded-password-123";             // hardcoded
-```
+This repository provides `SecretProvider` as an optional capability boundary. Use it when the adopting project has selected that abstraction or needs multiple secret backends/testability/portability. Do not wrap a platform-native mechanism solely to satisfy repository symmetry.
 
-See: [SecretProvider.md](../../contracts/SecretProvider.md)
+The repository's `SECRET_ADAPTER=env` local adapter is explicitly local-only and must not become an automatic production fallback.
 
-### 3. Rotation
+### Least Privilege and Scope
 
-Every secret must have a rotation plan:
+- Give each workload only the credentials/permissions it needs.
+- Avoid shared privileged credentials when separate identities are practical.
+- Scope secrets by environment and purpose according to the platform model.
+- Protect emergency access through the organization's approved break-glass process when one exists.
 
-| Secret Type | Rotation Frequency | Method |
-|-------------|-------------------|--------|
-| Database credentials | 90 days | Vault dynamic credentials or automated rotation |
-| API keys (external) | Per vendor policy or 180 days | Manual with notification or automated |
-| Encryption keys | 365 days | Key rotation with envelope encryption (no re-encryption needed) |
-| JWT signing keys | 180 days | Dual-key period: old key still verifies, new key signs |
-| TLS certificates | Before expiry (30-day lead) | cert-manager auto-renewal |
-| Service account tokens | 90 days | Vault auto-rotation or managed identity (no rotation needed) |
+### Rotation and Revocation
 
-**Rotation rules:**
-- Rotation must not require service restart (secret is fetched fresh from vault on next cache miss).
-- During rotation, both old and new values must be valid simultaneously (dual-write window).
-- After all consumers have rotated, revoke the old secret.
-- Emit `<service>_secrets_rotation_total` metric when a new version is detected.
+Rotation requirements come from credential lifetime, platform capability, vendor constraints, incident risk, and organization policy. Do not invent universal 5-minute cache TTLs or 90/180/365-day schedules.
 
-### 4. Caching
+For a rotatable secret, define as applicable:
 
-- Secrets cached in memory with TTL (default 5 minutes).
-- Cache is invalidated on explicit rotation event or TTL expiry.
-- Stale-while-revalidate: if vault is unreachable, return cached value rather than failing.
-- **Never cache secrets to disk, database, or external cache (Redis).**
+- source of truth;
+- refresh/reload behavior;
+- overlap/dual-key strategy when consumers require it;
+- revocation timing;
+- failure behavior when refresh fails;
+- operational evidence that rotation works.
 
-### 5. Access Control
+Prefer short-lived identity/credentials where the approved platform supports them and doing so meaningfully reduces risk.
 
-| Principle | Implementation |
-|-----------|----------------|
-| Least privilege | Each service accesses only its own secrets in the vault |
-| Audit trail | Vault logs every secret access (who, what, when) |
-| No shared secrets | Each service gets its own credential, not a shared one |
-| Emergency access | Break-glass procedure with full audit and notification |
+### Caching
 
-### 6. Secret Types and Handling
-
-| Type | Storage | Rotation | Special Handling |
-|------|---------|----------|-----------------|
-| Database password | Vault KV or dynamic | 90 days / on-demand | Dynamic credentials preferred (Vault generates per-connection) |
-| API key | Vault KV | Per policy | Store with metadata (vendor, purpose, expiry) |
-| Encryption key | Vault Transit or KMS | 365 days | Envelope encryption — rotate wrapping key, not data key |
-| JWT signing key | Vault KV or managed | 180 days | JWKS endpoint serves multiple keys during rotation |
-| TLS key/cert | Vault PKI or cert-manager | Before expiry | Auto-rotation mandatory |
-| OAuth client secret | Vault KV | 180 days | Rotate in identity provider and vault simultaneously |
+Cache secrets in process only when the selected secret mechanism/client requires or benefits from it. Keep cache lifetime bounded according to provider semantics, rotation requirements, availability needs, and exposure risk. Never cache secrets in an external general-purpose cache merely for convenience.
 
 ## Local Development
 
-In local development, `SECRET_ADAPTER=env` allows reading secrets from environment variables:
-
-```bash
-# .env.local (NEVER committed to VCS)
-DB_PASSWORD=local-dev-password
-API_KEY=test-key-12345
-```
-
-- `.env.local` must be in `.gitignore`.
-- Pre-commit hook should reject commits containing `.env.local` or patterns matching secrets.
-
-See: [Secret local adapter](../../standards/local-adapters/secret-local-adapter.md)
-
-## CI/CD Pipeline Secrets
-
-| Platform | Secret Mechanism |
-|----------|-----------------|
-| GitHub Actions | Repository/environment secrets |
-| Azure DevOps | Variable groups with vault integration |
-| GitLab CI | CI/CD variables (masked, protected) |
-| Jenkins | Credentials plugin with vault integration |
-
-**Rules:**
-- Pipeline secrets masked in logs.
-- Secrets scoped to the minimum required environment (not globally accessible).
-- Rotate pipeline secrets on the same schedule as application secrets.
+Use synthetic/local credentials only. `.env.local` or similar files may be used when explicitly supported by the project; such files must be excluded from version control and must never contain production credentials.
 
 ## Incident Response
 
-If a secret is compromised:
-
-1. **Immediately rotate** the compromised secret in the vault.
-2. **Revoke** the old secret value.
-3. **Audit** vault access logs to determine exposure scope.
-4. **Scan** for the compromised value in logs, error tracking, and monitoring systems.
-5. **Notify** security team and affected downstream consumers.
-6. **Review** how the compromise occurred and close the vulnerability.
+When a credential may be compromised, follow the organization's security incident process. Typical technical actions include revocation/rotation, exposure-scope investigation, removal from logs/artifacts, and validation of the affected trust boundary. Do not invent notification roles or timelines not established by policy.
 
 ## Anti-Patterns
 
-- **Secrets in ConfigProvider:** use `SecretProvider` for all secrets.
-- **Logging secret values:** never, under any circumstance, log a secret value.
-- **Shared credentials:** each service and each environment gets its own credentials.
-- **No rotation plan:** every secret must have a documented rotation schedule.
-- **Secrets in Docker build args:** use runtime injection, not build-time.
-- **Disabling vault in production:** `SECRET_ADAPTER=env` must never be active in production.
+- Hardcoded or committed credentials.
+- Logging/printing secret values.
+- Using the local environment-secret adapter as production degradation.
+- Universal rotation schedules copied without policy/platform evidence.
+- Requiring runtime-refresh architecture for credentials that are intentionally deployment-scoped.
+- Claiming a secret is safe merely because it is in an environment variable; evaluate how the production platform protects and exposes that environment.
 
 ## LLM Instructions
 
-- When generating code that needs a secret, use `SecretProvider.getSecret()`.
-- Never generate hardcoded secrets, even as placeholders. Use `<REPLACE_WITH_SECRET>` markers.
-- Never generate code that logs or prints a secret value.
-- When generating CI/CD pipelines, use the platform's secret mechanism.
-- When asked about secret rotation, generate the dual-key rotation pattern.
-- Ask the user which vault backend they use before generating vault-specific code.
+- Identify the project's approved secret-delivery/access mechanism before generating product-specific code.
+- Use `SecretProvider` only when the project has adopted that capability boundary or the design justifies it.
+- Never generate real credentials or examples that look usable.
+- Do not invent rotation intervals, cache TTLs, vault products, or CI scanners.
 
 ## Review Checklist
 
-- [ ] No secrets in source code, config files, Docker images, or logs.
-- [ ] All secrets accessed via `SecretProvider` in production.
-- [ ] Rotation plan documented for every secret type.
-- [ ] Rotation does not require service restart.
-- [ ] `.env.local` in `.gitignore`.
-- [ ] Secret scanner running in CI (`gitleaks`, `trufflehog`, etc.).
-- [ ] Vault access policies follow least privilege.
-- [ ] The local environment secret adapter (`SECRET_ADAPTER=env`) cannot activate in production.
+- [ ] No real secrets are committed or exposed through telemetry/artifacts.
+- [ ] Production credentials use an approved secure mechanism.
+- [ ] Workload access follows least privilege.
+- [ ] Rotation/revocation behavior is defined where required.
+- [ ] Local-only credential mechanisms cannot silently activate in production.
+- [ ] Secret values are not leaked through logs/errors/diagnostics.

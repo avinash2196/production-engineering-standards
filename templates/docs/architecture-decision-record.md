@@ -1,72 +1,45 @@
-# Architecture Decision Record
+# ADR-NNN: <Title>
 
-Template for ADRs. Copy this file into `docs/adr/` and number sequentially (e.g., `ADR-001-use-kafka.md`).
+**Date:** YYYY-MM-DD  
+**Status:** Proposed | Accepted | Deprecated | Superseded by ADR-NNN  
+**Deciders:** <names or roles>
 
----
+## Context
 
-## ADR-NNN: [Title]
+Describe the problem, relevant requirements, constraints, and evidence that make a decision necessary.
 
-**Status:** Proposed | Accepted | Deprecated | Superseded by [ADR-XXX]
+## Decision
 
-**Date:** YYYY-MM-DD
+State the decision clearly and identify its scope.
 
-**Author(s):** [Names]
+## Alternatives Considered
 
-### Context
+| Option | Benefits | Trade-offs / reason not selected |
+|---|---|---|
+| <option> | <benefits> | <trade-offs> |
 
-Describe the situation that requires a decision. Include:
+## Consequences
 
-- What problem or requirement triggered this decision?
-- What constraints exist (technical, regulatory, organizational)?
-- What alternatives were considered?
+### Positive
 
-### Decision
+- <benefit>
 
-State the decision clearly in one or two sentences.
+### Negative / Trade-offs
 
-> We will use **[chosen option]** because [primary reason].
+- <trade-off>
 
-### Alternatives Considered
+### Risks and Mitigations
 
-| Option | Pros | Cons |
-|--------|------|------|
-| Option A | | |
-| Option B | | |
-| Option C | | |
+- <risk and mitigation>
 
-### Consequences
+## Operational / Security / Data Impact
 
-#### Positive
+Document only impacts that apply to this decision. Do not infer compliance requirements from domain terminology.
 
-- [Benefit 1]
-- [Benefit 2]
+## References
 
-#### Negative
-
-- [Trade-off 1]
-- [Trade-off 2]
-
-#### Risks
-
-- [Risk and mitigation]
-
-### Compliance Impact
-
-- **Data classification:** Does this change how PHI/PII is handled?
-- **Security:** Does this introduce new attack surface?
-- **Audit trail:** Does this affect audit logging requirements?
-
-### References
-
-- [Link to relevant standards or RFCs]
-- [Link to related ADRs]
-- [Engineering principles](../../standards/engineering-principles.md)
+- <requirements/design/standards/related ADRs>
 
 ---
 
-## Usage Instructions
-
-1. Copy this template to `docs/adr/ADR-NNN-short-title.md`.
-2. Fill in all sections. "Alternatives Considered" is mandatory even if obvious.
-3. Submit as a PR. The ADR is accepted when the PR is merged.
-4. To supersede, update the old ADR's status and link to the new one.
+Copy to `docs/decisions/ADR-NNN-<kebab-title>.md` and number sequentially.

@@ -22,7 +22,7 @@ References:
 - [Naming](../../standards/naming.md)
 - [Capability Contracts](../../contracts/)
 - [Observability](../../standards/observability.md)
-- [Refactoring Engineer](../../agents/refactoring-engineer.md)
+- [Refactoring Engineer](../agents/refactoring-engineer.agent.md)
 
 ## Preconditions
 

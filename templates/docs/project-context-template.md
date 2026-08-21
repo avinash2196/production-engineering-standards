@@ -56,18 +56,16 @@
 
 | Item | Value |
 |------|-------|
-| Data classification | PHI · PII · Non-sensitive |
-| Compliance requirements | [e.g. HIPAA, SOC2 Type II, PCI-DSS] |
-| Authentication | [e.g. JWT via API Gateway, mTLS for internal] |
-| PHI fields | [if applicable: list fields, e.g. `patient_id`, `diagnosis_code`] |
+| Data classification | [Approved project classification, if applicable] |
+| Compliance requirements | [Explicitly applicable policy/framework, or N/A] |
+| Authentication | [Approved mechanism for protected resources, or N/A for public resources] |
+| Sensitive/regulatory data | [List only if classification/policy establishes it] |
 
 ## Config Keys (summary)
 
 | Key | Provider | Environment | Notes |
 |-----|----------|-------------|-------|
-| `DATABASE_URL` | Env / Vault | All | JDBC/asyncpg connection string |
-| `KAFKA_BOOTSTRAP_SERVERS` | Env | All | Comma-separated host:port |
-| `REDIS_URL` | Env / Vault | All | `redis://host:port` |
+| `[CONFIG_KEY]` | [Framework/platform source] | [Environment/scope] | [Purpose] |
 | `MESSAGING_ADAPTER` | Env | Dev only | `db` for DB outbox, `inmemory` for ephemeral |
 | `CACHE_ADAPTER` | Env | Dev only | `jsonfile` for JSON file, `inmemory` for ephemeral |
 | [Add more rows] | | | |
@@ -79,7 +77,7 @@
 | Kafka | `MESSAGING_ADAPTER=db` | Writes to `outbox_message` DB table | None — persisted |
 | Redis | `CACHE_ADAPTER=jsonfile` (if implemented) | File-backed, no distributed atomicity/concurrency | [bypass/stale/fail based on approved contract] |
 | S3/GCS | `STORAGE_ADAPTER=local` (if implemented) | Local disk only; no managed durability/IAM/lifecycle parity | [retry/fail/queue based on approved contract] |
-| Vault | `SECRET_ADAPTER=env` | Reads env variables | Secrets in env — dev only |
+| Managed secret service (if used) | `SECRET_ADAPTER=env` only if this local adapter is adopted | Reads explicitly supplied local env values | Local-only reduced security; never an automatic production fallback |
 
 ## Key Stakeholders
 

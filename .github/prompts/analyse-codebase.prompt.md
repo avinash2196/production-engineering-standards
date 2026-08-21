@@ -21,7 +21,7 @@ Analyse the provided repository or files against ALL organisation standards. Pro
 - Security: [standards/security/security-standards.md](../../standards/security/security-standards.md)
 - Observability: [standards/observability.md](../../standards/observability.md)
 - Coding standards: [standards/coding-standards.md](../../standards/coding-standards.md)
-- Full agent spec: [agents/codebase-analyst.md](../../agents/codebase-analyst.md)
+- Custom agent: [Codebase Analyst custom agent](../agents/codebase-analyst.agent.md)
 
 ## Severity Levels
 

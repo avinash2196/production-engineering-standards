@@ -1,19 +1,29 @@
-# Rule Precedence
+# Configuration Source Precedence
 
-Defines the precedence and separation between configuration sources, secrets, and dynamic overrides.
+## Purpose
 
-Precedence (highest → lowest):
-1. Runtime overrides (operator-supplied, e.g., Kubernetes `--set` or operator API)
-2. Dynamic configuration service (ConfigProvider with versioning/roll-back)
-3. Environment variables
-4. Local config files (development only)
-5. Built-time defaults / templates
+Define how to reason about precedence **when a project has multiple configuration sources**. This document no longer defines a universal repository-wide provider chain.
 
-Notes:
-- Secrets must be resolved via `SecretProvider` which prefers a secret manager (cloud) and falls back to environment variables only when explicitly enabled for dev.
-- Dynamic config updates must include a version or change token to prevent accidental rollbacks; services should support safe refresh with graceful degradation.
-- Configuration that affects security posture (e.g., selecting an in-memory local cache adapter) requires explicit environment toggles and CI gating; never enabled silently.
+Canonical guidance: [Configuration Management](configuration-management.md).
 
-Override rules:
-- Operator-level overrides for emergency fixes must be auditable and limited to a narrow set of keys.
-- Dynamic config may be used for feature flags and non-sensitive tuning; secrets and access controls are not allowed in dynamic config unless encrypted and access-controlled.
+## Rules
+
+- Prefer the target framework/platform's documented configuration model.
+- If a project intentionally combines multiple sources, document the actual order, ownership, mutability, and failure behavior.
+- Security-sensitive values must not become weaker merely because a lower-trust source has higher technical precedence.
+- Local-only selectors or reduced-guarantee adapters must not activate silently in production.
+- Emergency/operator overrides, if supported, need authorization and auditability appropriate to their risk.
+- Dynamic configuration, if supported, needs explicit version/concurrency/rollback semantics and safe source-failure behavior.
+- Secret values use the project's approved secret mechanism. A `SecretProvider` boundary is optional and should be used only when the project adopts it.
+
+## Example Only
+
+A platform **might** combine deployment/operator overrides, environment variables, profile files, and build defaults. Another platform may use a completely different order. Do not copy an example order into an implementation without confirming the stack's actual behavior.
+
+## Review Checklist
+
+- [ ] All active sources are identified from the real project/deployment model.
+- [ ] Their precedence is documented or inherited from a cited platform convention.
+- [ ] Mutable sources have defined validation/concurrency/failure behavior where applicable.
+- [ ] Security-sensitive values cannot be downgraded through an unintended override.
+- [ ] Local-only values are blocked or unavailable in production as designed.

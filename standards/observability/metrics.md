@@ -1,33 +1,53 @@
 # Metrics
 
-> Parent overview: [standards/observability.md](../observability.md)
+> Parent overview: [Observability](../observability.md)
 
-Purpose
-- Define canonical metric names, types, and labeling conventions that enable consistent dashboards, alerts, and SLO tracking across all services.
+## Purpose
 
-Mandatory Rules
-- Every service must emit the four golden signals: **latency**, **error rate**, **throughput**, **saturation**.
-- Metric names must follow the pattern: `<service>_<subsystem>_<signal>_<unit>` (e.g., `orders_api_request_duration_seconds`).
-- Use standard units: `_seconds` for durations, `_bytes` for sizes, `_total` for counters.
-- Label dimensions must include: `service`, `environment`, `method`, `status` (HTTP status code family or gRPC code).
-- Avoid high-cardinality labels (no user IDs, request IDs, or unbounded enum values in metric labels).
+Define metrics that make the service's real health, workload, dependencies, and failure modes measurable without forcing a universal metric library or fixed metric set.
 
-Defaults
-- Java: Micrometer with Prometheus registry. Use `@Timed` and `@Counted` annotations for controller/service methods.
-- Python: `prometheus_client` or OpenTelemetry metrics SDK. Register metrics in a shared registry module.
-- Export format: Prometheus exposition format (`/metrics` endpoint) or OpenTelemetry OTLP.
+## Selection
 
-Anti-patterns
-- Custom metric names that diverge from naming convention (prevents dashboard reuse).
-- Not emitting error metrics for caught exceptions that represent degraded behavior.
-- Emitting metrics with user-specific labels (causes cardinality explosion).
+Choose metrics from actual operational questions. Useful categories may include:
 
-LLM instructions
-- When adding a new endpoint or service call, emit latency (histogram) and error (counter) metrics following the naming convention.
-- Do not add user-specific or request-specific labels to metrics.
+- throughput/work completed;
+- latency or processing duration;
+- error/failure outcomes;
+- queue/backlog depth;
+- saturation/resource pressure;
+- dependency latency/error rates;
+- retry, circuit-breaker, DLQ, or reconciliation behavior;
+- cache behavior;
+- business outcomes that operators genuinely use.
 
-Review checklist
-- [ ] Four golden signals emitted for every service boundary.
-- [ ] Metric names follow `<service>_<subsystem>_<signal>_<unit>` convention.
-- [ ] No high-cardinality labels.
-- [ ] Metrics endpoint exposed and scrapeable.
+The four golden signals are a review lens, not a requirement that every service emit all four directly.
+
+## Naming and Labels
+
+Follow the conventions of the selected metrics platform and the adopting organization. Use standard units where the platform expects them and stable names that survive implementation refactors.
+
+Labels/dimensions must remain bounded. Do not use user IDs, request IDs, unbounded document/order IDs, tokens, or other high-cardinality/sensitive values.
+
+## Mechanisms
+
+Micrometer, Prometheus, OpenTelemetry Metrics, cloud-native metrics, or another platform mechanism may be appropriate. Select the mechanism from the approved runtime/operating model rather than installing one automatically.
+
+## Anti-Patterns
+
+- Emitting every golden signal only to satisfy a checklist.
+- Creating arbitrary thresholds without SLO/baseline evidence.
+- High-cardinality labels.
+- Duplicating platform metrics without operational value.
+- Treating a `/metrics` endpoint as mandatory when the platform uses another export path.
+
+## LLM Instructions
+
+- Ask what operators need to detect/diagnose or derive metrics from documented failure modes and SLOs.
+- Do not invent metric products, exporters, label schemas, or alert thresholds.
+
+## Review Checklist
+
+- [ ] Metrics answer concrete operational questions.
+- [ ] Names/units follow the selected platform convention.
+- [ ] Labels are bounded and non-sensitive.
+- [ ] Dependency/degradation behavior is measurable where it matters.

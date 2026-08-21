@@ -23,7 +23,7 @@ Read the supplied requirements, plan, implementation plan, ADRs, and representat
 - [DTO guidance](../../standards/dto-guidelines.md)
 - [Local adapter strategy](../../standards/local-adapter-strategy.md)
 - [Production degradation strategy](../../standards/fallback-strategy.md)
-- [Architecture reviewer specification](../../agents/architecture-reviewer.md)
+- [Architecture custom agent](../agents/architecture-reviewer.agent.md)
 
 ## Review Areas
 

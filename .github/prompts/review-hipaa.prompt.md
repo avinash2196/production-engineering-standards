@@ -18,7 +18,7 @@ Audit the provided service against HIPAA Security Rule engineering controls. Thi
 - HIPAA controls: [standards/compliance/hipaa-controls.md](../../standards/compliance/hipaa-controls.md)
 - Data classification: [standards/compliance/data-classification.md](../../standards/compliance/data-classification.md)
 - Security standards: [standards/security/security-standards.md](../../standards/security/security-standards.md)
-- Full agent spec: [agents/hipaa-reviewer.md](../../agents/hipaa-reviewer.md)
+- Custom agent: [HIPAA Reviewer custom agent](../agents/hipaa-reviewer.agent.md)
 
 ## Controls to Audit
 

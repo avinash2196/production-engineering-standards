@@ -1,38 +1,56 @@
 # Repository Instructions Template
 
-Purpose
-- Provide a clear, minimal onboarding and usage guide for this repository and its agents. Link to responsible agents and explain safe tool usage and override policies.
+## Purpose
 
-Placeholders
-- Service name: <SERVICE_NAME>
-- Owner: <TEAM/OWNER>
-- Contact: <EMAIL>
-- Stack: Java|Python
+Provide a minimal onboarding and usage guide for an adopting repository without assuming every standards-repository capability is used.
 
-Quick links
-- Agents: `agents/` (compliance-reviewer, backend-service-builder, code-reviewer)
-- Standards: `standards/`
-- Stacks: `stacks/`
+## Project Context
 
-Agent usage and tool policy
-- Use `backend-service-builder` to scaffold new services and `code-reviewer` for PR checks.
-- Agents may read and write template files and generate scaffolding. They MUST NOT commit secrets or run external network commands without explicit human consent.
-- Overrides: Operators may provide runtime overrides via operator-level config (see `rule-precedence.md`). Operator overrides must be auditable.
+- Service/project: `<SERVICE_NAME>`
+- Owner: `<TEAM_OR_ROLE>`
+- Stack: `<STACK>`
+- Production runtime: `<RUNTIME_OR_UNKNOWN>`
 
-Local adapters and local development
-- All local adapters are explicit. Select only implemented local adapters using typed configuration documented by the project (e.g., `MESSAGING_ADAPTER=db`, `CACHE_ADAPTER=jsonfile`).
-- Local-only config files must be named `application.local.yml` or `settings.local.yaml` and excluded from production bundles.
+## Copilot Customizations
 
-Config sources summary
-- Operator/runtime overrides → Dynamic config service (ConfigProvider) → Environment variables → Local files (dev only) → Build-time defaults.
+If copied into the adopting repository, use GitHub-native locations:
 
-Infra dependencies
-- List expected infra (for example): Kafka, Redis, PostgreSQL, Object Storage, Secret Manager.
-- For local dev use `templates/infra/docker-compose.dev.yaml` and select approved local adapters as needed.
+- repository instructions: `.github/copilot-instructions.md`
+- path-specific instructions: `.github/instructions/*.instructions.md`
+- custom agents: `.github/agents/*.agent.md`
+- prompt files: `.github/prompts/*.prompt.md`
+- Agent Skills: `.github/skills/<skill-name>/SKILL.md`
 
-Repository commands
-- Validate structure: `tooling/scripts/validate-repo-structure.ps1`
-- Create the Plan with `/create-plan`, then the milestone Implementation Plan with `/create-implementation-plan`; use `/implement-approved-plan` only after review.
+Copy only the customizations the project intends to maintain. Do not assume a link to another local repository automatically loads those files.
 
-Manual overrides
-- To change a generated scaffold, open a PR and reference the agent output in the description. For emergency operator overrides, document the change in `config/overrides.md` and increment the override audit log.
+## Engineering Standards
+
+List the standards this project has explicitly adopted and any project-specific overrides/ADRs.
+
+## Configuration and Secrets
+
+- Document only configuration sources the project actually uses.
+- Define deterministic precedence when multiple sources exist.
+- Production secrets must use the project's approved secure delivery/access mechanism.
+- If the project adopts the repository `SecretProvider` capability or local `SECRET_ADAPTER=env` reference, document that choice explicitly and prevent local-only behavior from activating in production.
+
+## Local Development
+
+Document the actual local profile/file convention used by the selected stack (for example Spring `application-local.yml` or a project-defined Python settings source). Keep local-only files and real credentials out of version control.
+
+## Infrastructure Dependencies
+
+List only required dependencies and how developers obtain realistic local equivalents (containers, official emulators, fakes, or approved local adapters).
+
+## Repository Commands
+
+- Plan: `/create-plan`
+- Milestone Implementation Plan: `/create-implementation-plan`
+- RED milestone: `/generate-tests`
+- GREEN/non-behavior milestone: `/implement-approved-plan`
+- REFACTOR milestone: `/refactor-code`
+- Repository validation: `python tooling/scripts/validate_repository.py` when this tooling is copied into the adopting repository
+
+## Human Review
+
+Custom agents, prompts, and skills support the workflow; they do not waive Plan, milestone approval, security, or production-readiness review gates.

@@ -1,33 +1,53 @@
-# Tracing
+# Distributed Tracing
 
-> Parent overview: [standards/observability.md](../observability.md)
+> Parent overview: [Observability](../observability.md)
 
-Purpose
-- Enable end-to-end request tracing across service boundaries to diagnose latency, failures, and distributed flow issues.
+## Purpose
 
-Mandatory Rules
-- Use OpenTelemetry SDK for trace instrumentation. All services must participate in the same trace context propagation (W3C Trace Context format).
-- Create a span for every inbound request (controller/handler), outbound service call (HTTP, gRPC, messaging), and significant internal operation (database query, cache lookup).
-- Span names must be descriptive: `<verb> <resource>` (e.g., `GET /api/orders`, `publish order.created`, `query orders_table`).
-- Set span status to `ERROR` and record exception details when operations fail.
-- Never include secrets, tokens, or full PII in span attributes. Redact sensitive fields.
+Use distributed tracing when cross-service or multi-dependency execution paths are difficult to diagnose with logs and metrics alone.
 
-Defaults
-- Java: OpenTelemetry Java agent (auto-instrumentation) + manual spans for business-critical paths. Configure via `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
-- Python: `opentelemetry-instrumentation-fastapi` for auto-instrumentation + `tracer.start_as_current_span()` for manual spans.
-- Sampling: use parent-based sampling with a default rate of 1.0 in dev, configurable via `OTEL_TRACES_SAMPLER_ARG` in production.
+## When to Use
 
-Anti-patterns
-- Creating spans for trivial in-memory operations (noise).
-- Not propagating trace context across async boundaries (message publish/subscribe).
-- Hardcoding exporter endpoints instead of using environment configuration.
+Tracing is commonly justified for:
 
-LLM instructions
-- When adding a new service call or external integration, wrap it in a span with descriptive name and error handling.
-- Ensure message publishers inject trace context into message headers and subscribers extract it.
+- requests spanning multiple services;
+- asynchronous workflows with difficult handoffs;
+- dependency chains where latency attribution matters;
+- critical workflows needing end-to-end execution visibility.
 
-Review checklist
-- [ ] OpenTelemetry configured with W3C Trace Context propagation.
-- [ ] Spans created for inbound requests, outbound calls, and DB/cache operations.
-- [ ] Span errors recorded with exception details.
-- [ ] Trace context propagated across async/messaging boundaries.
+A standalone utility, simple CRUD service, or low-complexity worker may not need tracing if existing telemetry is sufficient.
+
+## Implementation Guidance
+
+When tracing is selected:
+
+- use the platform/runtime's supported context-propagation standard;
+- prefer W3C Trace Context for interoperable distributed HTTP/service traces unless the platform establishes another compatible mechanism;
+- instrument boundaries and significant operations rather than every trivial in-memory call;
+- record error status/context safely;
+- propagate trace context across async/message boundaries where end-to-end traces are required;
+- never place secrets or unnecessary sensitive data in span names/attributes.
+
+OpenTelemetry is a preferred portable option when the project chooses portable tracing, not an automatically required dependency.
+
+Sampling, exporter, backend, and instrumentation strategy are environment/workload decisions and should be configurable where needed.
+
+## Anti-Patterns
+
+- Installing tracing only because the service is called distributed.
+- Creating excessive spans with no diagnostic value.
+- Breaking trace context across asynchronous handoffs.
+- Recording high-cardinality or sensitive payload data in attributes.
+- Hardcoding collector/exporter endpoints.
+
+## LLM Instructions
+
+- Determine whether tracing is justified by the approved operating model before adding a tracing SDK.
+- If tracing already exists, preserve the established context standard and instrumentation conventions.
+
+## Review Checklist
+
+- [ ] Tracing is justified by real diagnostic needs.
+- [ ] Relevant boundaries propagate context correctly.
+- [ ] Spans provide useful latency/error attribution without sensitive data.
+- [ ] Sampling/export configuration fits the environment and is not hardcoded.

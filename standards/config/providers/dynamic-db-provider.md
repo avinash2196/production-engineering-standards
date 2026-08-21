@@ -1,108 +1,76 @@
-# Dynamic DB Provider
+# Dynamic Configuration Source
 
 ## Purpose
 
-Specification for a database-backed or config-service-backed dynamic configuration provider. Supplies runtime-changeable values (feature flags, rate limits, kill switches, circuit breaker thresholds) without requiring service restart.
+Reference pattern for runtime-changeable configuration **when requirements justify dynamic configuration**. Typical candidates include kill switches, operational thresholds, or feature controls that must change without deployment.
 
-## How It Works
+Dynamic configuration is optional. Do not introduce a database, config service, polling loop, listener framework, or `ConfigProvider` solely because this reference exists.
 
-```
-┌─────────────┐    poll (30s)    ┌──────────────────┐
-│   Service    │ ◄────────────── │  Config Service / │
-│  (in-memory  │                 │  Config Database   │
-│   cache)     │                 └──────────────────┘
-└─────────────┘
-       │
-       ▼
-  Change listeners notified
-```
+The canonical policy is [Configuration Management](../../configuration-management.md).
 
-1. On startup, the provider loads all dynamic config keys into an in-memory cache.
-2. A background thread polls the config source at a configurable interval (default: 30 seconds).
-3. When a value changes, registered change listeners are invoked with the old and new values.
-4. If the config source is unreachable, the last known values are retained (stale-while-revalidate).
+## Design Decisions to Resolve
 
-## Interface (implements ConfigProvider sources)
+Before implementation, determine from requirements and platform capabilities:
 
-```java
-// Java — implements as one source in the ConfigProvider chain
-public class DynamicDbConfigSource implements ConfigSource {
-    String get(String key);                          // returns current cached value
-    void refresh();                                  // force refresh from source
-    void addChangeListener(String key, Consumer<ConfigChangeEvent> listener);
-}
-```
+- which keys are actually dynamic;
+- required propagation latency;
+- source of truth and ownership;
+- polling, push, streaming, or platform-native refresh mechanism;
+- startup behavior if the source is unavailable;
+- safe behavior for stale or missing values;
+- authorization and audit requirements for changes;
+- validation/versioning/concurrency behavior.
 
-```python
-# Python
-class DynamicDbConfigSource:
-    def get(self, key: str) -> str | None: ...
-    def refresh(self) -> None: ...
-    def add_change_listener(self, key: str, callback: Callable) -> None: ...
-```
+Do not invent a universal 30-second poll interval or stale-value policy.
 
-## Database Schema (if DB-backed)
+## Example Model
+
+If a database is deliberately selected, a versioned record can support optimistic concurrency and change detection:
 
 ```sql
 CREATE TABLE dynamic_config (
     config_key   VARCHAR(255) PRIMARY KEY,
     config_value TEXT NOT NULL,
-    description  VARCHAR(500),
-    updated_by   VARCHAR(100) NOT NULL,
-    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    version      INTEGER NOT NULL DEFAULT 1
+    updated_by   VARCHAR(100),
+    updated_at   TIMESTAMP NOT NULL,
+    version      INTEGER NOT NULL
 );
 ```
 
-- `config_key` namespaced: `<service>.rate-limit.max-requests`, `global.feature.new-checkout`.
-- `version` incremented on every update — enables optimistic concurrency and change detection.
-- `updated_by` records who changed the value (audit trail).
+This schema is illustrative, not mandatory. Use the project's database conventions, audit model, and data types.
 
-## Polling vs Push
+## Failure Behavior
 
-| Approach | Pros | Cons | When to Use |
-|----------|------|------|-------------|
-| Polling (default) | Simple, no infrastructure dependency beyond DB | Up to poll-interval delay | Most services |
-| Push (webhook/event) | Instant propagation | Requires event infrastructure | Kill switches, emergency toggles |
-| Hybrid | Best of both | More complex | High-criticality services |
+Define behavior per key/capability:
 
-Default: polling at 30-second intervals. For kill switches that must propagate within seconds, add a push mechanism.
-
-## Error Handling
-
-- **Source unreachable:** continue serving cached values. Log WARNING every poll cycle. Emit `<service>_config_source_errors_total`.
-- **Source returns invalid data:** reject the update, keep previous value, log ERROR.
-- **Startup with source unreachable:** use approved static defaults only for keys where that is safe; fail startup or disable the affected capability when a required key has no safe default.
+- retain a last-known value only when stale operation is safe;
+- use a static fallback only when it is semantically valid;
+- fail startup or disable the capability when a required value has no safe fallback;
+- reject invalid updates and preserve the last valid state when appropriate.
 
 ## Observability
 
-- Metrics: `<service>_config_refresh_total`, `<service>_config_refresh_duration_seconds`, `<service>_config_source_errors_total`, `<service>_config_change_events_total`.
-- Log each detected change at INFO: `Dynamic config changed: key=<key>, old=<old>, new=<new>, changedBy=<who>`.
-- Redact values that look sensitive (containing "password", "secret", "key", "token").
-
-## Production vs Local
-
-- **Production:** config service (Spring Cloud Config, Consul, Azure App Configuration) or shared database.
-- **Local:** dynamic provider typically disabled. Static defaults used. Developers can override via env vars or local config files for testing.
+Expose enough evidence to diagnose refresh failures and stale state using the project's existing logging/metrics/tracing conventions. Never log sensitive configuration values. Prefer recording key identifiers, versions, source status, and outcomes.
 
 ## Security
 
-- Config database/service must require authentication.
-- Write access restricted to authorized operators (not application service accounts).
-- All changes logged with `updated_by` for audit.
-- Values that look like secrets must be rejected — use `SecretProvider` instead.
+- Authenticate and authorize access to the selected source according to platform policy.
+- Restrict write access according to operational ownership.
+- Treat secret values as secrets; do not move them into a dynamic-config store unless that store is the approved secret mechanism.
+- Audit changes when required by project/security/compliance policy.
 
 ## LLM Instructions
 
-- When generating a feature flag or runtime-tunable value, wire it through the dynamic config source via `ConfigProvider`.
-- Provide a static default only when it is safe and semantically valid without the dynamic config source. Required security/correctness values may need fail-fast behavior instead.
-- Generate change listeners for values that affect runtime behavior (rate limits, circuit breaker thresholds).
+- Confirm that runtime mutation is required before designing dynamic configuration.
+- Derive propagation/fallback behavior from requirements; do not assume polling or a fixed interval.
+- Prefer an existing platform/configuration service over inventing infrastructure.
+- Do not log old/new values if they may be sensitive.
 
 ## Review Checklist
 
-- [ ] Poll interval configured (default 30s).
-- [ ] Stale-while-revalidate on source failure.
-- [ ] Every dynamic key has explicit source-failure behavior; static defaults exist only where safe and justified.
-- [ ] Change listeners registered for operationally important keys.
-- [ ] Changes logged with old/new values (sensitive values redacted).
-- [ ] Write access to config source restricted to operators.
+- [ ] Dynamic configuration is justified by an explicit requirement.
+- [ ] Propagation mechanism and latency target are documented.
+- [ ] Startup/source-failure behavior is defined per affected capability.
+- [ ] Invalid updates cannot silently corrupt runtime behavior.
+- [ ] Authorization/audit controls match the selected platform and risk.
+- [ ] Diagnostics expose source health without leaking values.

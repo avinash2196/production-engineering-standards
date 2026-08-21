@@ -2,128 +2,135 @@
 
 ## Purpose
 
-Comprehensive assessment of an existing repository against Production Engineering Standards, producing a prioritized remediation roadmap.
+Assess an existing repository against the Production Engineering Standards and produce an evidence-based remediation roadmap without forcing optional mechanisms or architecture patterns onto the codebase.
 
 ## Prerequisites
 
-- Access to the full repository codebase
-- Knowledge of the service's purpose and external dependencies
+- Access to the repository and relevant build/deployment configuration.
+- Enough context to understand the service's purpose, target environment, and important dependencies.
+- Explicit project requirements/policies when a finding depends on security, compliance, availability, or data-handling decisions.
 
 ## Steps
 
-### 1. Initial Scan
+### 1. Establish Context
 
-Identify:
+Identify from repository evidence:
 
-- Stack (Java Spring Boot / Python FastAPI / other)
-- Project structure (packages/modules, entry points, config files)
-- External dependencies (from build files: `pom.xml`, `build.gradle`, `requirements.txt`, `pyproject.toml`)
-- Deployment artifacts (Dockerfile, docker-compose, CI config)
-- Existing tests (location, framework, coverage)
+- stack/runtime and entry points;
+- module/package boundaries;
+- external dependencies and data stores;
+- deployment/CI artifacts;
+- current tests/checks;
+- known requirements, SLOs, data classifications, and policies.
+
+Record unknowns that materially affect the review instead of filling them with generic defaults.
 
 ### 2. Architecture Review
 
-Invoke **architecture-reviewer** agent:
+Use the [Architecture Reviewer custom agent](../.github/agents/architecture-reviewer.agent.md) or `/review-architecture` when useful.
 
-- Is layered architecture followed? (controller → service → domain → repository)
-- Are dependency directions correct?
-- Is the domain model meaningful or anemic?
-- Are DTOs separated from domain entities?
+Assess:
 
-### 3. Abstraction, Local Adapter & Failure-Behavior Review
+- whether responsibilities and dependency directions are understandable;
+- whether abstractions protect real testing/portability/policy boundaries;
+- data ownership and transaction boundaries;
+- API/event contracts and coupling;
+- unnecessary complexity as well as missing boundaries.
 
-Check each external dependency:
+Do not require a fixed controller → service → domain → repository layering model for every service.
 
-| Dependency | Boundary justified? | Local adapter? | Production failure behavior? |
-|-----------|-------------|-----------|---------|
-| Kafka | ✅/❌ | ✅/❌ | ✅/❌ |
-| Redis | ✅/❌ | ✅/❌ | ✅/❌ |
-| S3 | ✅/❌ | ✅/❌ | ✅/❌ |
-| Vault | ✅/❌ | ✅/❌ | ✅/❌ |
+### 3. Dependency, Local-Development, and Failure Behavior
 
-Reference: `standards/fallback-strategy.md`, `contracts/`
+For each material external dependency, record what actually applies:
 
-### 4. Configuration Review
+| Dependency | Boundary justified/used? | Local-development strategy needed? | Production failure behavior | Evidence / Gap |
+|---|---|---|---|---|
+| `<dependency>` | Yes / No / N/A | Yes / No / N/A | `<behavior>` | `<path/decision>` |
 
-- Are all env-specific values externalized?
-- Is config precedence followed? (operator → dynamic → env → files → defaults)
-- Are secrets separate from config? (SecretProvider, not mixed into config files)
-- Are adapter selectors explicit where adapters exist, and are local-only values rejected in production?
+A service does not need a local adapter for every dependency, and a shared capability contract should not be introduced without a real boundary.
 
-Reference: `standards/configuration-management.md`
+References: [Fallback Strategy](../standards/fallback-strategy.md), [Local Adapter Strategy](../standards/local-adapter-strategy.md), [Contracts](../contracts/).
 
-### 5. Observability Review
+### 4. Configuration and Secrets
 
-- Structured JSON logging with correlation ID?
-- Four golden signal metrics?
-- Distributed tracing with context propagation?
-- Health endpoint with adapter checks?
+- Does configuration use the target framework/platform's intended mechanism?
+- If multiple sources exist, is their actual precedence understood and tested where important?
+- Are required values validated safely?
+- Are production secrets obtained through the approved secure mechanism?
+- If local-only adapters/selectors exist, can they be rejected or prevented in production as designed?
 
-Reference: `standards/observability.md`, `standards/observability/*.md`
+Do not require `ConfigProvider`, dynamic configuration, `SecretProvider`, or a historical provider chain unless the project has adopted those boundaries.
 
-### 6. Security Review
+Reference: [Configuration Management](../standards/configuration-management.md), [Secrets Handling](../standards/security/secrets-handling.md).
 
-- No hardcoded secrets in source, config, or Docker images?
-- Input validation at controller layer?
-- Auth/authz on endpoints?
-- Dependencies scanned for vulnerabilities?
+### 5. Observability and Operations
 
-Reference: `standards/security-basics.md`, `standards/security/*.md`
+Assess whether operators can diagnose and support the service's critical paths using the approved operating model:
 
-### 7. Testing Review
+- logs/events useful for failure diagnosis;
+- correlation/context propagation where flows cross boundaries;
+- metrics/health evidence needed by the runtime and SLOs;
+- tracing where it provides material value;
+- alerts/runbooks/recovery evidence where required.
 
-- Unit tests exercise business logic with mocked abstractions?
-- Integration tests validate adapter contracts?
-- Tests are deterministic (no shared external services)?
-- Test naming and structure follow conventions?
+Do not require JSON logs, `X-Correlation-ID`, all four golden signals, OpenTelemetry, or a particular health endpoint shape by convention.
 
-Reference: `standards/testing/*.md`
+Reference: [Observability](../standards/observability.md).
 
-### 8. Distributed Systems Review
+### 6. Security and Compliance
 
-Invoke **distributed-systems-reviewer** agent:
+Review trust boundaries, input handling, protected resources, authorization decisions, least privilege, secret handling, sensitive-data leakage, and dependency/supply-chain controls that apply.
 
-- Timeouts on all outbound calls?
-- Retry behavior, where present, bounded and safe for duplicate effects?
-- Idempotency in message consumers?
-- Failure modes documented for each dependency?
+Apply compliance-specific controls only after applicability/classification is established. Use the [Compliance Reviewer](../.github/agents/compliance-reviewer.agent.md) or [HIPAA Reviewer](../.github/agents/hipaa-reviewer.agent.md) only for the appropriate scope.
 
-### 9. Compliance Review (if applicable)
+Reference: [Security Engineering Standard](../standards/security/security-standards.md).
 
-Invoke **compliance-reviewer** or **hipaa-reviewer** agent:
+### 7. Testing
 
-- Data classification documented?
-- Encryption at rest and in transit?
-- Audit logging on sensitive data access?
-- Access control enforced?
+Assess whether tests/checks provide evidence for the behavior and failure modes that matter:
 
-### 10. Produce Remediation Roadmap
+- deterministic unit tests for business/application decisions;
+- integration tests at boundaries where integration risk exists;
+- contract/schema compatibility tests where independently evolving components need them;
+- production safeguards/startup checks where required;
+- regression evidence for known failure modes.
 
-Compile findings into a prioritized roadmap:
+Do not require mocks, Testcontainers, Pact, or staging E2E for every project.
+
+### 8. Distributed-System Behavior
+
+For services with remote/distributed interactions, use the [Distributed Systems Reviewer](../.github/agents/distributed-systems-reviewer.agent.md) or `/review-distributed-systems`.
+
+Assess applicable timeouts, retry safety, idempotency/deduplication, ordering, concurrency, consistency, recovery, and dependency-failure behavior. Do not manufacture mechanisms for interactions that do not need them.
+
+### 9. Produce a Prioritized Roadmap
+
+Use evidence and risk rather than generic checklist severity:
 
 ```markdown
 ## Remediation Roadmap: <repo-name>
 
-### Phase 1: Critical (block production deploy)
-1. [CRITICAL] Remove hardcoded DB password → SecretProvider
-2. [CRITICAL] Add TLS for patient data endpoint
+### Production blockers
+1. [CRITICAL] <concrete violated requirement/control> — <evidence> — <remediation>
 
-### Phase 2: High (next sprint)
-3. [HIGH] Extract business logic from OrderController → OrderService
-4. [HIGH] Define Redis failure behavior; add a local adapter only if local/CI execution justifies it
+### High priority
+2. [HIGH] <material reliability/security/correctness gap> — <evidence> — <remediation>
 
-### Phase 3: Medium (next quarter)
-5. [MEDIUM] Add distributed tracing
-6. [MEDIUM] Improve integration test coverage
+### Planned improvements
+3. [MEDIUM] <justified improvement> — <evidence> — <remediation>
 
-### Phase 4: Low (backlog)
-7. [LOW] Rename generic methods to domain terms
+### Backlog / optional
+4. [LOW] <non-urgent improvement> — <evidence> — <remediation>
+
+### Needs verification
+- <missing decision/evidence that prevents a conclusion>
 ```
 
 ## Completion Criteria
 
-- [ ] All 8 review areas assessed
-- [ ] Findings prioritized by severity
-- [ ] Each finding references a specific standard
-- [ ] Each finding includes a remediation action with effort estimate
-- [ ] Roadmap organized in implementation phases
+- [ ] Context and applicability were established before judging mechanisms.
+- [ ] Findings cite repository/requirement/policy evidence.
+- [ ] Optional patterns were not treated as mandatory standards.
+- [ ] Severity reflects concrete risk and impact.
+- [ ] Remediation is scoped and does not silently expand architecture.
+- [ ] Unresolved material decisions are explicitly marked `NEEDS VERIFICATION`.

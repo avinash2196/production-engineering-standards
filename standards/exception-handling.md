@@ -1,26 +1,33 @@
 # Exception Handling
 
-Purpose
-- Define consistent error propagation, translation, and observability for failures.
+## Purpose
 
-Mandatory Rules
-- Surface typed domain errors from services; controllers map them to HTTP/gRPC responses.
-- Capture and log context for unexpected exceptions including correlation IDs and key request metadata.
-- Do not swallow exceptions silently; always handle or escalate.
+Make failures explicit, safely translated at boundaries, and diagnosable without leaking sensitive/internal details.
 
-Defaults
-- Use a central exception mapper in each stack to convert internal errors to transport-level responses.
-- Include an `errorCode` and `traceId` in error payloads for correlation.
+## Rules
 
-Anti-patterns
-- Catch-all empty `except`/`catch` blocks that drop stack traces or context.
-- Returning generic 500 without structured error payload.
+- Do not silently swallow failures.
+- Preserve useful root-cause context when translating/wrapping exceptions.
+- Use typed/domain/application error categories when callers need distinct handling; do not create an exception class for every message.
+- Translate internal failures at transport/interface boundaries according to the actual protocol/error contract.
+- Unexpected failures should produce sufficient secure diagnostic context using the project's observability mechanism.
+- External responses must not expose stack traces, credentials, raw SQL, internal paths/topology, or sensitive payloads.
 
-LLM instructions
-- When generating exception-handling scaffolding, create centralized mappers and include hooks for custom error enrichment.
-- Ask the user only if an error case implies data exposure, retention changes, or compliance impact.
+A central exception mapper, `errorCode`, `traceId`, or specific error envelope is optional unless the target framework/API contract adopts it.
 
-Review checklist
-- [ ] Central exception mapper exists.
-- [ ] Errors include `errorCode` and `traceId`.
-- [ ] Logging captures context and stack traces for unexpected failures.
+## Retry Interaction
+
+Exception handling must not convert deterministic validation/auth/business failures into retryable failures. Preserve enough classification for the approved retry/failure policy to behave correctly.
+
+## LLM Instructions
+
+- Reuse the project's existing error model and framework handler before introducing new infrastructure.
+- Include correlation/operation context when available; do not create a custom ID solely to satisfy this document.
+- Keep client-safe messages separate from secure internal diagnostics.
+
+## Review Checklist
+
+- [ ] Failures are handled or propagated intentionally.
+- [ ] Boundary translation matches the protocol/API contract.
+- [ ] Root cause/context is preserved for diagnostics without sensitive leakage.
+- [ ] Retry classification remains correct.

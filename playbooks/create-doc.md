@@ -53,43 +53,11 @@ Match the doc type to a template in `templates/docs/`:
 | Project copilot instructions | `templates/docs/project-copilot-instructions-bootstrap.md` |
 | Local standards | `templates/docs/local-standards-template.md` |
 | Repo instructions | `templates/docs/repo-instructions-template.md` |
-| ADR | No template yet — use standard ADR format (see below) |
+| ADR | `templates/docs/architecture-decision-record.md` |
 | Runbook | No template yet — use standard runbook format (see below) |
 | New standard | Copy structure from any file in `standards/` |
 
 If no template matches, create the file from scratch using the section guidelines in Step 4.
-
-### ADR Format (when no template exists)
-
-```markdown
-# ADR-NNN: <Title>
-
-**Date:** YYYY-MM-DD  
-**Status:** Proposed | Accepted | Deprecated | Superseded by ADR-NNN  
-**Deciders:** <names or roles>
-
-## Context
-
-<What situation or problem led to this decision?>
-
-## Decision
-
-<What was decided?>
-
-## Consequences
-
-### Positive
-- ...
-
-### Negative / Trade-offs
-- ...
-
-## Alternatives Considered
-
-| Option | Why rejected |
-|--------|-------------|
-| ... | ... |
-```
 
 ### Runbook Format (when no template exists)
 
@@ -154,7 +122,8 @@ Follow `standards/naming.md`. Key rules:
 | Runbook | `docs/runbooks/<kebab-name>.md` | `kebab-case.md` |
 | Standard | `standards/<kebab-name>.md` | `kebab-case.md` |
 | Workflow | `playbooks/<kebab-name>.md` | `kebab-case.md` |
-| Agent-facing guide | `agents/<kebab-name>.md` | `kebab-name.md` |
+| Copilot custom agent | `.github/agents/<kebab-name>.agent.md` | `<kebab-name>.agent.md` |
+| Agent Skill | `.github/skills/<kebab-name>/SKILL.md` | directory and `name` use the same kebab-case value |
 
 ## Step 6: Write the Plan (if doc is large)
 
@@ -180,7 +149,7 @@ After creating the file:
 
 ## LLM Instructions
 
-- Before creating any new `.md` file, ask the five questions (Step 2) in a single message. Never skip this step.
+- Before creating a new substantive document, gather only the missing context needed to choose the correct type, audience, scope, inputs, and cross-links. Do not re-ask details already clear from the request or repository evidence.
 - Search for an existing doc on the same topic before creating a new one. Use `grep` or file search in the same folder.
 - Always select a template from `templates/docs/` or use the standard ADR/runbook format defined in this workflow.
 - Add `## LLM Instructions` and `## Review Checklist` to any doc intended to guide agent behaviour.
@@ -189,7 +158,7 @@ After creating the file:
 
 ## Review Checklist
 
-- [ ] Five questions asked and answered before writing started
+- [ ] Required document context was established without redundant questions
 - [ ] Duplicate search done
 - [ ] Correct template used
 - [ ] File placed in correct directory per naming standard

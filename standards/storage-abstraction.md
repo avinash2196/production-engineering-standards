@@ -1,31 +1,39 @@
 # Storage Abstraction
 
-Purpose
-- Define the `ObjectStorageProvider` capability and required semantics for production and approved local adapters.
+## Purpose
 
-Mandatory Rules
-- Implementations must document consistency and durability guarantees (strong, eventual, best-effort).
-- Providers must support server-side encryption options and enforce encryption at rest for sensitive containers.
-- Provide a local disk adapter with configurable root path for dev/test.
+Guidance for object/blob/file storage boundaries. Use the optional `ObjectStorageProvider` capability when it creates a real testing, portability, policy, or vendor-isolation boundary.
 
-Defaults
-- Production adapters use cloud object storage with server-side encryption; local dev uses `./local-storage` or a mounted directory.
+## Required Decisions
 
-Anti-patterns
-- Directly coupling business code to cloud SDKs; leaking SDK-specific types into domain models.
+For each adopted storage flow, define what matters:
 
-Abstraction Patterns
-- Define a small, stable interface: `put(key, stream|bytes, metadata)`, `get(key) -> stream|bytes`, `delete(key)`, `list(prefix)`, and `presign(key, ttl)`.
-- Return/accept opaque metadata maps for extensibility; avoid returning SDK-specific handle types.
+- durability/availability expectations;
+- consistency/listing semantics relied upon;
+- object size/streaming behavior;
+- naming/namespace/tenant boundaries;
+- access-control and sensitive-data protection requirements;
+- lifecycle/retention/deletion behavior where applicable;
+- timeout/retry/failure behavior;
+- presigned/delegated access semantics if used.
 
-Production vs Local Differences
-- Production: strong durability SLAs, replication, and access controls. Local: best-effort file writes without replication. Tests must account for differences.
+Do not assume every provider supports the same consistency, encryption, metadata, event, or URL-signing semantics.
 
-LLM instructions
-- When generating adapters, scaffold both the cloud-backed provider and the local file-backed provider and add explicit tests validating the contract semantics.
-- Ask the user if objects will be used as event triggers (e.g., object create events) because this affects adapter responsibilities.
+## Boundary
 
-Review checklist
-- [ ] `ObjectStorageProvider` interface documented and used.
-- [ ] Cloud and local adapters included in templates.
-- [ ] Encryption-at-rest and access controls documented for production.
+Keep vendor SDK-specific types out of business/application code when the project has adopted a storage capability boundary. Direct SDK use in an infrastructure-only component can be perfectly valid.
+
+A local filesystem adapter is optional and should be created only when local/CI execution benefits from it more than mocks, an emulator, or another controlled fixture. Document reduced guarantees and prevent local-only behavior from becoming a production fallback.
+
+## LLM Instructions
+
+- Confirm storage requirements and selected backend before defining the contract surface.
+- Do not scaffold cloud + local providers automatically.
+- Keep the interface as small as the approved use cases require.
+
+## Review Checklist
+
+- [ ] Required storage semantics/limits are explicit.
+- [ ] Any abstraction has a concrete purpose.
+- [ ] Sensitive-data/access/lifecycle controls match project policy.
+- [ ] Local/test strategy is justified and documents reduced guarantees.

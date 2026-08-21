@@ -11,8 +11,7 @@ Use this skill for repository code review, including Copilot pull-request review
 
 When available, read and follow:
 
-- `agents/code-reviewer.md`;
-- `.github/prompts/review-code.prompt.md` for the canonical review structure;
+- `.github/prompts/review-code.prompt.md` for the canonical review structure when that prompt is available;
 - the approved Plan and milestone Implementation Plan when the adopting project uses PDD;
 - only standards relevant to the changed execution path.
 

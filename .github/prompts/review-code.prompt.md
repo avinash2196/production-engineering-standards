@@ -47,7 +47,7 @@ Always consider:
 * [Coding standards](../../standards/coding-standards.md)
 * [Naming](../../standards/naming.md)
 * [Architecture](../../standards/architecture.md)
-* [Code reviewer specification](../../agents/code-reviewer.md)
+* [Code custom agent](../agents/code-reviewer.agent.md)
 
 ## Applicable Standards
 

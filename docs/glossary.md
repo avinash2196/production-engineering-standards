@@ -10,7 +10,7 @@ Key terms used throughout this repository.
 | **DTO** | Data Transfer Object — a typed, validated structure used to carry data across API boundaries. Separate from domain objects. |
 | **Domain Object** | A class representing business concepts (entities, value objects, aggregates). No framework dependencies. |
 | **Aggregate Root** | The top-level domain object that controls access to a cluster of related entities. One repository per aggregate root. |
-| **Correlation ID** | A unique identifier propagated across all services in a request chain for distributed tracing (header: `X-Correlation-ID` or W3C `traceparent`). |
+| **Correlation / Operation Identifier** | Context used to connect related work across boundaries. It may be a W3C trace context, platform request ID, message/job ID, or an application correlation ID; `X-Correlation-ID` is one option, not a universal header. |
 | **Idempotency Key** | A client-provided identifier used to deduplicate messages and ensure exactly-once processing semantics. |
 | **PHI** | Protected Health Information — any health-related data that can identify an individual. Subject to HIPAA controls. |
 | **PII** | Personally Identifiable Information — data that can identify a person (name, email, SSN, etc.). |
@@ -22,8 +22,8 @@ Key terms used throughout this repository.
 | **MessagePublisher** | Capability interface for publishing messages/events to a topic. |
 | **MessageSubscriber** | Capability interface for consuming messages/events from a topic. |
 | **ObjectStorageProvider** | Capability interface for uploading, downloading, and managing files in object storage. |
-| **SecretProvider** | Capability interface for retrieving secrets (API keys, passwords, certificates) from a secure store. |
-| **ConfigProvider** | Capability interface for resolving configuration values from a prioritized chain of sources. |
+| **SecretProvider** | Optional capability interface for secret retrieval when a project benefits from isolating secret-store/platform details behind a boundary. Native platform secret injection may be used instead. |
+| **ConfigProvider** | Optional capability interface for configuration resolution when multiple/dynamic sources or portability justify a boundary. It does not imply a universal source-precedence chain. |
 | **SLO** | Service Level Objective — a target for service reliability (e.g., 99.9% availability, P95 latency < 250ms). |
 | **Canary Deployment** | A release strategy that routes a small percentage of traffic to the new version before full rollout. |
 | **Expand-then-Contract** | A database migration strategy where new schema is added first, data migrated, then old schema removed in a later release. |

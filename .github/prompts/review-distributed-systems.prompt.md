@@ -19,7 +19,7 @@ Evaluate the provided service for distributed systems correctness. Every outboun
 - Fallback strategy: [standards/fallback-strategy.md](../../standards/fallback-strategy.md)
 - Kafka integration: [stacks/java-springboot/integration-guides/kafka-integration.md](../../standards/messaging-abstraction.md)
 - Redis integration: [stacks/java-springboot/integration-guides/redis-integration.md](../../standards/resiliency.md)
-- Full agent spec: [agents/distributed-systems-reviewer.md](../../agents/distributed-systems-reviewer.md)
+- Custom agent: [Distributed Systems Reviewer custom agent](../agents/distributed-systems-reviewer.agent.md)
 
 ## What to Check
 

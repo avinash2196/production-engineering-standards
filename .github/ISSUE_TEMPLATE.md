@@ -17,10 +17,9 @@ assignees: ""
 ## Area
 
 <!-- Which section of the repository does this affect? -->
-- [ ] `core/`
 - [ ] `standards/`
 - [ ] `stacks/`
-- [ ] `agents/`
+- [ ] `.github/agents/`, `.github/skills/`, or `.github/prompts/`
 - [ ] `playbooks/`
 - [ ] `templates/`
 - [ ] `examples/`

@@ -1,25 +1,37 @@
 # Scalability
 
-Purpose
-- Define horizontal scaling patterns and capacity considerations for services and stateful dependencies.
+## Purpose
 
-Mandatory Rules
-- Design stateless service instances where possible. Stateful components must be sharded or partitioned explicitly.
-- Define and document scalability limits (throughput, connections) and provide autoscaling metrics.
+Make capacity limits, bottlenecks, and scaling behavior explicit for systems whose workload requires scaling beyond a single baseline deployment.
 
-Defaults
-- Use instance-based horizontality: scale by adding instances behind a load balancer; prefer sticky-less designs.
-- For stateful stores, partition by a business key and plan for re-sharding procedures.
+## Guidance
 
-Anti-patterns
-- Relying on single-instance vertical scaling without documented limits.
-- Storing global mutable state in-process without reconciliation.
+- Establish expected workload and limiting resources before choosing a scaling pattern.
+- Prefer stateless/restartable compute when it matches the application, but do not externalize state merely to satisfy a stateless-service convention.
+- Identify stateful bottlenecks such as database connections, hot partitions, locks, queues, caches, external quotas, and downstream capacity.
+- Use horizontal scaling, vertical scaling, partitioning/sharding, batching, async processing, caching, replication, or workload isolation according to measured requirements and correctness constraints.
+- Define capacity signals/limits and overload behavior for critical resources.
 
-LLM instructions
-- When proposing scaling changes, include target CPU/RPS thresholds and suggest autoscaling policies.
-- Ask the user if the system has regulatory constraints that limit multi-region scaling.
+Autoscaling is optional. If used, select signals and thresholds from observed workload/SLO/resource behavior; do not invent CPU/RPS thresholds.
 
-Review checklist
-- [ ] Service is stateless or state is externally partitioned.
-- [ ] Autoscaling metrics and thresholds documented.
-- [ ] Re-sharding and migration procedures documented for stateful components.
+Partitioning/sharding is optional. If used, define key distribution, hot-key behavior, rebalancing/migration, consistency, and failure implications.
+
+## Anti-Patterns
+
+- Claiming scalability without workload/capacity evidence.
+- Unbounded queues/concurrency/connections.
+- Global mutable in-process state when multiple instances are expected and no synchronization/reconciliation model exists.
+- Adding distributed complexity before a real bottleneck/requirement exists.
+
+## LLM Instructions
+
+- Ask for or inspect workload, latency/throughput targets, state ownership, and platform constraints before proposing scaling mechanisms.
+- State the bottleneck each proposed mechanism addresses.
+- Do not invent autoscaling thresholds or multi-region requirements.
+
+## Review Checklist
+
+- [ ] Workload/capacity assumptions are explicit.
+- [ ] Material bottlenecks and limits are identified.
+- [ ] Scaling mechanism preserves correctness/state semantics.
+- [ ] Overload/backpressure behavior is bounded.

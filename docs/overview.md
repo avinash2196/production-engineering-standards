@@ -10,14 +10,13 @@ It is not a claim that one architecture, reliability target, or implementation c
 - **Prompt-driven workflows** that separate Requirements, Plan, Implementation Plan, RED tests, GREEN implementation, refactoring, and final review.
 - **Capability boundaries** for infrastructure concerns such as messaging, caching, storage, secrets, and configuration.
 - **Local-adapter guidance** for development and CI without confusing local convenience with production failover.
-- **Review agents and prompts** that make architecture, distributed-systems, security, compliance, and readiness reviews repeatable.
+- **GitHub-native custom agents, Agent Skills, and prompts** that make architecture, distributed-systems, security, compliance, and readiness reviews repeatable.
 - **Executable repository checks** for rules that can be validated deterministically.
 
 ## Repository Structure
 
 ```text
-.github/          Persistent Copilot guidance, task instructions, prompts, and repository CI
-agents/           Agent responsibilities, guardrails, and review behavior
+.github/          Copilot instructions, custom agents, skills, prompts, and repository CI
 contracts/        Capability boundaries used by application code
 standards/        Engineering rules and decision guidance
 stacks/           Java/Spring Boot and Python/FastAPI stack guidance and templates
@@ -42,7 +41,9 @@ docs/             Overview, decisions, and enforcement status
 
 - `.github/copilot-instructions.md` provides stable repository-level guidance.
 - `.github/prompts/` contains repeatable planning, testing, implementation, refactoring, and review tasks.
-- `agents/` defines specialized review behavior and guardrails.
+- `.github/agents/` contains GitHub Copilot custom-agent profiles.
+- `.github/skills/` contains Agent Skills loaded when relevant.
+- See [Copilot Customization Model](copilot-customizations.md) for the division of responsibilities.
 - Human approval remains required where architecture, requirements, risk, or production behavior depends on context.
 
 ### Reviewers

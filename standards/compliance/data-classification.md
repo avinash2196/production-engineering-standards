@@ -2,113 +2,83 @@
 
 ## Purpose
 
-Define data classification levels and the handling rules required for each level. Every data element stored, processed, or transmitted by a service must be classified. The classification determines which security, encryption, logging, and access controls are required.
+Provide a reference classification model for projects that do not already have an organization-approved data-classification taxonomy. If the adopting organization/project has its own classification policy, **that policy takes precedence**.
 
-## Classification Levels
+Classification labels describe sensitivity and handling needs. They do not by themselves establish that HIPAA, PCI DSS, GDPR, or another legal/regulatory framework applies.
 
-| Level | Label | Description | Examples |
-|-------|-------|-------------|----------|
-| 1 | **Public** | Data intended for public consumption. No confidentiality requirement. | Marketing content, public API documentation, product catalog (non-priced) |
-| 2 | **Internal** | Not for external exposure, but no special protection required. | Internal wiki, non-sensitive metrics, team meeting notes |
-| 3 | **Confidential** | Business-sensitive data requiring access control and encryption. | Customer emails, financial records, pricing data, internal API keys |
-| 4 | **Restricted / PHI** | Highest sensitivity. Regulatory requirements apply (HIPAA, PCI, GDPR). | Patient health records, SSN, payment card numbers, biometric data |
+## Reference Levels
 
-## Handling Rules Per Level
+| Level | Label | Description | Illustrative examples |
+|---|---|---|---|
+| 1 | **Public** | Approved for public disclosure. | Public documentation, published catalog/content |
+| 2 | **Internal** | Non-public operational/business information with limited sensitivity. | Internal process metadata, non-sensitive internal docs |
+| 3 | **Confidential** | Sensitive information requiring controlled access and protection. | Customer contact data, non-public financial/business data |
+| 4 | **Restricted** | Highest-sensitivity information under an approved policy/risk model. | Government identifiers, regulated payment/health data **when the applicable policy classifies it here**, highly sensitive credentials/material |
 
-### Public (Level 1)
+Secrets such as passwords, private keys, API tokens, and credentials are governed by secret-management policy and should not be treated merely as ordinary classified business data.
 
-| Control | Requirement |
-|---------|-------------|
-| Encryption at rest | Not required |
-| Encryption in transit | HTTPS recommended, not mandatory for non-auth endpoints |
-| Access control | None (publicly accessible) |
-| Audit logging | Not required |
-| Data minimization | Not applicable |
-| Retention | No specific policy required |
-| Backup encryption | Not required |
+## Handling Model
 
-### Internal (Level 2)
+The exact controls for each level come from the adopting organization's current security/data-handling policy. At a minimum, classification should drive decisions about:
 
-| Control | Requirement |
-|---------|-------------|
-| Encryption at rest | Server-side encryption (default DB/storage encryption) |
-| Encryption in transit | TLS 1.2+ required |
-| Access control | Authentication required; no fine-grained authorization needed |
-| Audit logging | Not required for reads; log writes at application level |
-| Data minimization | Avoid unnecessary exposure in API responses |
-| Retention | Follow business retention policy |
-| Backup encryption | Server-side encryption |
+- who/what may access the data;
+- required protection at storage and network boundaries;
+- logging/telemetry restrictions;
+- auditability where required;
+- retention and disposal;
+- backup/replica/test-data handling;
+- data minimization and exposure in APIs;
+- incident/monitoring requirements where applicable.
 
-### Confidential (Level 3)
-
-| Control | Requirement |
-|---------|-------------|
-| Encryption at rest | Server-side encryption (TDE for databases) |
-| Encryption in transit | TLS 1.2+ required |
-| Access control | Authentication + authorization (RBAC) required |
-| Audit logging | Log all write operations; log reads of sensitive fields |
-| Data minimization | Projection DTOs; no `SELECT *` on confidential tables |
-| Retention | Defined retention policy with automated disposal |
-| Backup encryption | Server-side encryption with access-controlled keys |
-| Log handling | Redact confidential values in application logs |
-
-### Restricted / PHI (Level 4)
-
-| Control | Requirement |
-|---------|-------------|
-| Encryption at rest | Approved at-rest protection based on applicable policy/risk assessment; add field/application-level protection when required |
-| Encryption in transit | TLS 1.2+ required; mTLS for service-to-service |
-| Access control | Authentication + fine-grained authorization (RBAC or ABAC) |
-| Audit logging | Audit according to applicable policy; retention comes from legal/regulatory/organizational requirements; protect integrity |
-| Data minimization | Strict minimum necessary; projection DTOs; no PHI in URLs |
-| Retention | Applicable legal/regulatory/contractual/organizational policy; approved disposal method when retention expires |
-| Backup encryption | Approved at-rest protection with managed key access appropriate to the platform |
-| Log handling | No raw Restricted/PHI values in any log, error message, or metric |
-| Additional | PHI inventory required; see `hipaa-controls.md` |
+This repository intentionally does **not** assign universal TLS versions, mTLS, RBAC/ABAC, encryption algorithms, retention periods, or audit-storage mechanisms to a label.
 
 ## Classification Process
 
-### For New Services
+### New Work
 
-1. During service design, list every data element the service will handle.
-2. Classify each element using the table above.
-3. Record the classification in the service's data inventory table.
-4. Apply the handling rules for the highest classification level present.
+1. Identify the data/flow relevant to the approved scope.
+2. Apply the organization's approved classification policy; if none exists, the reference levels above may be proposed for human/security review.
+3. Record the classification and its source/rationale.
+4. Apply controls from the relevant approved security/compliance policy.
+5. Escalate unresolved classifications that materially affect the current design rather than inventing a lower-risk assumption.
 
-### For Existing Services
+### Existing Work
 
-1. Run the **compliance-reviewer** agent or execute the `review-compliance-controls` workflow.
-2. The reviewer will identify data elements and assign proposed classifications.
-3. The service owner validates and adjusts classifications.
+Use repository evidence to build an inventory, but treat inferred classifications as **proposals requiring confirmation** when policy evidence is absent.
 
 ## Data Inventory Template
 
-| Data Element | Field/Column | Classification | Justification |
-|-------------|-------------|---------------|---------------|
-| Patient name | `patients.name` | Restricted/PHI | HIPAA — individually identifiable health info |
-| Order total | `orders.total` | Confidential | Business-sensitive pricing data |
-| Product name | `products.name` | Public | Displayed on public catalog |
-| Employee email | `users.email` | Internal | Internal directory, not public |
+| Data / Field / Flow | Proposed or Approved Classification | Policy / Rationale | Storage / Transit | Required Controls / Owner |
+|---|---|---|---|---|
+| `<item>` | `<label>` | `<policy/decision>` | `<locations>` | `<controls>` |
 
 ## Cross-Cutting Rules
 
-- **Default to higher classification when uncertain.** If a data element could be Internal or Confidential, treat it as Confidential until confirmed otherwise.
-- **Mixed-classification tables:** if a database table contains both Internal and Restricted columns, the entire table must be treated at the Restricted level for access control. Apply additional field/application-level encryption when required by the approved risk assessment or security policy.
-- **Derived data:** aggregations or analytics derived from classified data inherit the source classification unless an approved de-identification/anonymization process justifies reclassification.
-- **Temporary storage:** classification applies regardless of storage duration. Temporary files, caches, and queues must use the controls required by the applicable security/data-handling policy.
+- Apply classification to copies, caches, queues, exports, backups, and temporary storage as required by the approved policy—not only to the primary database.
+- Derived data retains source sensitivity unless an approved de-identification/aggregation/reclassification process establishes otherwise.
+- Mixed-sensitivity storage requires controls that prevent lower-classification access paths from exposing higher-sensitivity data; do not automatically classify an entire physical table at the highest level if approved column/row controls provide the required isolation.
+- When classification is uncertain, mark it `NEEDS VERIFICATION`; use a temporary conservative handling decision only when explicitly justified for the current work.
+
+## Regulatory Applicability
+
+- Healthcare vocabulary does not prove HIPAA applicability.
+- Payment-related fields do not automatically establish PCI DSS scope.
+- Personal data does not by itself determine which privacy law/jurisdiction applies.
+
+When a framework is explicitly applicable, load its specific engineering guidance (for example [HIPAA Controls](hipaa-controls.md)) and seek qualified compliance/legal interpretation where required.
 
 ## LLM Instructions
 
-- When generating a data model, ask the user to classify each field.
-- If classification is missing, propose a classification from available evidence and mark it for human confirmation; do not infer regulatory applicability solely from a field name.
-- Apply the handling rules for the highest classification level present in the service.
-- Fields such as `ssn`, `dob`, `diagnosis`, `patient*`, or `health*` should trigger a sensitive-data/PHI review; confirm whether HIPAA or another regime actually applies.
-- Fields named `password`, `secret`, `api_key`, `token` → these are secrets, not data classifications. Route to `SecretProvider`.
+- Ask for or inspect the project's classification/policy source before applying fixed controls.
+- Do not infer a regulatory regime solely from names such as `patient`, `card`, `ssn`, `email`, or `health`.
+- Propose classifications only as reviewable suggestions when policy evidence is missing.
+- Treat obvious credentials/tokens/keys as secret-handling concerns and route them to the approved secret mechanism; do not automatically require the optional `SecretProvider` abstraction.
+- Never invent retention periods, encryption mechanisms, or access-control models from this reference classification alone.
 
 ## Review Checklist
 
-- [ ] Every data element in the service has an assigned classification.
-- [ ] Handling rules match or exceed the requirements for the assigned level.
-- [ ] Data inventory documented and maintained.
-- [ ] No Restricted/PHI data at lower protection levels.
-- [ ] Derived data classified based on source data.
+- [ ] Relevant data/flows have an approved classification or are explicitly marked `NEEDS VERIFICATION`.
+- [ ] Classification source/policy is identified.
+- [ ] Controls are derived from that policy and the actual architecture.
+- [ ] Copies/derived data/non-production use are considered.
+- [ ] Regulatory applicability is established separately from classification labels.

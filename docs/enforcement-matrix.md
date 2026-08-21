@@ -8,8 +8,11 @@ A rule is described as **enforced** only when the automated-enforcement column n
 |---|---|---|---|---|
 | Required standards-repository structure | `README.md` | Repository review | `validate_repository.py` and CI | Enforced |
 | Active internal Markdown links resolve | Documentation guidance | Documentation review | `validate_repository.py` and CI | Enforced |
-| Prompt files use supported frontmatter | Agent execution standard | Prompt review | `validate_repository.py` and CI | Enforced |
+| Prompt files use supported repository frontmatter subset | Agent execution standard | Prompt review | `validate_repository.py` and CI | Enforced |
+| GitHub Copilot custom agents use `.github/agents/*.agent.md` with required metadata | Copilot customization model | Agent-profile review | `validate_repository.py` and CI | Enforced |
+| Legacy top-level `agents/` hierarchy is absent | Copilot customization model | Repository review | `validate_repository.py` and CI | Enforced |
 | Agent Skills use required structure and metadata | Requirements/review skills | Skill review | `validate_repository.py` and CI | Enforced |
+| Packaged repository excludes IDE/Python cache artifacts | Repository hygiene | Repository review | `validate_repository.py` and CI (`PYTHONDONTWRITEBYTECODE=1`) | Enforced in this repository |
 | Known placeholder implementations are rejected | Definition of Done | Code review | `validate_repository.py` and CI | Enforced |
 | Plan and Implementation Plan templates exist | PDD workflow | Planning review | Required-path validator | Enforced in this repository |
 | RED/GREEN/optional-REFACTOR remain separate phase milestones in active guidance | PDD workflow | Planning/code review | `test_pdd_workflow_semantics.py` and CI | Enforced in this repository |

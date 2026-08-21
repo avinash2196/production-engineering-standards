@@ -1,25 +1,47 @@
 # Compliance Engineering
 
-Purpose
-- Provide engineering controls and checklists that help teams design for privacy- and compliance-sensitive systems (HIPAA-aware), without giving legal certification.
+## Purpose
 
-Mandatory Rules
-- Classify data by sensitivity and document handling rules for each class.
-- Encrypt sensitive data at rest and in transit; ensure keys are rotated per policy.
-- Implement immutable audit logging for security-relevant events and make access auditable.
+Provide engineering guidance for systems with explicitly established privacy, data-protection, contractual, or regulatory controls. This repository does not provide legal advice or compliance certification.
 
-Defaults
-- Default retention windows set in config and reviewed by compliance owners.
-- Redact PII/PHI from logs by default; provide opt-in mechanisms for debug traces controlled by environment and limited time windows.
+## Applicability First
 
-Anti-patterns
-- Storing PHI unencrypted or shipping PII in logs without consent and access controls.
+Before applying a framework-specific control:
 
-LLM instructions
-- Agents must ask targeted questions before proposing designs that store or transmit sensitive data (what data, expected retention, intended audience).
-- Provide evidence items: data classification, stakeholders, regulatory constraints, and retention windows.
+- identify the data/processing scope;
+- identify the approved classification and policy source;
+- establish which regulatory/contractual framework actually applies;
+- mark unresolved applicability as `NEEDS VERIFICATION` rather than inferring it from domain/field names.
 
-Review checklist
-- [ ] Data classification documented.
-- [ ] Encryption at rest and in transit configured.
-- [ ] Audit logging implemented for access and modification of sensitive records.
+## Core Engineering Outcomes
+
+When required by the applicable policy:
+
+- minimize collection/exposure of sensitive data;
+- protect data at relevant storage/network boundaries;
+- enforce approved identity/access controls and least privilege;
+- create sufficient audit evidence for accountable actions;
+- keep secrets and sensitive values out of ordinary diagnostics;
+- define retention/disposal from an identified policy source;
+- ensure required controls are testable/reviewable and operational failures are visible.
+
+The exact mechanisms—immutable storage, mTLS, RBAC/ABAC, field encryption, a particular secret manager, key rotation period, or retention window—are policy/architecture decisions, not universal defaults.
+
+## HIPAA
+
+Use [HIPAA Controls](compliance/hipaa-controls.md) only when HIPAA/ePHI applicability is established. Healthcare terminology alone does not establish HIPAA scope.
+
+## LLM Instructions
+
+- Ask only targeted questions that materially affect the current compliance/security decision.
+- Cite policy/requirement/repository evidence for controls and findings.
+- Do not claim legal/regulatory certification.
+- Do not invent retention periods, cryptographic parameters, authentication models, audit-storage products, or regulatory applicability.
+
+## Review Checklist
+
+- [ ] Applicability and data classification are established or marked `NEEDS VERIFICATION`.
+- [ ] Required access/data-protection/audit/minimization controls have evidence.
+- [ ] Retention/disposal has an identified policy source when applicable.
+- [ ] Sensitive values are excluded from ordinary telemetry and error surfaces.
+- [ ] Optional mechanisms are not treated as universal requirements.

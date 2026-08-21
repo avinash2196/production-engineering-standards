@@ -1,29 +1,34 @@
 # Engineering Style
 
-This style guide focuses on consistent, production-oriented patterns for code and architecture across Java and Python stacks.
+## Purpose
 
-1. Code Organization
-- Follow layered architecture: `controller` (API) → `service` (business orchestration) → `domain` (entities, value objects) → `repository` (data access).
-- Keep modules small and single-responsibility. Avoid god classes.
+Keep code understandable, cohesive, testable, and consistent with the target stack without forcing every service into one layer count or abstraction pattern.
 
-2. Naming and DTOs
-- Use explicit DTOs for requests and responses. Map DTOs to/from domain objects in the service layer.
-- Use clear, domain-driven names; keep API models stable and versioned.
+## Principles
 
-3. Configuration
-- Centralize configuration models using `pydantic`/`spring-configuration` patterns. Avoid ad-hoc environment reads scattered through code.
+- Organize code around coherent responsibilities and dependency boundaries.
+- Keep transport/framework/vendor details out of business decisions when that separation creates real value.
+- Prefer domain-specific names over generic `manager/helper/data` terminology.
+- Use typed configuration through the stack's established mechanism; avoid scattered ad-hoc reads when central binding materially improves correctness.
+- Make state mutation, transactions, concurrency, retries, and external side effects explicit.
+- Keep business behavior changes separate from broad refactoring whenever practical.
+- Prefer the formatter/linter/testing conventions already adopted by the project.
 
-4. Error Handling
-- Prefer typed errors and error codes. Controllers convert domain/service errors into HTTP status + structured error payloads.
+A controller/service/domain/repository hierarchy is one common pattern, not a universal required package structure. Simple services may use fewer layers; complex domains may need richer boundaries.
 
-5. Asynchrony
-- Explicitly mark async boundaries. Use message-driven patterns for eventual work and HTTP/REST for synchronous interactions.
+## Testing
 
-6. Observability
-- Inject correlation IDs at the edge (API gateway or controller) and pass them downstream. Instrument with OpenTelemetry and Micrometer where applicable.
+Choose unit, integration, contract/schema, end-to-end, load, and security checks according to actual risk and boundary behavior. Testcontainers, emulators, local adapters, mocks, and ephemeral environments are options—not universal requirements.
 
-7. Security
-- Validate inputs strictly and minimize returned data. Apply field-level redaction in logs for PII/PHI.
+## LLM Instructions
 
-8. Tests
-- Provide unit tests for business logic, integration tests for infrastructure wiring (use Testcontainers/emulators or approved local adapters), and contract tests for APIs.
+- Inspect existing project conventions before creating packages/layers.
+- Add abstractions only for a clear responsibility, testing, portability, or policy boundary.
+- Avoid speculative cleanup outside the approved milestone.
+
+## Review Checklist
+
+- [ ] Responsibilities and dependency directions are understandable.
+- [ ] New layers/abstractions have a concrete reason.
+- [ ] Side effects/failure behavior are explicit where material.
+- [ ] Tests/checks match the actual behavior and risk.

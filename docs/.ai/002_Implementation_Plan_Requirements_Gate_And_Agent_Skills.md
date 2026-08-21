@@ -22,7 +22,7 @@ Implement the final requirements-analysis and Agent Skill hardening defined by `
 - `.github/prompts/create-plan.prompt.md`
 - `.github/prompts/review-code.prompt.md`
 - `standards/questioning-policy.md`
-- `agents/backend-service-builder.md`
+- `.github/agents/backend-service-builder.agent.md`
 - `tooling/tests/test_validate_repository.py`
 - `tooling/scripts/validate_repository.py`
 - `README.md`

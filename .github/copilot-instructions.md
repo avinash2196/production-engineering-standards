@@ -105,7 +105,7 @@ Details: [Production Dependency Failure and Degradation](../standards/fallback-s
 ## Engineering Rules
 
 1. Domain logic must not depend on web, persistence, or vendor SDK frameworks unless a project-specific architecture decision explicitly adopts an active-record model.
-2. Secrets are accessed through the configured secret-provider boundary. Environment variables are permitted only for explicitly local development adapters.
+2. Production secrets use the approved secure delivery/access mechanism. When an adopting project uses this repository's `SecretProvider` boundary, access secrets through that boundary. The `SECRET_ADAPTER=env` reference is local-only and must not become a production fallback.
 3. External calls define timeouts and documented failure behavior.
 4. Transaction and idempotency boundaries are explicit where duplicate or partial processing could occur.
 5. Collection-fetching paths are reviewed for N+1 behavior using cardinality and pagination context.
@@ -139,6 +139,7 @@ Do not call a rule “enforced” unless an executable mechanism blocks the viol
 | Integration testing | [Integration Testing](../standards/testing/integration-testing.md) |
 | Production readiness | [Production Readiness](../standards/production-readiness.md) |
 | Enforcement status | [Enforcement Matrix](../docs/enforcement-matrix.md) |
+| Copilot customizations | [Copilot Customization Model](../docs/copilot-customizations.md) |
 
 ## Stack Guidance
 

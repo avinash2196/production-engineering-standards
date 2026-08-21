@@ -2,184 +2,91 @@
 
 ## Purpose
 
-Define the audit logging schema, immutability requirements, retention policies, and implementation patterns for tracking access to and modification of classified data. Audit logs are distinct from application/operational logs — they serve compliance, security investigation, and accountability purposes.
+Define engineering principles for audit evidence when an approved security, compliance, contractual, or business policy requires accountable records of sensitive actions. Audit logs are distinct from ordinary diagnostic/application logs.
 
-## When Audit Logging Is Required
+## Applicability
 
-| Data Classification | Create | Read | Update | Delete |
-|--------------------|--------|------|--------|--------|
-| Public | No | No | No | No |
-| Internal | No | No | Optional | Optional |
-| Confidential | Yes | Optional | Yes | Yes |
-| Restricted / PHI | Yes | Yes | Yes | Yes |
+Do not audit every CRUD operation merely because this document exists. Establish:
 
-Reference: `data-classification.md` for classification definitions.
+- which actions/resources require audit evidence;
+- who/what must be attributable;
+- what outcomes/context must be recorded;
+- integrity/availability requirements;
+- retention/disposal source;
+- monitoring/review obligations.
 
-## Audit Event Schema
+These decisions come from the applicable policy, threat/risk assessment, or business requirement.
 
-Every audit event must include these fields:
+## Event Content
+
+An audit event normally needs enough information to answer questions such as:
+
+- **who/what** performed or attempted the action;
+- **what** action occurred;
+- **which resource/data scope** was affected;
+- **when** it occurred;
+- **outcome** (success, failure, denied);
+- **useful request/operation context** for investigation.
+
+A project may use a schema like:
 
 ```json
 {
-  "eventId": "uuid-v4",
-  "eventType": "DATA_ACCESS | DATA_CREATE | DATA_UPDATE | DATA_DELETE",
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "actor": {
-    "type": "USER | SERVICE | SYSTEM",
-    "id": "user-123 | order-service",
-    "ip": "10.0.1.15",
-    "roles": ["clinician", "admin"]
-  },
-  "resource": {
-    "type": "patient | order | document",
-    "id": "patient-456",
-    "classification": "RESTRICTED"
-  },
-  "action": {
-    "operation": "READ",
-    "fields": ["name", "dob", "diagnosis"],
-    "query": "GET /api/patients/456"
-  },
-  "outcome": {
-    "status": "SUCCESS | FAILURE | DENIED",
-    "reason": "null | insufficient_permissions | resource_not_found"
-  },
-  "context": {
-    "traceId": "abc-123",
-    "correlationId": "req-789",
-    "service": "patient-service",
-    "environment": "production"
-  }
+  "eventId": "<globally-unique-id>",
+  "eventType": "DATA_ACCESS",
+  "timestamp": "<timestamp>",
+  "actor": {"type": "USER_OR_SERVICE", "id": "<identity>"},
+  "resource": {"type": "<type>", "id": "<identifier>", "classification": "<approved-label>"},
+  "action": {"operation": "READ"},
+  "outcome": {"status": "SUCCESS"},
+  "context": {"traceOrRequestId": "<optional-context>"}
 }
 ```
 
-### Schema Rules
+The shape is illustrative unless the adopting organization explicitly adopts it as its audit schema. A globally unique event identifier need not be UUID v4 specifically.
 
-- **`eventId`** must be a globally unique identifier (UUID v4).
-- **`actor.id`** must be the authenticated identity. Never use "anonymous" or "system" for PHI access.
-- **`resource.id`** is the record identifier. Never include the actual PHI values in the audit event.
-- **`action.fields`** lists which fields were accessed or modified. For updates, include old and new values only if the values are not PHI — otherwise log field names only.
-- **`outcome.status`** must always be present, including for denied access attempts.
+## Sensitive Data
 
-## Immutability Requirements
+- Record identifiers/field names rather than raw sensitive values whenever possible.
+- Never place secrets in audit events.
+- Minimize personal/sensitive information in audit records to what the audit purpose requires.
+- Protect audit data itself according to its classification and access needs.
 
-Audit logs must be tamper-resistant once written:
+## Integrity and Availability
 
-| Strategy | Description | When to Use |
-|----------|-------------|-------------|
-| Append-only storage | Write-once storage (S3 Object Lock, Azure Immutable Blob) | Default for all compliance-grade audit logs |
-| Separate write permissions | Audit log storage is writable only by the audit service; application services cannot modify or delete | Always |
-| Cryptographic chaining | Each event includes a hash of the previous event | High-security environments |
-| External witness | Audit events forwarded to an external SIEM in real-time | When breach detection is required |
+Use controls appropriate to the approved audit requirement, such as restricted append access, immutable/write-once storage, separation of duties, external forwarding/SIEM, cryptographic integrity, or provider-native audit services.
 
-**Mandatory rules:**
-- Application services must not have delete or update permissions on audit log storage.
-- Audit logs must be written synchronously or with at-most-once-delayed guarantees (buffer ≤ 5 seconds before flush).
-- Failed audit writes must not fail the business operation silently — emit an alert metric.
+This repository does not impose one storage technology or a universal synchronous/5-second flush requirement. Define loss/delay guarantees from the actual policy and failure model. Audit pipeline failures that threaten a required control must be observable and handled according to the approved design.
 
-## Retention Policy
+## Retention and Disposal
 
-Audit retention is defined by applicable legal, regulatory, contractual, and organizational policy for the system and data involved. HIPAA's six-year documentation-retention requirement must not be treated as a universal six-year rule for every application audit log or medical record.
+Retention is determined by applicable law/regulation, contract, records policy, security policy, and investigation/legal-hold requirements. Record the source for each required retention period and implement approved lifecycle/disposal controls.
 
-- Record the policy/source that determines retention for each audit stream.
-- Enforce approved retention through storage lifecycle controls where practical.
-- Protect records for the full retention period and use an approved disposal mechanism afterward.
-- Keep legal holds and investigation requirements separate from normal lifecycle deletion.
+Do not infer that HIPAA imposes one universal application-audit-log or medical-record retention duration.
 
-## Implementation Patterns
+## Placement and Failure Semantics
 
-### Java (Spring)
+Choose where audit emission occurs so bypass is difficult and the record corresponds to the authoritative action/outcome. Depending on the architecture this can be application/service logic, database/platform audit, gateway/policy layer, an event stream, or a dedicated audit service.
 
-```java
-@Component
-public class AuditLogger {
-    private final AuditEventStore store;
+Define what happens if required audit recording fails. Some operations may fail closed; others may use a durable asynchronous path. The decision must come from policy and business correctness requirements.
 
-    public void logAccess(AuditEvent event) {
-        event.setEventId(UUID.randomUUID().toString());
-        event.setTimestamp(Instant.now());
-        store.append(event);
-        meterRegistry.counter("audit_events_total",
-            "type", event.getEventType(),
-            "classification", event.getResource().getClassification()
-        ).increment();
-    }
-}
+## Alerting / Review
 
-// Usage in service layer
-public PatientDto getPatient(String patientId, AuthContext auth) {
-    Patient patient = patientRepository.findById(patientId);
-    auditLogger.logAccess(AuditEvent.builder()
-        .eventType("DATA_ACCESS")
-        .actor(auth.toActor())
-        .resource(AuditResource.of("patient", patientId, "RESTRICTED"))
-        .action(AuditAction.read("name", "dob", "diagnosis"))
-        .outcome(AuditOutcome.success())
-        .context(AuditContext.fromTrace())
-        .build());
-    return PatientDto.from(patient);
-}
-```
-
-### Python (FastAPI)
-
-```python
-class AuditLogger:
-    def __init__(self, store: AuditEventStore):
-        self.store = store
-
-    def log_access(self, event: AuditEvent) -> None:
-        event.event_id = str(uuid4())
-        event.timestamp = datetime.utcnow()
-        self.store.append(event)
-
-# Usage in endpoint
-@router.get("/patients/{patient_id}")
-async def get_patient(patient_id: str, auth: AuthContext = Depends(get_auth)):
-    patient = await patient_repo.find_by_id(patient_id)
-    audit_logger.log_access(AuditEvent(
-        event_type="DATA_ACCESS",
-        actor=auth.to_actor(),
-        resource=AuditResource(type="patient", id=patient_id, classification="RESTRICTED"),
-        action=AuditAction.read(fields=["name", "dob", "diagnosis"]),
-        outcome=AuditOutcome.success(),
-    ))
-    return PatientDto.from_entity(patient)
-```
-
-## What NOT to Audit Log
-
-- Operational events (service startup, health checks, config changes) → use application logs.
-- Performance metrics → use metrics/tracing.
-- Debug information → use application logs at DEBUG level.
-- Raw PHI values → log resource IDs and field names only.
-
-## Alerting
-
-Configure alerts for:
-
-| Condition | Severity | Response |
-|-----------|----------|----------|
-| Bulk PHI access (> N records in M minutes by one actor) | High | Investigate for data exfiltration |
-| Access denied to restricted resources | Medium | Review for privilege escalation attempts |
-| Audit write failures | Critical | Audit pipeline is broken — fix immediately |
-| Access from unusual IP/service | Medium | Verify legitimacy |
+Where required, monitor for audit-pipeline failure and suspicious access patterns. Thresholds/severity/response procedures are system- and organization-specific; do not invent universal numeric triggers.
 
 ## LLM Instructions
 
-- When generating code that accesses Confidential or Restricted data, include audit logging calls.
-- Use the audit event schema above — do not invent a different format.
-- Never include raw PHI in audit events — use resource IDs and field names.
-- Place audit logging in the service layer, after the data operation, before returning to the caller.
-- Ask the user about retention requirements if generating audit infrastructure.
+- Confirm that audit logging is required for the reviewed action before adding it.
+- Derive event fields, durability, retention, and failure behavior from the approved policy/design.
+- Never log raw secrets or unnecessary sensitive values.
+- Do not hard-code UUID version, storage technology, flush latency, or retention period without evidence.
+- Distinguish diagnostic logs from compliance/security audit records.
 
 ## Review Checklist
 
-- [ ] Audit events emitted for all required CRUD operations per data classification.
-- [ ] Audit event schema matches the standard (eventId, actor, resource, action, outcome, context).
-- [ ] No raw PHI or secret values in audit events.
-- [ ] Audit storage is append-only or write-once.
-- [ ] Application services cannot delete or modify audit logs.
-- [ ] Retention policy configured and automated.
-- [ ] Alert rules configured for anomalous access patterns.
-- [ ] Audit write failures produce alerts, not silent failures.
+- [ ] Audit applicability and policy source are documented.
+- [ ] Required actor/action/resource/time/outcome context is available.
+- [ ] Audit records avoid raw secrets and unnecessary sensitive values.
+- [ ] Integrity/access/durability controls satisfy the stated requirement.
+- [ ] Required audit-write failures are observable and have explicit behavior.
+- [ ] Retention/disposal has an identified policy source.

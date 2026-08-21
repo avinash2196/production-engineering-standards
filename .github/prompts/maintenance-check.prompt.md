@@ -19,7 +19,7 @@ Run recurring maintenance checks to keep the service healthy, secure, and aligne
 - Security: [standards/security/security-standards.md](../../standards/security/security-standards.md)
 - Observability: [standards/observability.md](../../standards/observability.md)
 - Coding standards: [standards/coding-standards.md](../../standards/coding-standards.md)
-- Full agent spec: [agents/lifecycle-agent/spec.md](../../agents/lifecycle-agent/spec.md)
+- Custom agent: [Lifecycle Reviewer custom agent](../agents/lifecycle-reviewer.agent.md)
 
 ## Checks to Run
 

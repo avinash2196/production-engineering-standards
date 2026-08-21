@@ -24,7 +24,7 @@ Load the standards that apply to the service and target:
 - [Local adapter strategy](../../standards/local-adapter-strategy.md)
 - [Java stack guide](../../stacks/java-springboot/java-spring.md) when the service is Java/Spring Boot
 - [Python stack guide](../../stacks/python-fastapi/python-backend.md) when the service is Python/FastAPI
-- [Production readiness reviewer specification](../../agents/production-readiness-reviewer.md)
+- [Production readiness custom agent](../agents/production-readiness-reviewer.agent.md)
 
 Do not load unrelated stack or compliance guidance merely to increase review coverage.
 

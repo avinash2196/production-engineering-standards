@@ -18,9 +18,9 @@ Implement the approved final consistency-hardening plan across workflow guidance
 
 - `.github/prompts/scaffold-service.prompt.md`
 - `.github/prompts/review-production-readiness.prompt.md`
-- `agents/backend-service-builder.md`
-- `agents/code-reviewer.md`
-- `agents/production-readiness-reviewer.md`
+- `.github/agents/backend-service-builder.agent.md`
+- `.github/agents/code-reviewer.agent.md`
+- `.github/agents/production-readiness-reviewer.agent.md`
 - `standards/agent-execution.md`
 - `tooling/scripts/validate_repository.py`
 - `tooling/tests/test_validate_repository.py`

@@ -29,7 +29,7 @@ References:
 - [Integration Testing](../../standards/testing/integration-testing.md)
 - [Java Stack](../../stacks/java-springboot/java-spring.md)
 - [Python Stack](../../stacks/python-fastapi/python-backend.md)
-- [Test Engineer](../../agents/test-engineer.md)
+- [Test Engineer](../agents/test-engineer.agent.md)
 
 ## Rules
 

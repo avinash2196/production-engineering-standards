@@ -1,32 +1,46 @@
-# Correlation IDs
+# Correlation and Operation Identifiers
 
-> Parent overview: [standards/observability.md](../observability.md)
+> Parent overview: [Observability](../observability.md)
 
-Purpose
-- Enable request-level tracing and log correlation across all services in a distributed call chain by propagating a single correlation identifier.
+## Purpose
 
-Mandatory Rules
-- Every inbound HTTP request must carry or generate a correlation ID via the `X-Correlation-ID` header.
-- If the header is absent, the edge service (API gateway or first-receiving controller) must generate a UUID v4 and attach it.
-- The correlation ID must be propagated to all downstream HTTP calls, message publishes, and async job dispatches.
-- The correlation ID must appear in every structured log line and as a span attribute in distributed traces.
-- Never reuse or overwrite an existing correlation ID received from an upstream caller.
+Preserve enough identity across related work to correlate logs, traces, messages, and asynchronous processing when cross-boundary diagnosis requires it.
 
-Defaults
-- Java: Use a servlet filter or Spring `HandlerInterceptor` to extract/generate the ID and store in MDC (`MDC.put("correlationId", id)`). Add to outbound `RestTemplate`/`WebClient` interceptors.
-- Python: Use FastAPI middleware to extract/generate the ID and store in `contextvars`. Add to outbound `httpx`/`aiohttp` request headers.
+## Decision Guidance
 
-Anti-patterns
-- Generating a new correlation ID at every service boundary (breaks end-to-end correlation).
-- Storing correlation ID only in thread-local without propagating across async/reactive boundaries.
-- Omitting correlation ID from message headers (breaks correlation across async flows).
+Use an existing correlation mechanism whenever possible. Examples include:
 
-LLM instructions
-- When scaffolding a new service, include correlation ID middleware that extracts from `X-Correlation-ID` header, generates if missing, stores in request context, and propagates to outbound calls.
-- When adding message publish/subscribe, include correlation ID in message headers.
+- W3C trace/span identifiers;
+- a platform request identifier;
+- a job/event/message identifier;
+- a safe business-operation identifier;
+- a custom correlation header when no suitable mechanism already exists.
 
-Review checklist
-- [ ] Correlation ID extracted or generated at service edge.
-- [ ] ID propagated to all downstream HTTP and messaging calls.
-- [ ] ID present in all structured log lines.
-- [ ] ID preserved (not regenerated) across service boundaries.
+A custom `X-Correlation-ID` + UUID v4 scheme is one valid implementation, not a universal requirement.
+
+## Required Behavior When Correlation Is Used
+
+- Preserve the chosen identifier across the boundaries where end-to-end correlation is needed.
+- Define trust/validation behavior for caller-supplied identifiers.
+- Avoid high-cardinality identifiers in metrics labels.
+- Avoid sensitive values as correlation identifiers.
+- Propagate context across asynchronous/reactive boundaries using the runtime's supported context mechanism.
+
+## Anti-Patterns
+
+- Generating a new identifier at every boundary and breaking the intended chain.
+- Creating a second custom correlation ID when tracing/platform context already solves the problem.
+- Using thread-local-only storage in code that crosses async/reactive execution without propagation support.
+- Logging sensitive business identifiers solely for correlation convenience.
+
+## LLM Instructions
+
+- First determine whether the project already uses W3C tracing, request IDs, job/message IDs, or another correlation mechanism.
+- Add custom correlation middleware/headers only when the approved design needs them.
+
+## Review Checklist
+
+- [ ] A correlation mechanism exists only where diagnosis requires it.
+- [ ] The established identifier is propagated across relevant boundaries.
+- [ ] Async/reactive context propagation is correct.
+- [ ] Sensitive/high-cardinality identifiers are not misused.

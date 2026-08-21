@@ -1,141 +1,98 @@
 # Release Process
 
-Release and tagging workflow guidance for promoting services through environments.
+## Purpose
 
-## Overview
+Reference guidance for designing a repeatable, traceable, and recoverable release process. The adopting project's source-control model, artifact type, environments, approval gates, versioning scheme, and deployment platform remain explicit project/organization decisions.
 
-All services follow a trunk-based development model with automated CI/CD. Releases are immutable artifacts (container images) promoted through environments without rebuilding.
+## Required Outcomes
 
-## Branching Model
+A production release process should provide evidence for the outcomes that apply:
 
-```
-main (trunk)
-  ├── feature/PROJ-123-add-payment   (short-lived, < 2 days)
-  ├── feature/PROJ-456-fix-timeout   (short-lived)
-  └── hotfix/PROJ-789-critical-fix   (from main, merged back to main)
-```
+- the released artifact/revision is uniquely identifiable and traceable to source;
+- required automated tests/checks ran against the intended revision/artifact;
+- production deployment uses an approved artifact without unreviewed mutation;
+- rollout and rollback/forward-recovery behavior are defined for material risk;
+- schema/data migrations preserve compatibility for the selected deployment strategy;
+- required security/compliance/release approvals are captured;
+- post-deployment verification can detect a bad release;
+- operators know how to recover.
 
-**Rules:**
-- `main` is always deployable.
-- Feature branches live < 2 days. Use feature flags for longer work.
-- No long-lived release branches.
-- Hotfixes branch from `main` and merge back to `main`.
+## Source-Control Model
 
-## Release Flow
+Trunk-based development is one valid model, not a repository-wide mandate. Teams may use trunk-based, release branches, GitFlow-like models, or another approved process as long as the model preserves reviewability, traceability, and release correctness.
 
-```
-1. Developer merges PR to main
-2. CI pipeline runs:
-   a. Build + unit tests
-   b. Lint + static analysis
-   c. Contract tests
-   d. Build container image
-   e. Tag image with: git SHA + semver
-   f. Push to container registry
-3. CD pipeline promotes to staging (automatic)
-4. Staging validation (smoke tests + integration tests)
-5. Production promotion (manual approval gate)
-6. Post-deploy verification (health checks + canary metrics)
-```
+If using short-lived branches, document merge/review requirements. If using long-lived release branches, document synchronization/backport rules and how divergence risk is controlled.
 
-## Versioning
+## Artifact and Versioning
 
-Use **semantic versioning** (`MAJOR.MINOR.PATCH`):
+Prefer immutable/reproducible release artifacts when the platform supports them. Artifact examples include container images, packages, binaries, serverless revisions, infrastructure bundles, or signed source releases.
 
-| Change type | Version bump | Example |
-|-------------|-------------|----------|
-| Breaking API change | MAJOR | `2.0.0` |
-| New feature (backward compatible) | MINOR | `1.3.0` |
-| Bug fix | PATCH | `1.2.4` |
+Use the project's established version/identifier scheme—semantic versioning, calendar versioning, Git SHA, build number, release ID, or another stable convention. Do not add SemVer solely because this playbook exists.
 
-Container images are tagged with both:
-- `v1.2.4` (human-readable)
-- `abc123f` (git SHA, for traceability)
+## Example Release Flow
 
-## Tagging
-
-```bash
-# Tag the release
-git tag -a v1.2.4 -m "Release 1.2.4: add payment retry logic"
-git push origin v1.2.4
+```text
+approved change
+  -> build/test/security checks
+  -> create identifiable release artifact/revision
+  -> environment-specific verification/approval as required
+  -> deploy/promote
+  -> post-deploy verification
+  -> rollback or forward recovery if acceptance criteria fail
 ```
 
-The CI pipeline detects the tag and builds the release artifact.
+The number/names of environments and manual gates are organization-specific. A project may deploy directly to production with strong automated controls or may require staging/canary/manual approval.
+
+## Database / State Changes
+
+Plan migrations according to the deployment topology and compatibility window. Expand-then-contract is a common safe pattern for rolling/mixed-version deployments, but not every migration needs three releases.
+
+Avoid destructive changes while old application versions still depend on the old schema/state unless the deployment strategy guarantees they cannot coexist and the risk is explicitly accepted.
+
+## Rollout and Recovery
+
+Define measurable release acceptance/failure signals from the service SLOs and known risks. Do not copy universal thresholds such as “5% errors for 10 minutes” or “3 failed probes.”
+
+Recovery may be:
+
+- rollback to a prior immutable artifact;
+- roll forward with a fix;
+- disable/limit a feature through an approved mechanism;
+- traffic shift/canary reversal;
+- data repair/reconciliation when state has changed.
+
+Record special recovery constraints for irreversible migrations or side effects.
 
 ## Pre-Release Checklist
 
-- [ ] All tests pass on `main` (unit, integration, contract).
-- [ ] No CRITICAL or HIGH CVEs in dependency scan.
-- [ ] Compliance review is current (if data categories changed).
-- [ ] Database migrations are backward-compatible (expand-then-contract).
-- [ ] Feature flags are configured for any partially-complete features.
-- [ ] Changelog is updated.
-- [ ] Runbook is updated if operational procedures changed.
+Use only applicable checks:
 
-## Database Migration Strategy
+- [ ] Required automated tests/checks pass for the release revision.
+- [ ] Required security/dependency/image/source findings are assessed under the organization's risk policy.
+- [ ] API/schema/data compatibility is understood.
+- [ ] Configuration/secrets for the target environment are validated safely.
+- [ ] Required documentation/runbook/migration steps are current.
+- [ ] Release artifact/revision is identifiable and traceable.
+- [ ] Rollout acceptance and recovery criteria are defined for material risks.
+- [ ] Required human/compliance/change-management approvals are recorded.
 
-Migrations must be **backward-compatible** to support rolling deployments:
-
-```
-Release N:   Add new column (nullable) + write to both old and new columns
-Release N+1: Migrate data, switch reads to new column
-Release N+2: Drop old column
-```
-
-Never rename or drop a column in the same release that changes the app code.
-
-## Rollback Procedure
-
-### Automatic Rollback
-- If canary metrics show error rate > 5% within 10 minutes of deploy, auto-rollback.
-- If health check fails 3 consecutive times, auto-rollback.
-
-### Manual Rollback
-
-```bash
-# Redeploy previous image
-kubectl set image deployment/order-service \
-  order-service=registry.example.com/order-service:v1.2.3
-
-# Or via CD tool
-cd rollback --service=order-service --version=v1.2.3
-```
-
-### Post-Rollback
-1. Notify the team channel.
-2. Create an incident ticket.
-3. Analyze the failure (logs, traces, metrics).
-4. Fix forward — do not leave the main branch in a broken state.
-
-## Changelog
-
-Maintain a `CHANGELOG.md` in each service repository:
+## Release Record Template
 
 ```markdown
-## [1.2.4] - 2026-04-16
-### Fixed
-- Payment retry now respects idempotency key (#PROJ-789)
-
-### Added
-- Webhook notification for order status changes (#PROJ-456)
-
-## [1.2.3] - 2026-04-10
-### Fixed
-- Connection pool exhaustion under load (#PROJ-750)
+## Release <identifier>
+- Source revision: <sha/change-set>
+- Artifact/revision: <immutable identifier>
+- Changes: <summary/links>
+- Required checks: <evidence>
+- Migration/config changes: <details or N/A>
+- Rollout strategy: <strategy>
+- Verification signals: <signals>
+- Recovery strategy: <strategy>
+- Approvals: <when applicable>
 ```
-
-Follow [Keep a Changelog](https://keepachangelog.com/) format.
-
-## Environment Promotion
-
-| Environment | Deploy trigger | Approval | Tests |
-|-------------|---------------|----------|-------|
-| CI | Every PR | Automatic | Unit + contract |
-| Staging | Merge to main | Automatic | Smoke + integration |
-| Production | Manual promotion | Team lead | Canary + health checks |
 
 ## References
 
-- [Coding standards](../../standards/coding-standards.md)
+- [Production Readiness](../../standards/production-readiness.md)
 - [Observability](../../standards/observability.md)
-- [Security standards](../../standards/security/security-standards.md)
+- [Security Engineering Standard](../../standards/security/security-standards.md)
