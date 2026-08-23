@@ -95,7 +95,7 @@ Repository tests also guard the canonical PDD phase model so active guidance can
 ```text
 .github/
   copilot-instructions.md       Workspace-level persistent guidance
-  instructions/                Stack and task-specific instructions
+  instructions/                Path-specific stack instructions
   agents/                      GitHub Copilot custom agent profiles (`*.agent.md`)
   prompts/                     Reusable PDD and review workflows
   skills/                      Task-specific Agent Skills for requirements and review
