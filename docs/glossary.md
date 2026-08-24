@@ -12,9 +12,9 @@ Key terms used throughout this repository.
 | **Aggregate Root** | The top-level domain object that controls access to a cluster of related entities. One repository per aggregate root. |
 | **Correlation / Operation Identifier** | Context used to connect related work across boundaries. It may be a W3C trace context, platform request ID, message/job ID, or an application correlation ID; `X-Correlation-ID` is one option, not a universal header. |
 | **Idempotency Key** | A client-provided identifier used to deduplicate messages and ensure exactly-once processing semantics. |
-| **PHI** | Protected Health Information — any health-related data that can identify an individual. Subject to HIPAA controls. |
+| **PHI / ePHI** | Protected Health Information / electronic PHI under HIPAA. Whether data is PHI depends on the HIPAA-regulated context and applicable definitions; healthcare or identifying data alone does not establish HIPAA applicability. |
 | **PII** | Personally Identifiable Information — data that can identify a person (name, email, SSN, etc.). |
-| **BAA** | Business Associate Agreement — a HIPAA-required contract with third parties that handle PHI. |
+| **BAA** | Business Associate Agreement — an agreement used where HIPAA requires one between covered entities/business associates and relevant subcontractors. Applicability is a legal/compliance determination, not something inferred from a repository field name. |
 | **DLT / DLQ** | Dead-Letter Topic / Dead-Letter Queue — a destination for messages that failed processing after all retries. |
 | **Consumer-Driven Contract** | A testing pattern where the API consumer defines the expected interaction, and the provider verifies compliance. |
 | **Pact** | A contract testing framework implementing consumer-driven contracts for HTTP and messaging. |

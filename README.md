@@ -114,7 +114,7 @@ docs/                          Overview, decisions, and enforcement status
 
 ### In this repository
 
-GitHub Copilot loads repository instructions from `.github/copilot-instructions.md` on supported surfaces. Prompt files under `.github/prompts/` provide explicit reusable tasks, Agent Skills under `.github/skills/` provide specialized behavior that Copilot can load automatically when relevant, and custom agents under `.github/agents/` provide manually selectable specialist personas with controlled tool access. The always-on instructions still carry the non-negotiable PDD and anti-invention rules. See [Copilot Customization Model](docs/copilot-customizations.md).
+GitHub Copilot loads repository-wide instructions from `.github/copilot-instructions.md` on supported surfaces, while `.github/instructions/*.instructions.md` applies only to matching file paths. Prompt files under `.github/prompts/` provide explicit reusable tasks in supported VS Code local-agent workflows; specialist prompts bind to repository custom agents under `.github/agents/`, and Agent Skills under `.github/skills/` provide reusable capabilities that Copilot can load when relevant. GitHub Copilot Agent Host does not consume prompt files, so cross-surface governance must remain in repository instructions, skills, custom agents, standards, tests, and CI rather than relying on prompts alone. See [Copilot Customization Model](docs/copilot-customizations.md).
 
 Prompt workflows include:
 
@@ -178,15 +178,17 @@ CI runs the same sequence and currently enforces:
 
 - required repository structure
 - active Markdown link integrity
-- prompt frontmatter conventions
+- prompt frontmatter syntax, current tool-set aliases, and valid custom-agent bindings
+- path-specific instruction frontmatter and rejection of repository-global `applyTo: "**/*"` files
 - custom-agent profile location, `.agent.md` naming, required description, and tool-list structure
 - rejection of the obsolete top-level `agents/` hierarchy
 - repository-package hygiene for IDE/Python cache artifacts
 - Agent Skill structure and required frontmatter
 - canonical PDD phase-milestone semantics (separate RED/GREEN/optional-REFACTOR milestones and phase-specific Implementation Plans)
 - absence of known placeholder implementations
-- absence of deprecated active configuration terminology
-- production-foundation semantic checks for minimal Python dependencies and requirement-driven observability/configuration/security/readiness
+- absence of deprecated active configuration terminology and legacy custom-agent references
+- governance semantic checks that prevent blanket `apply all standards`, invented approval, and compliance-without-applicability behavior
+- production-foundation semantic checks for minimal Python dependencies, a runnable local-adapter reference, and requirement-driven observability/configuration/security/readiness
 
 Project-level enforcement such as Java architecture tests, Python import-boundary checks, secret scanning, dependency scanning, and service tests belongs in each generated or adopting project.
 

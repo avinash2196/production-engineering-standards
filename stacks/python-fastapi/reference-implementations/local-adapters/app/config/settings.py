@@ -43,10 +43,10 @@ class Settings(BaseSettings):
 
     service_name: str = "service-name"
     environment: str = "local"
-    messaging_adapter: MessagingAdapter = MessagingAdapter.KAFKA
-    cache_adapter: CacheAdapter = CacheAdapter.REDIS
-    storage_adapter: StorageAdapter = StorageAdapter.S3
-    secret_adapter: SecretAdapter = SecretAdapter.VAULT
+    messaging_adapter: MessagingAdapter = MessagingAdapter.IN_MEMORY
+    cache_adapter: CacheAdapter = CacheAdapter.IN_MEMORY
+    storage_adapter: StorageAdapter = StorageAdapter.LOCAL
+    secret_adapter: SecretAdapter = SecretAdapter.ENV
 
     database_url: str = (
         "postgresql+asyncpg://postgres:postgres@localhost:5432/service_db"

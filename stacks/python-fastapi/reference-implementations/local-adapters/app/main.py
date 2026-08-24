@@ -6,7 +6,6 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI
 
-from app.api.router import router
 from app.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,6 @@ def create_app() -> FastAPI:
         redoc_url=None,
         lifespan=lifespan,
     )
-    app.include_router(router)
     return app
 
 

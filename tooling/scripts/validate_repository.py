@@ -41,6 +41,23 @@ PROHIBITED_ACTIVE_REFERENCES = (
     "generate-template.py",
 )
 
+BUILTIN_PROMPT_AGENTS = {"agent", "ask", "plan"}
+LEGACY_PROMPT_TOOLS = {
+    "codebase",
+    "createFile",
+    "editFiles",
+    "problems",
+    "readFile",
+    "runCommands",
+    "searchFiles",
+}
+PROHIBITED_CUSTOMIZATION_PHRASES = (
+    "apply all standards",
+    "against all organisation standards",
+    "against all organization standards",
+    "reference standards (apply all)",
+)
+
 MARKDOWN_LINK = re.compile(r"\[[^\]]*]\(([^)]+)\)")
 FRONTMATTER_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):(?:\s*(.*))?$")
 FRONTMATTER_LIST_ITEM = re.compile(r"^ {2,}-\s+(.+)$")
@@ -252,6 +269,21 @@ def _is_inline_list(value: str) -> bool:
     return stripped.startswith("[") and stripped.endswith("]")
 
 
+def _normalize_scalar(value: str) -> str:
+    return value.strip().strip('"').strip("'")
+
+
+def _metadata_list_items(value: str | list[str]) -> list[str]:
+    if isinstance(value, list):
+        return [_normalize_scalar(item) for item in value]
+    if not _is_inline_list(value):
+        return []
+    inner = value.strip()[1:-1].strip()
+    if not inner:
+        return []
+    return [_normalize_scalar(item) for item in inner.split(",") if item.strip()]
+
+
 def validate_prompt_files(root: Path = ROOT) -> list[str]:
     """Validate prompt frontmatter conventions used by VS Code prompt files."""
     errors: list[str] = []
@@ -286,6 +318,20 @@ def validate_prompt_files(root: Path = ROOT) -> list[str]:
         if "mode" in metadata:
             errors.append(f"{relative_file}: deprecated frontmatter field 'mode'")
 
+        agent = metadata.get("agent")
+        normalized_agent: str | None = None
+        if agent is not None:
+            if not isinstance(agent, str) or not agent.strip():
+                errors.append(f"{relative_file}: frontmatter field 'agent' must not be empty")
+            else:
+                normalized_agent = _normalize_scalar(agent)
+                if normalized_agent not in BUILTIN_PROMPT_AGENTS:
+                    agent_file = root / ".github/agents" / f"{normalized_agent}.agent.md"
+                    if not agent_file.exists():
+                        errors.append(
+                            f"{relative_file}: custom prompt agent '{normalized_agent}' does not exist at .github/agents/{normalized_agent}.agent.md"
+                        )
+
         tools = metadata.get("tools")
         if tools is not None:
             if isinstance(tools, list):
@@ -298,8 +344,95 @@ def validate_prompt_files(root: Path = ROOT) -> list[str]:
                     f"{relative_file}: frontmatter field 'tools' must be a YAML list"
                 )
 
+            tool_items = _metadata_list_items(tools) if isinstance(tools, (str, list)) else []
+            for tool in tool_items:
+                if tool in LEGACY_PROMPT_TOOLS:
+                    errors.append(
+                        f"{relative_file}: legacy prompt tool '{tool}' is not allowed; use current tool-set/tool identifiers"
+                    )
+            if normalized_agent and normalized_agent not in BUILTIN_PROMPT_AGENTS:
+                errors.append(
+                    f"{relative_file}: prompt bound to custom agent '{normalized_agent}' must not override its tools"
+                )
+
         if any(line.strip() == "mode: agent" for line in body_lines):
             errors.append(f"{relative_file}: duplicate body metadata 'mode: agent'")
+
+    return sorted(set(errors))
+
+
+def validate_instruction_files(root: Path = ROOT) -> list[str]:
+    """Validate path-specific instruction structure and repository scoping policy."""
+    errors: list[str] = []
+    instructions_directory = root / ".github/instructions"
+    if not instructions_directory.exists():
+        return errors
+
+    for instruction_file in sorted(path for path in instructions_directory.rglob("*") if path.is_file()):
+        relative_file = instruction_file.relative_to(root)
+        if not instruction_file.name.endswith(".instructions.md"):
+            errors.append(
+                f"{relative_file}: path-specific instruction files must use '*.instructions.md'"
+            )
+            continue
+
+        content = _read_text(instruction_file)
+        if content is None:
+            continue
+        split = _split_frontmatter(content)
+        if split is None:
+            errors.append(f"{relative_file}: missing or unterminated frontmatter")
+            continue
+
+        frontmatter_lines, _ = split
+        metadata, syntax_errors = _parse_prompt_frontmatter(frontmatter_lines, relative_file)
+        errors.extend(syntax_errors)
+        if syntax_errors:
+            continue
+
+        description = metadata.get("description")
+        if not isinstance(description, str) or not description.strip():
+            errors.append(f"{relative_file}: missing frontmatter field 'description'")
+
+        apply_to = metadata.get("applyTo")
+        if not isinstance(apply_to, str) or not apply_to.strip():
+            errors.append(f"{relative_file}: missing frontmatter field 'applyTo'")
+        else:
+            normalized = _normalize_scalar(apply_to)
+            if normalized in {"**", "**/*"}:
+                errors.append(
+                    f"{relative_file}: repository-global applyTo '{normalized}' is not allowed; use .github/copilot-instructions.md for repository-wide guidance"
+                )
+
+    return sorted(set(errors))
+
+
+def validate_customization_governance(root: Path = ROOT) -> list[str]:
+    """Reject legacy or blanket semantics in active Copilot customization files."""
+    errors: list[str] = []
+    targets = [root / ".github/copilot-instructions.md"]
+    for directory_name in ("agents", "instructions", "prompts", "skills"):
+        directory = root / ".github" / directory_name
+        if directory.exists():
+            targets.extend(path for path in directory.rglob("*.md") if path.is_file())
+
+    for path in sorted(set(targets)):
+        if not path.exists():
+            continue
+        content = _read_text(path)
+        if content is None:
+            continue
+        relative = path.relative_to(root)
+        lowered = content.lower()
+        for phrase in PROHIBITED_CUSTOMIZATION_PHRASES:
+            if phrase in lowered:
+                errors.append(
+                    f"{relative}: blanket customization phrase is not allowed: '{phrase}'"
+                )
+        for match in re.finditer(r"`agents/[^`]+\.md`", content):
+            errors.append(
+                f"{relative}: legacy root-agent reference is not allowed: {match.group(0)}"
+            )
 
     return sorted(set(errors))
 
@@ -482,8 +615,10 @@ def validate_repository(root: Path = ROOT) -> list[str]:
         *validate_markdown_links(root),
         *validate_no_placeholders(root),
         *validate_prompt_files(root),
+        *validate_instruction_files(root),
         *validate_agent_files(root),
         *validate_skill_files(root),
+        *validate_customization_governance(root),
         *validate_no_legacy_agents_directory(root),
         *validate_repository_hygiene(root),
         *validate_prohibited_references(root),

@@ -3,13 +3,10 @@ description: "Create a new service through PDD with separate reviewed RED, GREEN
 argument-hint: "service name and known requirements"
 agent: "agent"
 tools:
-  - codebase
-  - createFile
-  - editFiles
-  - readFile
-  - searchFiles
-  - runCommands
-  - problems
+  - read
+  - search
+  - edit
+  - execute
 ---
 
 You are the service-scaffolding orchestrator for this repository. Do not generate a complete service immediately from a short prompt.

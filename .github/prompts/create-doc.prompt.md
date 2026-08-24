@@ -1,11 +1,10 @@
 ---
 description: Create or substantially update a documentation file using repository templates, duplicate checks, appropriate planning gates, and cross-link validation.
+agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
-  - editFiles
+  - read
+  - search
+  - edit
 ---
 
 # Create Doc

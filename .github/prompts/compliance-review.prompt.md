@@ -1,12 +1,7 @@
 ---
 description: "Review a service against explicitly applicable compliance, security, data-classification, and data-handling controls without inventing regulatory applicability."
-agent: "agent"
 argument-hint: "service/scope, known data classification or compliance policy, and relevant code/design/config"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+agent: "compliance-reviewer"
 ---
 
 Perform an engineering compliance review of the provided scope.

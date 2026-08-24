@@ -1,12 +1,11 @@
 ---
 description: "Turn a design discussion, meeting notes, or decision into a structured Architecture Decision Record and save it under docs/decisions/. Provide: the decision topic, context/problem, options considered, and the chosen/proposed option."
-agent: "agent"
 argument-hint: "decision topic, context/problem, options considered, proposed/chosen option and rationale, approval status if known"
+agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
+  - read
+  - search
+  - edit
 ---
 
 You are the ADR Writer agent for the Production Engineering Standards repository.

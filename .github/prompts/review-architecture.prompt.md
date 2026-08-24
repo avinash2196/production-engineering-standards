@@ -1,12 +1,7 @@
 ---
 description: "Review architecture against approved scope, dependency boundaries, data ownership, and explicit failure behavior without forcing a fixed layer count."
-agent: "agent"
 argument-hint: "service/system name, plan or implementation plan, architecture doc, ADR, or key source files"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+agent: "architecture-reviewer"
 ---
 
 You are the Architecture Reviewer for the Production Engineering Standards repository.

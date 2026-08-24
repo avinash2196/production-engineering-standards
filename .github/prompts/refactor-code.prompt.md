@@ -1,15 +1,7 @@
 ---
 description: "Execute an approved REFACTOR milestone from a verified GREEN baseline without changing external behavior."
 argument-hint: "approved REFACTOR Implementation Plan path"
-agent: "agent"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - editFiles
-  - createFile
-  - runCommands
-  - problems
+agent: "refactoring-engineer"
 ---
 
 You are the REFACTOR milestone execution phase of the Prompt-Driven Development workflow.

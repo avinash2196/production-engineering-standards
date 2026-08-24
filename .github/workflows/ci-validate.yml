@@ -46,11 +46,8 @@ jobs:
           -s stacks/python-fastapi/project-template/tests
           -p 'test_*.py'
 
-      - name: Install local-adapter reference test dependencies
-        run: >-
-          python -m pip install
-          "sqlalchemy>=2,<3"
-          "asyncpg>=0.29,<1"
+      - name: Install local-adapter reference
+        run: python -m pip install ./stacks/python-fastapi/reference-implementations/local-adapters
 
       - name: Test Python local-adapter reference
         env:

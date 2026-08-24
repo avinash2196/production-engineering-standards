@@ -1,74 +1,61 @@
-# Plan — Final PDD Requirements Gate and Agent Skills
+# Plan — Final Repository Convergence
 
 ## Status
 
-Ready for owner review.
+Completed on 2026-08-23; final owner review remains the publication gate.
 
 ## Goal
 
-Finalize the repository as the v1 baseline before using it to build real Java Spring Boot and Python FastAPI services by strengthening the **Requirements → Plan** boundary and making the same non-assumptive behavior available through GitHub Copilot Agent Skills.
+Converge the repository on one stable GitHub Copilot customization and engineering-governance model, remove legacy semantics and broken references, strengthen executable regression checks, and verify the distributable repository from a clean extraction before publication.
 
-Preserve the published PDD lifecycle:
+The repository keeps the canonical lifecycle:
 
 > **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
 
-This change adds a requirements-analysis gate inside the existing Requirements → Plan transition. It does not add another required planning artifact or change the RED/GREEN/refactor model.
+This convergence does not add a new engineering architecture or compliance requirement. It aligns existing artifacts with the already-approved model.
 
-## Current-State Summary
+## Frozen Customization Model
 
-- The core PDD workflow already requires Plan and Implementation Plan approval, test-first RED, minimal GREEN, separate refactoring, and final review.
-- Java and Python base templates are capability-minimal; integrations are selected by approved milestones rather than preloaded universally.
-- General code review and production-readiness review are already applicability/risk based.
-- A dedicated requirements-analysis skill is not yet present under `.github/skills/`.
-- `create-plan.prompt.md` asks when a material requirement is unclear but does not yet use a shared requirements-analysis evidence model.
-- `standards/questioning-policy.md` still contains an arbitrary question-count cap and legacy wording that can encourage defaults instead of surfacing material ambiguity.
-- The current `review-code.prompt.md` contains malformed YAML list markers even though the repository validator correctly rejects that syntax.
-- The repository validator does not yet validate Agent Skill structure/frontmatter.
+| Construct | Responsibility |
+|---|---|
+| `.github/copilot-instructions.md` | Repository-wide stable guidance |
+| `.github/instructions/*.instructions.md` | Automatic path/file-specific guidance only |
+| `.github/prompts/*.prompt.md` | Explicit reusable tasks on supported VS Code local-agent surfaces |
+| `.github/agents/*.agent.md` | Specialized roles with their own tool boundaries |
+| `.github/skills/*/SKILL.md` | Reusable capabilities loaded/invoked when relevant |
+| `standards/` | Normative engineering principles and decision rules |
+| `playbooks/` | Procedures for applying standards |
+| `templates/` | Starting structures, not mandatory architecture |
+| `examples/` and reference implementations | Demonstrations, not universal defaults |
 
-## Scope
+## Convergence Scope
 
-### Milestone 1 — Requirements Analysis Gate
-
-- Add a repository `requirements-analysis` Agent Skill.
-- Add `/review-requirements` as an explicit review-only workflow.
-- Update always-on Copilot guidance and `/create-plan` so material ambiguity causes numbered questions and stops Plan creation.
-- Replace the questioning policy with a materiality-based policy: ask the smallest set of current-boundary questions; do not invent or prematurely decide later-milestone behavior.
-- Align the backend service builder with the same gate.
-
-### Milestone 2 — Review Skill and Prompt Correctness
-
-- Add a `code-review` Agent Skill that reinforces the existing evidence-based reviewer behavior.
-- Fix `review-code.prompt.md` frontmatter without changing its substantive review philosophy.
-
-### Milestone 3 — Executable Skill Validation and Public Documentation
-
-- Add validator tests for Agent Skill structure/frontmatter before validator implementation.
-- Validate required skill metadata and directory/name consistency.
-- Update README and enforcement status to describe skills accurately.
-- Add repository hygiene ignore rules if not already present.
+1. Audit active Copilot customizations for malformed frontmatter, obsolete tool identifiers, legacy paths, task-vs-path instruction misuse, and blanket standards application.
+2. Bind specialist prompt files to the matching custom agents and keep the tool boundary in the agent profile.
+3. Preserve requirement/risk/applicability-driven behavior in codebase, maintenance, distributed-systems, production-readiness, and compliance reviews.
+4. Prevent generated ADRs/document workflows from inventing approval or bypassing PDD gates.
+5. Make the Python local-adapter reference independently runnable with safe zero-infrastructure local defaults and explicit production guards.
+6. Extend the dependency-free validator and repository semantic tests so these regressions fail CI.
+7. Align README, customization documentation, contributing guidance, glossary, and enforcement matrix with the implemented behavior.
+8. Produce a clean package without Git metadata, IDE state, bytecode, or test caches and re-run validation after extraction.
 
 ## Out of Scope
 
-- Healthcare-platform feature code.
-- Inventing healthcare-specific HIPAA, PHI, retention, authorization, or SLO requirements.
-- New architecture patterns, production adapters, persistence technologies, cloud platforms, or deployment targets.
-- Rewriting already-correct code-review, production-readiness, Java-template, or Python-template guidance.
-- Changing the public PDD lifecycle or creating a mandatory Requirements document artifact beyond the input already supplied by a project.
+- Adding new agents, skills, capability contracts, production adapters, deployment platforms, or compliance regimes.
+- Claiming that adopting services are production-ready merely because they use this repository.
+- Replacing project-specific security scanning, dependency scanning, architecture tests, service tests, or operational validation.
+- Introducing technology choices not justified by an adopting project's requirements and approved design.
 
-## Risks
+## Acceptance Criteria
 
-- Requirements analysis could become bureaucratic if agents ask questions that are irrelevant to the current milestone; the policy must use materiality and defer later decisions.
-- Skills are contextually loaded by Copilot, so anti-invention rules must remain in always-on instructions and explicit prompts rather than relying on skills alone.
-- Skill validation must remain a dependency-free check of the repository-supported metadata shape, not pretend to implement a full YAML parser.
-
-## Success Criteria
-
-- Planning never silently resolves a material requirement gap from framework defaults, industry conventions, or likely architecture choices.
-- When material current-scope information is missing or contradictory, the workflow asks numbered clarification questions and stops before Plan creation.
-- When information belongs to a later milestone, the workflow records/defer it instead of interrogating the user early.
-- `/review-requirements`, `/create-plan`, the service builder, questioning policy, and requirements-analysis skill express the same rule.
-- Code review remains evidence-based, applicability-scoped, and capable of reporting concrete correctness defects without checklist inflation.
-- `review-code.prompt.md` uses valid supported frontmatter.
-- Agent Skill structure and metadata are covered by executable validator tests.
-- README and enforcement documentation accurately describe the new skills and checks.
-- No healthcare-specific behavior or technical dependency is invented by this repository-level change.
+- No obsolete top-level `agents/` hierarchy.
+- No task-specific globally applied `.instructions.md` file.
+- All prompt/agent/skill/instruction frontmatter parses as YAML and follows the repository-supported conventions.
+- Prompt files contain no known legacy VS Code tool identifiers and custom-agent prompt bindings resolve.
+- No active customization uses blanket `apply all standards` semantics or stale root-agent references.
+- HIPAA/compliance review establishes applicability before applying controls and does not claim certification.
+- ADR/document workflows do not invent approval, deciders, policy, or silent authorization.
+- The canonical Python starter remains capability-minimal.
+- The local-adapter reference starts with checked-in defaults, declares its own runtime dependencies, and rejects local-only selections in production.
+- Repository validator and all repository/starter/reference tests pass from a clean extracted package.
+- README accurately limits the production claim: this repository supports governed production engineering; it does not make generated applications automatically production-ready.

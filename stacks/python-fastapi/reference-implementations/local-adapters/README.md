@@ -10,6 +10,16 @@ It demonstrates explicit local-development/test adapters for:
 - environment-backed local secrets;
 - typed adapter selection and production startup guards.
 
+## Run the Reference
+
+From this directory, install this reference implementation's dependencies and run:
+
+```bash
+PYTHONPATH=. uvicorn app.main:app --reload
+```
+
+The checked-in defaults deliberately select zero-infrastructure local adapters (`inmemory`, `inmemory`, `local`, and `env`) so the reference can start without Kafka, Redis, object storage, or a secret manager. Selecting a production adapter remains an explicit project decision, and the reference does not pretend to implement those managed adapters.
+
 ## Use This Reference When
 
 - an approved Plan introduces one of these capabilities;

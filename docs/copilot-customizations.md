@@ -7,7 +7,7 @@ This repository uses GitHub Copilot customization mechanisms in their native rep
 | Mechanism | Repository location | Trigger | Use in this repository |
 |---|---|---|---|
 | Repository instructions | `.github/copilot-instructions.md` | Automatic | Stable workflow, anti-invention, architecture, safety, and evidence rules |
-| Path-specific instructions | `.github/instructions/*.instructions.md` | Automatic when the path matches | Java, Python, and task-specific guidance |
+| Path-specific instructions | `.github/instructions/*.instructions.md` | Automatic when the path matches | Language, stack, or file-path guidance only |
 | Prompt files | `.github/prompts/*.prompt.md` | Manual | Repeatable single tasks such as planning, RED tests, reviews, and refactoring |
 | Custom agents | `.github/agents/*.agent.md` | Manually selected in supported Copilot surfaces | Specialized roles with scoped behavior and tool access |
 | Agent Skills | `.github/skills/<skill-name>/SKILL.md` | Loaded by Copilot when relevant | Detailed reusable capabilities such as requirements analysis and code review |
@@ -57,7 +57,9 @@ Skills may reference standards, scripts, examples, or other resources, but they 
 
 ## Prompt Files
 
-Prompt files are explicit reusable tasks. They stay under `.github/prompts/` and are invoked manually on supported IDE surfaces. A prompt may reference a native custom agent for the same specialist behavior, but the prompt remains a separate reusable task rather than an agent definition.
+Prompt files are explicit reusable tasks stored under `.github/prompts/`. In current VS Code they are invoked manually in local extension-host chat sessions; VS Code Agent Host sessions do not consume prompt files. Workflows that must also work through Copilot cloud agent, CLI, or other agent surfaces therefore rely on repository instructions, Agent Skills, custom agents, and ordinary standards rather than assuming prompt-file availability.
+
+When a prompt has a matching specialist custom agent, this repository binds the prompt to that agent by name and lets the agent profile own its tool boundary. Other prompts use current VS Code tool-set aliases such as `read`, `search`, `edit`, and `execute`.
 
 ## What Is Not Used
 
@@ -70,10 +72,11 @@ Do not reintroduce a second agent-specification hierarchy outside `.github/agent
 `tooling/scripts/validate_repository.py` validates repository customizations that can be checked deterministically, including:
 
 - required customization directories;
-- prompt frontmatter;
+- prompt frontmatter, custom-agent references, and legacy tool identifiers;
+- path-specific instruction frontmatter and repository-wide `applyTo` misuse;
 - custom-agent profile naming/frontmatter/tool-list structure;
 - Agent Skill directory/name/frontmatter structure;
-- internal Markdown links.
+- internal Markdown links and selected literal customization references.
 
 The validator checks structure, not whether Copilot will make a correct engineering decision. Context-sensitive behavior remains subject to human review.
 

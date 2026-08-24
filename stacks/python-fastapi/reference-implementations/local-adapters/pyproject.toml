@@ -2,11 +2,14 @@
 name = "python-local-adapter-reference"
 version = "0.1.0"
 description = "Reference implementation for explicit local adapter patterns"
-authors = ["your-team <team@myorg.com>"]
+authors = ["Production Engineering Standards contributors"]
 readme = "README.md"
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
 pydantic = "^2.7.0"
 pydantic-settings = "^2.2.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.0"}

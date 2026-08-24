@@ -1,13 +1,11 @@
 ---
 description: "Generate k6 or Gatling load test scripts to establish performance baselines for a service's key endpoints. Provide: service name, key endpoints (path + method + payload example), expected RPS or concurrent users, and SLO targets (latency p99, error rate)."
-agent: "agent"
 argument-hint: "service name, key endpoints with example request payloads, target RPS or VUs, SLO targets (p99 latency ms, max error rate %)"
+agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
-  - editFiles
+  - read
+  - search
+  - edit
 ---
 
 You are the Load Test Generator agent for the Production Engineering Standards repository.

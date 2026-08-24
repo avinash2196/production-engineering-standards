@@ -1,12 +1,10 @@
 ---
 description: "Review an API/OpenAPI contract against the repository's API principles and project-specific conventions; identify compatibility, validation, error, exposure, and security issues without inventing authentication or URI conventions."
-agent: "agent"
 argument-hint: "OpenAPI YAML/JSON or API contract, plus prior version/project API conventions when available"
+agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+  - read
+  - search
 ---
 
 Review the supplied API contract using repository evidence and the project's established API conventions.

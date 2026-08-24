@@ -1,12 +1,7 @@
 ---
 description: "Review HIPAA-related engineering controls for a service only after project evidence establishes that it creates, receives, maintains, or transmits PHI/ePHI in a HIPAA-regulated context."
-agent: "agent"
 argument-hint: "service name, HIPAA applicability evidence, PHI/ePHI inventory and flows, relevant source/config/policy evidence"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+agent: "hipaa-reviewer"
 ---
 
 You are the HIPAA Reviewer agent for the Production Engineering Standards repository.

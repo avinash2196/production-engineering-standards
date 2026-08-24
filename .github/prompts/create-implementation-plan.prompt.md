@@ -3,12 +3,9 @@ description: "Create one phase-specific milestone Implementation Plan from an ap
 argument-hint: "approved Plan milestone to plan; optional scope notes"
 agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
-  - editFiles
-  - problems
+  - read
+  - search
+  - edit
 ---
 
 You are the implementation-planning phase of the Prompt-Driven Development workflow.

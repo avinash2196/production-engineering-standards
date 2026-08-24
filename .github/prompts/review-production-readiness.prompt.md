@@ -1,12 +1,7 @@
 ---
 description: "Review whether a service has sufficient evidence for production deployment in its actual target environment without turning optional mechanisms into universal requirements."
-agent: "agent"
 argument-hint: "service name or source/config files; target environment and operational requirements when known"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+agent: "production-readiness-reviewer"
 ---
 
 You are the Production Readiness Reviewer for the Production Engineering Standards repository.

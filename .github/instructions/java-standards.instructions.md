@@ -40,14 +40,9 @@ Use a simpler layered structure for straightforward CRUD when documented and tes
 
 ## Adapter Selection
 
-Use typed configuration such as:
+Select adapters in configuration/composition code using the adopting project's typed configuration model. The adapter names shown in this repository's local-adapter examples (`kafka`, `pubsub`, `db`, `inmemory`, `redis`, `jsonfile`, `s3`, `gcs`, `local`, `env`) are illustrative and must not create dependencies or configuration keys that the approved design does not require.
 
-- `adapters.messaging=kafka|pubsub|db|inmemory`
-- `adapters.cache=redis|jsonfile|inmemory`
-- `adapters.storage=s3|gcs|local`
-- `adapters.secrets=vault|secretmanager|env`
-
-Select implementations in configuration/composition code. Local-only adapters must be observable, document reduced guarantees, and be rejected by production startup validation.
+Local-only adapters must be explicit, document reduced guarantees, and be rejected by production startup or deployment validation. Add logging/metrics for activation when those signals are part of the project's operating model.
 
 ## Security and Observability
 

@@ -1,15 +1,7 @@
 ---
 description: "Execute an approved RED milestone Implementation Plan. Tests/checks only; establish valid RED and stop before production implementation."
 argument-hint: "approved RED Implementation Plan path; optional focused test type"
-agent: "agent"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
-  - editFiles
-  - runCommands
-  - problems
+agent: "test-engineer"
 ---
 
 You are the RED milestone execution phase of the Prompt-Driven Development workflow.

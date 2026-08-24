@@ -130,8 +130,8 @@ Do work.
 description: Example
 agent: agent
 tools:
-  - codebase
-  - readFile
+  - read
+  - search
 ---
 Do work.
 """,
@@ -147,7 +147,7 @@ Do work.
             """---
 description: Example
 agent: agent
-tools: ['search/codebase', 'vscode/askQuestions']
+tools: ['search/codebase', 'read/problems']
 ---
 Do work.
 """,
@@ -473,6 +473,159 @@ allowed-tools:
                 ".github/skills/code-review/SKILL.md:5: invalid list item; use '- value'"
             ],
             errors,
+        )
+
+    def test_prompt_validation_rejects_legacy_tool_identifier(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: agent
+tools:
+  - readFile
+---
+Do work.
+""",
+        )
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md: legacy prompt tool 'readFile' is not allowed; use current tool-set/tool identifiers"
+            ],
+            validator.validate_prompt_files(self.root),
+        )
+
+    def test_prompt_validation_requires_custom_agent_to_exist(self) -> None:
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: code-reviewer
+---
+Do work.
+""",
+        )
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md: custom prompt agent 'code-reviewer' does not exist at .github/agents/code-reviewer.agent.md"
+            ],
+            validator.validate_prompt_files(self.root),
+        )
+
+    def test_prompt_validation_accepts_existing_custom_agent_without_tool_override(self) -> None:
+        self.write(
+            ".github/agents/code-reviewer.agent.md",
+            """---
+name: code-reviewer
+description: Review code.
+tools:
+  - read
+  - search
+---
+# Reviewer
+""",
+        )
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: code-reviewer
+---
+Do work.
+""",
+        )
+
+        self.assertEqual([], validator.validate_prompt_files(self.root))
+
+    def test_prompt_validation_rejects_tool_override_for_custom_agent(self) -> None:
+        self.write(
+            ".github/agents/code-reviewer.agent.md",
+            """---
+name: code-reviewer
+description: Review code.
+---
+# Reviewer
+""",
+        )
+        self.write(
+            ".github/prompts/example.prompt.md",
+            """---
+description: Example
+agent: code-reviewer
+tools:
+  - read
+---
+Do work.
+""",
+        )
+
+        self.assertEqual(
+            [
+                ".github/prompts/example.prompt.md: prompt bound to custom agent 'code-reviewer' must not override its tools"
+            ],
+            validator.validate_prompt_files(self.root),
+        )
+
+    def test_instruction_validation_accepts_path_specific_instruction(self) -> None:
+        self.write(
+            ".github/instructions/java.instructions.md",
+            """---
+description: Java guidance
+applyTo: "**/*.java"
+---
+Use Java conventions.
+""",
+        )
+
+        self.assertEqual([], validator.validate_instruction_files(self.root))
+
+    def test_instruction_validation_rejects_repository_global_apply_to(self) -> None:
+        self.write(
+            ".github/instructions/new-service.instructions.md",
+            """---
+description: New service task
+applyTo: "**/*"
+---
+Create a service.
+""",
+        )
+
+        self.assertEqual(
+            [
+                ".github/instructions/new-service.instructions.md: repository-global applyTo '**/*' is not allowed; use .github/copilot-instructions.md for repository-wide guidance"
+            ],
+            validator.validate_instruction_files(self.root),
+        )
+
+    def test_customization_governance_rejects_apply_all_semantics(self) -> None:
+        self.write(
+            ".github/prompts/review.prompt.md",
+            """---
+description: Review
+---
+Reference Standards (apply all).
+""",
+        )
+
+        self.assertEqual(
+            [
+                ".github/prompts/review.prompt.md: blanket customization phrase is not allowed: 'reference standards (apply all)'"
+            ],
+            validator.validate_customization_governance(self.root),
+        )
+
+    def test_customization_governance_rejects_legacy_root_agent_reference(self) -> None:
+        self.write(
+            ".github/skills/code-review/SKILL.md",
+            "Use `agents/code-reviewer.md`.\n",
+        )
+
+        self.assertEqual(
+            [
+                ".github/skills/code-review/SKILL.md: legacy root-agent reference is not allowed: `agents/code-reviewer.md`"
+            ],
+            validator.validate_customization_governance(self.root),
         )
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready for owner review.
+Completed — historical execution artifact; not active guidance.
 
 ## Milestone Description
 

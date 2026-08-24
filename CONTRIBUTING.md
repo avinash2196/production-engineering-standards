@@ -17,6 +17,7 @@ Guidelines for contributing to the Production Engineering Standards repository.
 | Engineering standards | `standards/` | Architecture, reliability, testing, security |
 | Repository decisions | `docs/decisions/` | ADRs about this standards repository |
 | Stack-specific guidance | `stacks/` | Java/Spring Boot and Python/FastAPI guidance |
+| Path-specific Copilot instructions | `.github/instructions/` | Language, stack, or file-path guidance selected by `applyTo` |
 | GitHub Copilot custom agents | `.github/agents/` | Specialist review and implementation roles |
 | Agent Skills | `.github/skills/` | Task-specific reusable capabilities |
 | Prompt files | `.github/prompts/` | Reusable explicit workflows |
@@ -41,7 +42,7 @@ Standards should state their purpose, normative rules or decision guidance, LLM 
 
 ### Copilot Customizations
 
-Custom agents belong in `.github/agents/` and use the `.agent.md` suffix with valid YAML frontmatter. Agent Skills belong in `.github/skills/<skill-name>/SKILL.md` and must use a lowercase hyphenated name matching the directory. Prompt files belong in `.github/prompts/`. Do not create a second top-level `agents/` specification hierarchy. See [Copilot Customization Model](docs/copilot-customizations.md).
+Path-specific instructions belong in `.github/instructions/`, use the `.instructions.md` suffix, and must have an `applyTo` pattern narrower than the whole repository; repository-wide behavior belongs in `.github/copilot-instructions.md`. Custom agents belong in `.github/agents/` and use the `.agent.md` suffix with valid YAML frontmatter. Agent Skills belong in `.github/skills/<skill-name>/SKILL.md` and must use a lowercase hyphenated name matching the directory. Prompt files belong in `.github/prompts/` and should use current VS Code tool-set names or bind to a repository custom agent. Do not create a second top-level `agents/` specification hierarchy. See [Copilot Customization Model](docs/copilot-customizations.md).
 
 ### Evidence and Claims
 

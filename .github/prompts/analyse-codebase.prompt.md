@@ -1,12 +1,7 @@
 ---
 description: "Analyse an existing codebase against applicable production-engineering standards — architecture, boundaries, local adapters, dependency failure behavior, observability, security, and test quality. Produces a prioritised evidence-based remediation report."
-agent: "agent"
 argument-hint: "repository path or paste key source files, stack (java/python), analysis scope (full/architecture/security/observability)"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+agent: "codebase-analyst"
 ---
 
 You are the Codebase Analyst agent for the Production Engineering Standards repository.

@@ -52,9 +52,9 @@ Simple CRUD services may use fewer structural layers when the dependency directi
 
 Full rules: [Architecture Standard](../standards/architecture.md)
 
-## Capability Interfaces
+## Capability Boundaries
 
-Application and domain code depend on capability contracts rather than vendor SDKs:
+Keep vendor SDKs out of business logic when a meaningful capability boundary is needed. The contracts below are reference examples, not interfaces that every service must implement:
 
 - [MessagePublisher](../contracts/MessagePublisher.md) and [MessageSubscriber](../contracts/MessageSubscriber.md)
 - [CacheProvider](../contracts/CacheProvider.md)
@@ -62,25 +62,20 @@ Application and domain code depend on capability contracts rather than vendor SD
 - [SecretProvider](../contracts/SecretProvider.md)
 - [ConfigProvider](../contracts/ConfigProvider.md)
 
-Introduce an abstraction when it protects a meaningful boundary, supports testing, or permits multiple implementations. Do not create speculative interfaces without a justified use case.
+Introduce an abstraction only when it protects a real boundary, improves testability, isolates vendor coupling, or supports multiple implementations. Prefer an adopting project's existing abstraction/configuration model when it already satisfies that need. Do not create speculative interfaces for symmetry.
 
 ## Local Adapter Configuration
 
 Local adapters help developers and CI exercise behavior without every external platform. They are not automatic production failover mechanisms.
 
-| Variable | Production adapters | Local-only adapters |
-|---|---|---|
-| `MESSAGING_ADAPTER` | `kafka`, `pubsub` | `db`, `inmemory` |
-| `CACHE_ADAPTER` | `redis` | `jsonfile`, `inmemory` |
-| `STORAGE_ADAPTER` | `s3`, `gcs` | `local` |
-| `SECRET_ADAPTER` | `vault`, `secretmanager` | `env` |
+The repository's reference implementation demonstrates adapter names such as `db`, `inmemory`, `jsonfile`, `local`, and `env`. Those names and environment-variable keys are **examples**, not required configuration contracts for every adopting project. Reuse an existing project configuration model when one exists.
 
 Rules:
 
-1. Adapter selection uses typed configuration.
-2. Local-only adapter activation emits a structured warning and metric.
+1. Adapter selection is explicit and validated through the project's typed/configuration mechanism.
+2. Local-only adapter activation is observable; use logging and metrics where those signals are part of the project's operating model.
 3. Reduced durability, ordering, consistency, concurrency, and security guarantees are documented.
-4. Production startup fails when a local-only adapter is selected.
+4. Production startup or deployment validation rejects local-only adapters.
 5. Testcontainers or official emulators may be preferable to a custom local adapter.
 
 Details: [Local Adapter Strategy](../standards/local-adapter-strategy.md)
@@ -105,7 +100,7 @@ Details: [Production Dependency Failure and Degradation](../standards/fallback-s
 ## Engineering Rules
 
 1. Domain logic must not depend on web, persistence, or vendor SDK frameworks unless a project-specific architecture decision explicitly adopts an active-record model.
-2. Production secrets use the approved secure delivery/access mechanism. When an adopting project uses this repository's `SecretProvider` boundary, access secrets through that boundary. The `SECRET_ADAPTER=env` reference is local-only and must not become a production fallback.
+2. Production secrets use the approved secure delivery/access mechanism. When an adopting project uses this repository's `SecretProvider` boundary, access secrets through that boundary. Environment-backed secret resolution in the local-adapter reference is local/test guidance and must not silently become a production fallback.
 3. External calls define timeouts and documented failure behavior.
 4. Transaction and idempotency boundaries are explicit where duplicate or partial processing could occur.
 5. Collection-fetching paths are reviewed for N+1 behavior using cardinality and pagination context.

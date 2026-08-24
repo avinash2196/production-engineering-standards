@@ -3,12 +3,9 @@ description: "Create or update docs/.ai/Plan.md from requirements and current re
 argument-hint: "requirement, issue, or change request; optional files to review"
 agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - createFile
-  - editFiles
-  - problems
+  - read
+  - search
+  - edit
 ---
 
 You are the planning phase of the Prompt-Driven Development workflow.

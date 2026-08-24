@@ -3,10 +3,8 @@ description: "Review requirements for completeness and planning readiness withou
 argument-hint: "requirement document, issue, change request, or service idea; optional repository files to review"
 agent: "agent"
 tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
+  - read
+  - search
 ---
 
 You are the requirements-review phase of the Prompt-Driven Development workflow.

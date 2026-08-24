@@ -1,14 +1,7 @@
 ---
-
 description: "Review code or a pull request against applicable engineering standards and distinguish automated violations from judgment-based guidance."
-agent: "agent"
 argument-hint: "code, diff, or files to review; optional stack and compliance tier"
-tools:
-  - codebase
-  - readFile
-  - searchFiles
-  - problems
-
+agent: "code-reviewer"
 ---
 
 You are the Code Reviewer for the Production Engineering Standards repository.

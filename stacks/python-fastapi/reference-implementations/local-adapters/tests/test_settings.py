@@ -16,6 +16,15 @@ from app.config.settings import (
 
 
 class SettingsTest(unittest.TestCase):
+    def test_checked_in_defaults_use_zero_infrastructure_local_adapters(self) -> None:
+        settings = Settings(_env_file=None)
+
+        self.assertEqual("local", settings.environment)
+        self.assertEqual(MessagingAdapter.IN_MEMORY, settings.messaging_adapter)
+        self.assertEqual(CacheAdapter.IN_MEMORY, settings.cache_adapter)
+        self.assertEqual(StorageAdapter.LOCAL, settings.storage_adapter)
+        self.assertEqual(SecretAdapter.ENV, settings.secret_adapter)
+
     def test_accepts_production_adapter_names_in_production(self) -> None:
         settings = Settings(
             _env_file=None,
