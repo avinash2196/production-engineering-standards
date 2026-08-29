@@ -16,6 +16,14 @@ user-invocable: true
 
 You are the REFACTOR-milestone engineer. You execute one separately approved REFACTOR Implementation Plan from a verified GREEN baseline without changing external behavior.
 
+## On Activation
+
+1. Locate the adopting project's approved `REFACTOR` milestone and its separately approved Implementation Plan.
+2. Verify the named predecessor `GREEN` milestone and run the focused tests plus relevant regression suite before editing.
+3. Confirm the baseline is GREEN and that the requested work is behavior-preserving.
+4. Apply only standards relevant to the approved refactor; do not pull feature, bug-fix, or future-milestone work into the change.
+5. If the baseline is not protected or behavior must change, stop and return to the appropriate planning/RED/GREEN workflow.
+
 ## Preconditions
 
 1. Read the approved Plan and the separately approved REFACTOR milestone Implementation Plan.

@@ -12,8 +12,8 @@ SPECIALIST_PROMPTS = {
     "analyse-codebase": "codebase-analyst",
     "compliance-review": "compliance-reviewer",
     "generate-tests": "test-engineer",
-    "implement-approved-plan": "backend-service-builder",
-    "maintenance-check": "lifecycle-reviewer",
+    "implement-approved-plan": "backend-service-engineer",
+    "maintenance-check": "maintenance-reviewer",
     "refactor-code": "refactoring-engineer",
     "review-architecture": "architecture-reviewer",
     "review-code": "code-reviewer",
@@ -122,7 +122,26 @@ class CopilotCustomizationSemanticsTest(unittest.TestCase):
     def test_code_review_skill_has_no_legacy_agent_dependency(self) -> None:
         skill = (ROOT / ".github/skills/code-review/SKILL.md").read_text(encoding="utf-8")
         self.assertNotIn("`agents/code-reviewer.md`", skill)
-        self.assertIn(".github/prompts/review-code.prompt.md", skill)
+        self.assertIn("../../prompts/review-code.prompt.md", skill)
+        self.assertNotIn(".github/prompts/review-code.prompt.md", skill)
+
+    def test_all_custom_agents_define_activation_behavior(self) -> None:
+        failures = []
+        for path in sorted(AGENTS.glob("*.agent.md")):
+            text = path.read_text(encoding="utf-8")
+            if "## On Activation" not in text:
+                failures.append(str(path.relative_to(ROOT)))
+        self.assertEqual([], failures)
+
+    def test_agent_and_skill_definitions_have_no_machine_specific_paths(self) -> None:
+        failures = []
+        machine_path = re.compile(r"(?:[A-Za-z]:[\\/]|/Users/|/home/|/mnt/)")
+        paths = list(AGENTS.glob("*.agent.md")) + list((ROOT / ".github/skills").rglob("*.md"))
+        for path in sorted(paths):
+            text = path.read_text(encoding="utf-8")
+            if machine_path.search(text):
+                failures.append(str(path.relative_to(ROOT)))
+        self.assertEqual([], failures)
 
     def test_prompt_surface_limitation_is_documented(self) -> None:
         doc = (ROOT / "docs/copilot-customizations.md").read_text(encoding="utf-8")

@@ -59,3 +59,15 @@ This convergence does not add a new engineering architecture or compliance requi
 - The local-adapter reference starts with checked-in defaults, declares its own runtime dependencies, and rejects local-only selections in production.
 - Repository validator and all repository/starter/reference tests pass from a clean extracted package.
 - README accurately limits the production claim: this repository supports governed production engineering; it does not make generated applications automatically production-ready.
+## Publication Hardening Addendum — 2026-08-29
+
+Final owner review approved a narrow portability hardening milestone without changing the frozen customization model:
+
+1. converge the final agent names to `backend-service-engineer` and `maintenance-reviewer`;
+2. give every agent an explicit Markdown `On Activation` contract;
+3. make standards-repository references in active agents/skills definition-file-relative and keep adopting-project paths explicitly labeled;
+4. document external/personal customization use without requiring a submodule or consuming-project `copilot-instructions.md`;
+5. preserve clean-package validation with no Git metadata or IDE-local state.
+
+Execution evidence is recorded in [`003_Implementation_Plan_Agent_Activation_And_Portability.md`](003_Implementation_Plan_Agent_Activation_And_Portability.md).
+

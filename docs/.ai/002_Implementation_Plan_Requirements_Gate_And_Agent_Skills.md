@@ -22,7 +22,7 @@ Implement the final requirements-analysis and Agent Skill hardening defined by `
 - `.github/prompts/create-plan.prompt.md`
 - `.github/prompts/review-code.prompt.md`
 - `standards/questioning-policy.md`
-- `.github/agents/backend-service-builder.agent.md`
+- `.github/agents/backend-service-engineer.agent.md`
 - `tooling/tests/test_validate_repository.py`
 - `tooling/scripts/validate_repository.py`
 - `README.md`
@@ -62,7 +62,7 @@ Do not add a third-party YAML dependency or claim generic YAML validation.
 
 ### Requirements Workflow Changes
 
-Add the requirements-analysis skill and `/review-requirements` prompt. Update always-on instructions, `/create-plan`, the questioning policy, and backend-service-builder so they share this contract:
+Add the requirements-analysis skill and `/review-requirements` prompt. Update always-on instructions, `/create-plan`, the questioning policy, and backend-service-engineer so they share this contract:
 
 - classify evidence as `EXPLICIT`, `REPOSITORY-CONFIRMED`, `UNRESOLVED`, or `NOT REQUIRED YET`;
 - use only explicit/repository-confirmed facts for planning;

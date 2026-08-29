@@ -21,13 +21,13 @@ This repository uses the `.agent.md` suffix because it is explicit in VS Code wh
 The current agents are:
 
 - `architecture-reviewer`
-- `backend-service-builder`
+- `backend-service-engineer`
 - `code-reviewer`
 - `codebase-analyst`
 - `compliance-reviewer`
 - `distributed-systems-reviewer`
 - `hipaa-reviewer`
-- `lifecycle-reviewer`
+- `maintenance-reviewer`
 - `production-readiness-reviewer`
 - `refactoring-engineer`
 - `test-engineer`
@@ -35,6 +35,21 @@ The current agents are:
 Repository agents are configured for manual invocation (`disable-model-invocation: true`) so a specialized role is not silently selected by the cloud agent. Human review gates in the PDD workflow still apply.
 
 Read-only/review agents receive read/search/execute capabilities. Agents that intentionally change tests or implementation receive edit access as well. A profile must not claim access to an external registry, vulnerability database, CI system, or MCP tool unless that capability is actually configured.
+
+
+## Activation and Portability Contract
+
+Every custom agent contains an `On Activation` section in its Markdown body. This is a repository convention, not a custom YAML property. It makes startup behavior explicit: identify scope, inspect evidence, apply only relevant standards, verify prerequisites, and stop or report missing evidence before crossing the agent's responsibility boundary.
+
+This repository is designed to remain portable across developer machines:
+
+- Agent and skill definitions must not contain developer-specific absolute filesystem paths.
+- Links from an agent or skill to files in this standards repository use paths relative to the definition file.
+- Paths such as the adopting project's `docs/.ai/Plan.md` are intentionally project-relative and are labeled as adopting-project artifacts.
+- When these customizations are registered outside an application repository, configure the supported IDE/Copilot surface to discover **both** `.github/agents/` and `.github/skills/`. Discovering an agent directory does not by itself guarantee that a separate skill directory is discoverable.
+- Keep machine-specific checkout locations in user/personal IDE configuration, not in this repository. JetBrains IDEs expose workspace and personal customizations through the Agent Customizations editor; VS Code also supports user-level agents/skills and additional discovery locations.
+
+A submodule is therefore optional rather than required. Use one only when an application intentionally needs the complete standards repository inside its workspace and wants Git to pin the standards revision.
 
 ## Agent Skills
 

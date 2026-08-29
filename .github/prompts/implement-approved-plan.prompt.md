@@ -1,7 +1,7 @@
 ---
 description: "Execute one approved GREEN or non-behavior milestone Implementation Plan. Does not create RED tests or perform REFACTOR work."
 argument-hint: "path to approved GREEN, FOUNDATION, or OTHER Implementation Plan"
-agent: "backend-service-builder"
+agent: "backend-service-engineer"
 ---
 
 You are the execution phase for one approved non-RED, non-REFACTOR milestone in the Prompt-Driven Development workflow.

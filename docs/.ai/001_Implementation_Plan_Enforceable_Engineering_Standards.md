@@ -91,7 +91,7 @@ No phase may silently collapse into another.
 
 ### Agent files
 
-- Update `backend-service-builder.md`, `test-engineer.md`, and `refactoring-engineer.md`.
+- Update `backend-service-engineer.agent.md`, `test-engineer.agent.md`, and `refactoring-engineer.agent.md`.
 - Replace automatic fallback generation with explicit adapter/degradation decisions.
 
 ### Playbooks

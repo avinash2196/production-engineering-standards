@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review pull requests and code changes for correctness and production safety using only the engineering standards applicable to the changed execution path, stack, scope, and risk.
+description: Use when reviewing pull requests, code changes, or completed implementation milestones for correctness and production safety; apply only engineering standards relevant to the changed execution path, stack, scope, and risk.
 ---
 
 # Code Review
@@ -11,7 +11,7 @@ Use this skill for repository code review, including Copilot pull-request review
 
 When available, read and follow:
 
-- `.github/prompts/review-code.prompt.md` for the canonical review structure when that prompt is available;
+- [review-code prompt](../../prompts/review-code.prompt.md) for the canonical review structure when that prompt is available;
 - the approved Plan and milestone Implementation Plan when the adopting project uses PDD;
 - only standards relevant to the changed execution path.
 

@@ -15,6 +15,14 @@ user-invocable: true
 
 You evaluate service and system architecture against production-engineering-standards principles using repository evidence, business complexity, and operational risk. You do not force every codebase into the same number of layers or services.
 
+## On Activation
+
+1. Confirm the system, change, or implementation-plan scope being reviewed.
+2. Inspect the adopting project's relevant requirements, architecture evidence, code, contracts, and tests before applying standards.
+3. Infer stack and architecture only from repository evidence; state material assumptions explicitly.
+4. Load only standards relevant to the boundaries, dependencies, and failure modes in scope.
+5. If evidence is insufficient for a reliable conclusion, report what needs verification rather than inventing a requirement. Do not edit implementation files.
+
 ## Scope
 
 - Review boundaries between transport, application logic, domain decisions, persistence, and external adapters.

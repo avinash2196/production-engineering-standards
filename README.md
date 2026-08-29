@@ -134,13 +134,13 @@ Prompt workflows include:
 
 Choose one controlled distribution approach:
 
-1. Copy or synchronize the relevant instruction and prompt files into the target repository.
-2. Open the standards repository and target repository in the same VS Code workspace and configure referenced-instruction inclusion deliberately.
-3. Publish approved organization-level instructions where supported.
+1. **Personal/external customizations (preferred for a clean application repository):** register this repository's `.github/agents/` and `.github/skills/` through the supported IDE/Copilot customization mechanism. Register both locations; agent discovery does not automatically imply skill discovery. Keep the machine-specific checkout location in user/personal IDE settings, not in application source control.
+2. **Workspace/submodule integration:** place the standards repository in the application workspace only when the complete standards library must be directly available there or when the application intentionally needs to pin a standards revision.
+3. **Repository or organization distribution:** copy/synchronize approved customizations or publish organization-level customizations where the target Copilot surface supports them.
 
-Do not assume that a Markdown link to an arbitrary local clone automatically distributes or enforces standards for every developer and CI environment.
+The agent and skill files in this repository use portable relative links for standards-repository resources and do not require a fixed Windows, macOS, or Linux checkout path. Application artifacts such as `docs/.ai/Plan.md` remain relative to the adopting project by design.
 
-Start with [`templates/docs/project-copilot-instructions-bootstrap.md`](templates/docs/project-copilot-instructions-bootstrap.md), then adapt paths and enabled prompts for the target repository.
+Do not assume that merely linking to an arbitrary local clone automatically distributes or enforces standards for every developer and CI environment. See [Copilot Customization Model](docs/copilot-customizations.md) for the activation and portability contract.
 
 ## Validation
 
