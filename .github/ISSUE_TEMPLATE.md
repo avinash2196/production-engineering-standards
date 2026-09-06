@@ -1,47 +1,13 @@
----
-name: General Issue
-about: Report a gap, correction, or proposal for the production-engineering-standards repository
-title: "[AREA] Brief description"
-labels: ""
-assignees: ""
----
+# Change Request
 
-## Category
+## Problem
 
-<!-- Select one -->
-- [ ] **Gap** — Missing standard, guide, template, or example
-- [ ] **Correction** — Factual error or outdated information
-- [ ] **Proposal** — New standard, agent, workflow, or structural change
-- [ ] **Bug** — Broken link, formatting issue, or template error
+## Desired Outcome
 
-## Area
+## Constraints / Known Requirements
 
-<!-- Which section of the repository does this affect? -->
-- [ ] `standards/`
-- [ ] `stacks/`
-- [ ] `.github/agents/`, `.github/skills/`, or `.github/prompts/`
-- [ ] `playbooks/`
-- [ ] `templates/`
-- [ ] `examples/`
-- [ ] `docs/`
-- [ ] Other: ___
+## Evidence / Existing Behavior
 
-## Description
+## Open Decisions
 
-<!-- Clearly describe the issue or proposal. -->
-
-## Current Behavior
-
-<!-- What exists today? Link to the specific file if applicable. -->
-
-## Expected Behavior
-
-<!-- What should exist or what should change? -->
-
-## References
-
-<!-- Link to related standards, ADRs, or external resources. -->
-
-## Additional Context
-
-<!-- Any other information that would help (screenshots, examples, related PRs). -->
+## Validation Expected

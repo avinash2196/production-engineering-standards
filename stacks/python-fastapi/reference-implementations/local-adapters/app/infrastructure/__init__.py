@@ -1,1 +1,0 @@
-"""Reference infrastructure adapters."""

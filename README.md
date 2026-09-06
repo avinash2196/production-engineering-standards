@@ -1,209 +1,118 @@
 # Production Engineering Standards
 
-Practical engineering standards for building production-oriented backend and distributed systems in Java and Python with AI-assisted development.
+A Copilot-native engineering standards repository for production-oriented Java, Python, distributed-system, and database-modernization work.
 
-The repository is intentionally not a promise that AI-generated code is automatically production-ready. Copilot instructions guide decisions, prompts make reviews repeatable, and tests, validators, and CI enforce the rules that can be checked automatically.
+The repository separates five concerns:
 
-## Why This Repository Exists
+- **Instructions** — standing rules that should apply automatically.
+- **Skills** — reusable engineering and domain knowledge loaded when relevant.
+- **Agents** — responsibility-focused roles for planning, implementation, testing, refactoring, and review.
+- **Prompts** — explicit entry points for repeatable Prompt-Driven Development workflows.
+- **Tooling** — executable repository checks. Guidance is not described as enforcement unless a check can actually fail.
 
-A single `copilot-instructions.md` file is useful for persistent context, but it is not enough for engineering governance. This repository separates:
+## Core Development Lifecycle
 
-1. **Stable standards** — architecture, testing, security, observability, local adapters, and production degradation.
-2. **Task workflows** — requirements analysis, Plan, Implementation Plan, tests, implementation, refactoring, and review through prompt files, Agent Skills, and GitHub Copilot custom agents.
-3. **Executable enforcement** — repository tests, validators, stack-specific tests, and CI gates.
-4. **Human judgment** — architecture, trade-offs, operational safety, and exceptions that cannot be reduced to a brittle rule.
+For behavior-changing work that adopts this repository's Prompt-Driven Development model:
 
-## Required Development Lifecycle
+> **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED → GREEN → optional REFACTOR → Final Review**
 
-Qualifying implementation work follows the same high-level PDD/TDD sequence used throughout this repository:
-
-> **Requirements → Plan → Human Review → Implementation Plan → Human Review → RED Tests → GREEN Code → Refactor → Final Review**
-
-The important control boundary is that **RED, GREEN, and optional REFACTOR are separate Plan milestones for behavior-changing work**:
-
-```text
-Approved Plan
-  → RED milestone
-      → RED Implementation Plan
-      → Human Review
-      → Tests/checks only
-      → Valid RED evidence
-  → GREEN milestone
-      → GREEN Implementation Plan
-      → Human Review
-      → Minimal production implementation
-      → GREEN evidence
-  → REFACTOR milestone (only when justified)
-      → REFACTOR Implementation Plan
-      → Human Review
-      → Behavior-preserving cleanup
-      → Remains GREEN
-  → Final Review
-```
-
-`docs/.ai/Plan.md` defines **what** will be delivered, the phase-specific milestone order, predecessor relationships, scope, risks, and success criteria. Each repository-changing milestone then receives its own `docs/.ai/NNN_Implementation_Plan_<Milestone>.md`, which defines **how that phase only** will be executed.
-
-This extra separation is intentional for AI-assisted development: a human can validate the RED interpretation before production code is authorized, GREEN stays minimal, and refactoring cannot be smuggled into feature implementation. An end-to-end request does not waive these review gates for behavior-changing work.
-
-Before Plan creation, material requirement ambiguity is resolved rather than guessed through. Framework defaults, common practices, and industry assumptions do not become requirements merely because information is missing.
-
-See [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md).
-
-## Experience-Driven Adapter and Failure Strategy
-
-The repository preserves a practical distinction that is often lost in generic AI guidance.
-
-### Local adapters
-
-Local adapters make development and CI possible without every external service:
-
-| Capability | Production adapter examples | Local-only adapter examples |
-|---|---|---|
-| Messaging | Kafka, Pub/Sub | database-backed queue/outbox, in-memory queue |
-| Cache | Redis | inspectable JSON-file cache, in-memory cache |
-| Storage | S3, GCS | local filesystem |
-| Secrets | Vault, Secret Manager | environment-variable provider |
-
-Local adapters must be explicit, observable, testable, and blocked in production. Their reduced durability, ordering, consistency, concurrency, and security guarantees must be documented.
-
-### Production degradation
-
-Production dependency failure is a separate design decision. A service may fail fast, fail closed, retry, circuit-break, queue durably, serve stale data, bypass a non-critical capability, or operate with reduced functionality.
-
-The fallback itself is not the standard. The standard is that degraded behavior is **explicit, observable, testable, and unable to activate silently**.
-
-See:
-
-- [Local Adapter Strategy](standards/local-adapter-strategy.md)
-- [Production Dependency Failure and Degradation](standards/fallback-strategy.md)
-
-## How Standards Are Applied
-
-| Level | Purpose | Examples |
-|---|---|---|
-| **Guidance** | Influence planning, generation, and review | Copilot instructions, stack guidance |
-| **Repeatability** | Apply the same workflow and review structure | Prompt files, Agent Skills, custom agents, playbooks |
-| **Enforcement** | Fail an executable check on violation | Unit tests, integration tests, repository validator, CI |
-| **Human review** | Evaluate context-sensitive trade-offs | Architecture, resilience, security, operational readiness |
-
-A documented rule is described as enforced only when an executable mechanism blocks the violation. Current status is tracked in the [Enforcement Matrix](docs/enforcement-matrix.md).
-
-Repository tests also guard the canonical PDD phase model so active guidance cannot silently collapse RED, GREEN, and optional REFACTOR back into one milestone or one Implementation Plan.
+RED, GREEN, and REFACTOR are separate authorization boundaries. Completing one phase does not authorize the next.
 
 ## Repository Structure
 
 ```text
 .github/
-  copilot-instructions.md       Workspace-level persistent guidance
-  instructions/                Path-specific stack instructions
-  agents/                      GitHub Copilot custom agent profiles (`*.agent.md`)
-  prompts/                     Reusable PDD and review workflows
-  skills/                      Task-specific Agent Skills for requirements and review
-  workflows/                   Repository validation CI
-contracts/                     Capability boundaries
-standards/                     Engineering rules and decision guidance
-stacks/                        Java and Python stack guidance/templates
-playbooks/                     Step-by-step delivery and operational workflows
-templates/                     Plan, Implementation Plan, ADR, infra, and docs templates
-examples/                      Reference architectures and behavior walkthroughs
-tooling/                       Dependency-free validator and tests
-docs/                          Overview, decisions, and enforcement status
+  copilot-instructions.md
+  instructions/            Path-scoped standing rules
+  agents/                  Responsibility-focused custom agents
+  skills/                  Domain knowledge + reusable engineering capabilities
+  prompts/                 Explicit reusable workflow entry points
+  workflows/               Repository validation CI
+
+tooling/
+  scripts/                 Dependency-free validators
+  tests/                   Repository contract tests
+
+examples/
+  reference-service/       Small adoption example
+
+docs/
+  getting-started.md
+  customization-model.md
+  migration-from-v1.md
 ```
 
-## Using the Repository
+There are intentionally **no** top-level `standards/`, `playbooks/`, `stacks/`, `contracts/`, or `templates/` directories. Knowledge and supporting assets live with the skill that owns them.
 
-### In this repository
+## Mental Model
 
-GitHub Copilot loads repository-wide instructions from `.github/copilot-instructions.md` on supported surfaces, while `.github/instructions/*.instructions.md` applies only to matching file paths. Prompt files under `.github/prompts/` provide explicit reusable tasks in supported VS Code local-agent workflows; specialist prompts bind to repository custom agents under `.github/agents/`, and Agent Skills under `.github/skills/` provide reusable capabilities that Copilot can load when relevant. GitHub Copilot Agent Host does not consume prompt files, so cross-surface governance must remain in repository instructions, skills, custom agents, standards, tests, and CI rather than relying on prompts alone. See [Copilot Customization Model](docs/copilot-customizations.md).
+| Need | Location |
+|---|---|
+| Rule that should almost always apply | `.github/copilot-instructions.md` |
+| Rule for Java/Python/SQL paths | `.github/instructions/` |
+| Specialized engineering/domain expertise | `.github/skills/` |
+| Responsibility or review role | `.github/agents/` |
+| Explicit repeatable task | `.github/prompts/` |
+| Executable verification | `tooling/` |
+| Whole-project usage example | `examples/` |
+| Human setup/explanation | `docs/` |
 
-Prompt workflows include:
+## Oracle to PostgreSQL Modernization
 
-- `/review-requirements`
-- `/create-plan`
-- `/create-implementation-plan`
-- `/implement-approved-plan`
-- `/generate-tests`
-- `/refactor-code`
-- `/scaffold-service`
-- `/review-code`
-- `/review-architecture`
-- `/review-distributed-systems`
-- `/review-production-readiness`
+Oracle → PostgreSQL is modeled as a **skill**, not a standalone agent:
 
-### In another project
+```text
+.github/skills/oracle-to-postgres-modernization/
+  SKILL.md
+  references/
+    assessment.md
+    schema-and-sql-mapping.md
+    spring-boot-migration.md
+    verification-and-cutover.md
+```
 
-Choose one controlled distribution approach:
+The reason is architectural: **an agent represents responsibility; a skill represents reusable domain capability**. The planner, implementation engineer, test engineer, architecture reviewer, and code reviewer can all apply the migration skill at different phases.
 
-1. **Personal/external customizations (preferred for a clean application repository):** register this repository's `.github/agents/` and `.github/skills/` through the supported IDE/Copilot customization mechanism. Register both locations; agent discovery does not automatically imply skill discovery. Keep the machine-specific checkout location in user/personal IDE settings, not in application source control.
-2. **Workspace/submodule integration:** place the standards repository in the application workspace only when the complete standards library must be directly available there or when the application intentionally needs to pin a standards revision.
-3. **Repository or organization distribution:** copy/synchronize approved customizations or publish organization-level customizations where the target Copilot surface supports them.
+Use `/migrate-oracle-to-postgres` as the explicit prompt entry point when you want to start that workflow.
 
-The agent and skill files in this repository use portable relative links for standards-repository resources and do not require a fixed Windows, macOS, or Linux checkout path. Application artifacts such as `docs/.ai/Plan.md` remain relative to the adopting project by design.
+## Key Skills
 
-Do not assume that merely linking to an arbitrary local clone automatically distributes or enforces standards for every developer and CI environment. See [Copilot Customization Model](docs/copilot-customizations.md) for the activation and portability contract.
+- Prompt-Driven Development
+- Requirements analysis
+- Implementation planning
+- Architecture design
+- Distributed systems
+- API design
+- Resilience and degradation
+- Observability
+- Security
+- Compliance engineering
+- Testing
+- Code review
+- Production readiness
+- Java/Spring Boot
+- Python/FastAPI
+- Oracle → PostgreSQL modernization
+
+Each skill owns its references, templates, checklists, or examples instead of depending on parallel root-level taxonomies.
 
 ## Validation
 
-Run the tests first without creating Python bytecode inside the repository:
+Run:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tooling/tests -p 'test_*.py'
-```
-
-Then run the repository validator:
-
-```bash
 PYTHONDONTWRITEBYTECODE=1 python tooling/scripts/validate_repository.py
 ```
 
-Run the canonical minimal Python starter checks after installing its minimal dependencies:
+CI runs the same checks.
 
-```bash
-PYTHONPATH=stacks/python-fastapi/project-template \
-  python -m unittest discover \
-  -s stacks/python-fastapi/project-template/tests \
-  -p 'test_*.py'
-```
+## Adoption
 
+For another repository, register or distribute the approved agents and skills using the Copilot/IDE mechanism supported by your environment. Keep machine-specific checkout paths in personal IDE settings rather than application source control.
 
-The Python local-adapter implementation is a separate reference under `stacks/python-fastapi/reference-implementations/local-adapters/`. Run its tests only when working on that reference and after installing its own dependencies. Passing those tests is not production-readiness evidence for managed dependencies.
-
-Windows wrapper:
-
-```powershell
-pwsh tooling/scripts/validate-repo-structure.ps1
-```
-
-CI runs the same sequence and currently enforces:
-
-- required repository structure
-- active Markdown link integrity
-- prompt frontmatter syntax, current tool-set aliases, and valid custom-agent bindings
-- path-specific instruction frontmatter and rejection of repository-global `applyTo: "**/*"` files
-- custom-agent profile location, `.agent.md` naming, required description, and tool-list structure
-- rejection of the obsolete top-level `agents/` hierarchy
-- repository-package hygiene for IDE/Python cache artifacts
-- Agent Skill structure and required frontmatter
-- canonical PDD phase-milestone semantics (separate RED/GREEN/optional-REFACTOR milestones and phase-specific Implementation Plans)
-- absence of known placeholder implementations
-- absence of deprecated active configuration terminology and legacy custom-agent references
-- governance semantic checks that prevent blanket `apply all standards`, invented approval, and compliance-without-applicability behavior
-- production-foundation semantic checks for minimal Python dependencies, a runnable local-adapter reference, and requirement-driven observability/configuration/security/readiness
-
-Project-level enforcement such as Java architecture tests, Python import-boundary checks, secret scanning, dependency scanning, and service tests belongs in each generated or adopting project.
-
-## Important Standards
-
-- [Prompt-Driven Development Workflow](standards/prompt-driven-development-workflow.md)
-- [Agent Execution](standards/agent-execution.md)
-- [Architecture](standards/architecture.md)
-- [Engineering Principles](standards/engineering-principles.md)
-- [Coding Standards](standards/coding-standards.md)
-- [Testing](standards/testing/unit-testing.md)
-- [Security](standards/security/security-standards.md)
-- [Observability](standards/observability.md)
-- [Production Readiness](standards/production-readiness.md)
+See [Getting Started](docs/getting-started.md) and [Customization Model](docs/customization-model.md).
 
 ## Human Review
 
-Custom agents, prompts, and skills may help create plans, tests, source changes, and review reports. They must not silently broaden scope, invent requirements, commit secrets, or claim commands passed when they were not run. Human review remains required before accepting implementation and production-readiness decisions.
+Agents, skills, prompts, and instructions may accelerate engineering work, but they do not approve requirements, plans, production changes, or architecture decisions on behalf of a human reviewer. Do not claim commands passed unless they were actually run.

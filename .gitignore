@@ -1,16 +1,9 @@
-# IDE and local workspace
-.idea/
-.vscode/
-
-# Python
 __pycache__/
 *.py[cod]
-.coverage
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.venv/
-
-# OS/editor noise
+.idea/
+.vscode/
 .DS_Store
-Thumbs.db
+build/
+target/
+dist/

@@ -1,1 +1,0 @@
-"""Local-adapter reference package."""
