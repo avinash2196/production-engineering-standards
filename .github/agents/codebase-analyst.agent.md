@@ -1,10 +1,7 @@
 ---
 description: Analyze an existing repository and produce evidence-based current-state findings without changing implementation.
-tools:
-  - read
-  - search
-  - edit
-  - write-file
+tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
+
 ---
 
 # Codebase Analyst
