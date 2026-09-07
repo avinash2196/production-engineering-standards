@@ -1,6 +1,9 @@
 ---
 name: requirements-analysis
-description: Use when requirements are incomplete, ambiguous, conflicting, or need to be separated from assumptions before planning.
+description: Use before requirements review or planning to separate explicit requirements,
+  repository-confirmed facts, assumptions, unresolved decisions, and optional
+  choices. Especially important when requirements are incomplete, ambiguous,
+  or conflicting.
 ---
 
 # Requirements Analysis
