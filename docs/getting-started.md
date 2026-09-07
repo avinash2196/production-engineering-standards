@@ -4,7 +4,7 @@ This repository is intended to remain separate from the applications that use it
 
 The standards repository provides reusable agents, skills, prompts, engineering knowledge, and validation patterns.
 
-The application remains responsible for its own project context, source code, tests, planning artifacts, and runtime configuration.
+The application remains responsible for its own project context, source code, tests, planning artifacts, runtime configuration, and application-specific Copilot instructions.
 
 ## 1. Keep the Standards Repository Separate
 
@@ -30,7 +30,9 @@ The adopting application should own its own:
 
 ```text
 .github/copilot-instructions.md
+docs/requirements.md                    # or the application's chosen requirements artifact
 docs/.ai/Plan.md
+docs/.ai/<API-or-external-contract>.md  # when applicable
 docs/.ai/NNN_Implementation_Plan_<Milestone>.md
 ```
 
@@ -38,88 +40,45 @@ Those files describe the current application and current work.
 
 They do not belong in the standards repository.
 
-## 3. Keep Application Instructions Project-Specific
+## 3. Start from the PDD Application Instruction Template
 
-The application's `.github/copilot-instructions.md` should contain stable facts and rules about that application.
-
-It should not duplicate the full engineering standards library.
-
-For example:
+Use:
 
 ```text
-# Application Context
-
-This repository is a Java 21 / Spring Boot application.
-
-## Architecture
-
-- Keep business logic outside controllers.
-- Preserve current module boundaries unless an approved Plan changes them.
-- Access external dependencies through explicit adapters.
-- Do not introduce a new service or distributed boundary without an approved architecture decision.
-
-## Persistence
-
-- PostgreSQL is the production database.
-- Schema changes use Flyway.
-- Do not rely on Hibernate auto-DDL in production.
-- Database-specific SQL must be documented and tested.
-
-## API
-
-- Preserve existing API compatibility unless explicitly approved.
-- Validate request boundaries.
-- Keep API contracts separate from persistence entities.
-- Use the application's established error-response model.
-
-## Testing
-
-- Behavior-changing work follows RED → GREEN → optional REFACTOR.
-- Unit tests cover business behavior.
-- Integration tests cover important persistence and infrastructure boundaries.
-- Database-specific behavior must be tested against PostgreSQL when relevant.
-
-## Verification
-
-Run:
-
-./mvnw test
-./mvnw verify
-
-Do not claim verification passed unless these commands were actually run.
-
-## External Engineering Standards
-
-Reusable engineering knowledge, review guidance, and specialist capabilities come from the externally registered production-engineering-standards agents and skills.
-
-Do not copy those standards into this repository unless the application intentionally owns a local override.
-
-## PDD Artifacts
-
-Task-specific planning artifacts belong under:
-
-docs/.ai/Plan.md
-docs/.ai/NNN_Implementation_Plan_<Milestone>.md
-
-Human review is required between authorization phases.
+.github/skills/prompt-driven-development/templates/application-copilot-instructions.md
 ```
 
-The exact content will vary by application.
+as a starter for the adopting application's:
 
-The important point is that the application instruction file describes **this application**, while reusable engineering expertise remains in skills.
+```text
+.github/copilot-instructions.md
+```
+
+Then add only application-specific facts such as:
+
+- runtime and framework versions,
+- module or architectural boundaries,
+- database and migration approach,
+- API compatibility expectations,
+- build and verification commands,
+- application-specific conventions.
+
+Do not copy the full engineering standards library into the application.
+
+Reusable expertise remains in externally available skills.
 
 ## 4. Choose the Correct Primitive
 
 Use the following rule when deciding where new content belongs:
 
-* always-on repository rule → instruction
-* path-specific rule → `.github/instructions/`
-* specialized expertise → skill
-* responsibility → agent
-* explicit reusable command → prompt
-* executable rule → tooling or tests
+- always-on repository rule → instruction
+- path-specific rule → `.github/instructions/`
+- specialized expertise → skill
+- responsibility → agent
+- explicit reusable command → prompt
+- executable rule → tooling or tests
 
-For example:
+Examples:
 
 ```text
 "Never commit secrets"
@@ -138,25 +97,38 @@ For example:
     → tooling
 ```
 
-## 5. Start a Behavior-Changing Work Item
+## 5. Start a New PDD Work Item
 
-A typical flow is:
+For a new application or a change whose requirements are not yet captured:
 
-1. `/review-requirements`
-2. resolve material ambiguity
-3. `/create-plan`
-4. human Plan review
-5. `/create-implementation-plan` for RED
+1. `/capture-requirements`
+2. resolve all material ambiguity
+3. human requirements review
+4. `/create-plan`
+5. human Plan review
+6. `/create-api-contract` when externally visible behavior must be defined before implementation
+7. human contract review
+8. create milestone-specific Implementation Plans
+9. execute RED, GREEN, and optional REFACTOR as separate authorization phases
+10. final code and production-readiness review as applicable
+
+For an existing application with already-approved requirements, start from the earliest artifact that needs to change.
+
+## 6. Behavior-Changing Milestone Flow
+
+A typical behavior-changing milestone is:
+
+1. `/create-implementation-plan` for RED
+2. human review
+3. `/generate-tests`
+4. verify valid RED evidence
+5. `/create-implementation-plan` for GREEN
 6. human review
-7. `/generate-tests`
-8. verify RED
-9. `/create-implementation-plan` for GREEN
-10. human review
-11. `/implement-approved-plan`
-12. verify GREEN
-13. create a separate REFACTOR milestone only when justified
-14. `/review-code`
-15. `/review-production-readiness` when applicable
+7. `/implement-approved-plan`
+8. verify GREEN
+9. create a separate REFACTOR Implementation Plan only when justified
+10. `/refactor-code`
+11. final review
 
 The important control is not the command names.
 
@@ -168,9 +140,49 @@ GREEN
 REFACTOR
 ```
 
-are separate authorization boundaries for behavior-changing work.
+are separate authorization boundaries.
 
-## 6. Oracle to PostgreSQL Modernization
+Completing one phase does not authorize the next.
+
+## 7. Clarification Is a Blocking Gate
+
+When material information is missing, ambiguous, or contradictory:
+
+```text
+ASK
+ ↓
+STOP
+ ↓
+WAIT FOR USER
+```
+
+Do not create or finalize the dependent artifact.
+
+Do not use an Open Questions section as a substitute for required clarification.
+
+## 8. Artifact Authority
+
+Use this authority model:
+
+```text
+Requirements
+    ↓
+Plan
+    ↓
+API / External Contract when applicable
+    ↓
+Milestone Implementation Plan
+    ↓
+Tests / Checks
+    ↓
+Production Implementation
+```
+
+If authoritative artifacts materially conflict, stop and surface the conflict for human review.
+
+Do not silently rewrite one artifact to match another.
+
+## 9. Oracle to PostgreSQL Modernization
 
 For Oracle → PostgreSQL modernization, use:
 
@@ -188,20 +200,20 @@ The migration capability itself lives in:
 
 It may be used by multiple responsibility-focused agents during:
 
-* assessment
-* planning
-* schema conversion
-* SQL conversion
-* Spring Boot configuration changes
-* migration testing
-* reconciliation
-* performance validation
-* cutover planning
-* post-migration cleanup
+- assessment
+- planning
+- schema conversion
+- SQL conversion
+- Spring Boot configuration changes
+- migration testing
+- reconciliation
+- performance validation
+- cutover planning
+- post-migration cleanup
 
 Oracle → PostgreSQL is therefore a skill rather than a dedicated migration agent.
 
-## 7. Where Examples Belong
+## 10. Where Examples Belong
 
 Do not create placeholder root-level examples simply to demonstrate folder structure.
 
@@ -217,7 +229,7 @@ A valid whole-project example should include meaningful source code, tests, buil
 
 Until such an example exists, the repository does not need a root `examples/` directory.
 
-## 8. Validate Before Publishing Changes
+## 11. Validate Before Publishing Changes
 
 Run:
 
