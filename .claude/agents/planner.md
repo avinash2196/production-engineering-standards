@@ -1,7 +1,7 @@
 ---
+name: planner
 description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete phase-specific Implementation Plans without implementing them.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Planner

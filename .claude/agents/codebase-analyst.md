@@ -1,7 +1,7 @@
 ---
+name: codebase-analyst
 description: Analyze an existing repository and produce evidence-based current-state findings without changing implementation.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Codebase Analyst

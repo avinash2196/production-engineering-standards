@@ -1,6 +1,6 @@
 # Production Engineering Standards
 
-A Copilot-native engineering standards repository for production-oriented Java, Python, distributed-system, and database-modernization work.
+A Copilot- and Claude Code-native engineering standards repository for production-oriented Java, Python, distributed-system, and database-modernization work.
 
 The repository separates five concerns:
 
@@ -26,14 +26,34 @@ Material ambiguity is also a blocking boundary:
 
 ## Repository Structure
 
+**Root-level configuration files:**
+
+- `CLAUDE.md` — Claude Code repository-wide rules (equivalent to `.github/copilot-instructions.md` plus path-scoped rules from `.github/instructions/`)
+- `.github/copilot-instructions.md` — GitHub Copilot repository-wide rules
+- `CLAUDE.md` and `.claude/` directory are loaded automatically by Claude Code when this repo is opened.
+
+**Directory structure:**
+
 ```text
 .github/
   copilot-instructions.md
   instructions/            Path-scoped standing rules
-  agents/                  Responsibility-focused custom agents
+  agents/                  Responsibility-focused custom agents (GitHub Copilot format)
   skills/                  Domain knowledge + reusable engineering capabilities
   prompts/                 Explicit reusable workflow entry points
   workflows/               Repository validation CI
+
+.claude/
+  agents/                  Same responsibility-focused agents, Claude Code format
+  skills/                  Same domain knowledge, Claude Code format
+  commands/                Same workflow entry points, Claude Code format
+
+plugin/
+  .claude-plugin/
+    plugin.json            Installable Claude Code plugin manifest
+  agents/                  Mirror of .claude/agents/, packaged for distribution
+  skills/                  Mirror of .claude/skills/, packaged for distribution
+  commands/                Mirror of .claude/commands/, packaged for distribution
 
 tooling/
   scripts/                 Dependency-free validators
@@ -62,15 +82,15 @@ Whole-project examples should be added only when they provide a runnable, end-to
 
 ## Mental Model
 
-| Need | Location |
-| --- | --- |
-| Rule that should almost always apply | `.github/copilot-instructions.md` |
-| Rule for Java, Python, SQL, or specific paths | `.github/instructions/` |
-| Specialized engineering or domain expertise | `.github/skills/` |
-| Responsibility or review role | `.github/agents/` |
-| Explicit repeatable task | `.github/prompts/` |
-| Executable verification | `tooling/` |
-| Human setup and repository explanation | `docs/` |
+| Need | Copilot (GitHub) | Claude Code |
+| --- | --- | --- |
+| Rule that should almost always apply | `.github/copilot-instructions.md` | `CLAUDE.md` |
+| Rule for Java, Python, SQL, or specific paths | `.github/instructions/` | `CLAUDE.md` (path sections) |
+| Specialized engineering or domain expertise | `.github/skills/` | `.claude/skills/` |
+| Responsibility or review role | `.github/agents/` | `.claude/agents/` |
+| Explicit repeatable task | `.github/prompts/` | `.claude/commands/` |
+| Executable verification | `tooling/` | `tooling/` |
+| Human setup and repository explanation | `docs/` | `docs/` |
 
 A simple way to think about the model is:
 
@@ -79,6 +99,30 @@ A simple way to think about the model is:
 > **Agents = responsibility**  
 > **Prompts = explicit workflow entry points**  
 > **Tooling = enforcement**
+
+## Using with Claude Code
+
+The repository provides three parallel pieces for Claude Code:
+
+**`.claude/` directory** — Drop-in project configuration automatically loaded when this repository (or any adopting project that includes it) is opened in Claude Code. No installation step required.
+
+**`plugin/` directory** — Packages the same skills, agents, and commands as an installable Claude Code plugin for distribution or local testing:
+
+```bash
+# Validate the plugin manifest
+claude plugin validate ./plugin
+
+# Install and test locally
+claude plugin install ./plugin
+```
+
+When installed as a plugin, skills, agents, and commands are namespaced as `/production-engineering-standards:<name>` (e.g., `/production-engineering-standards:create-plan`, `/production-engineering-standards:code-review`).
+
+**`.claude/` and `plugin/` as translations** — Both directories contain translations of `.github/` content into Claude Code's format. They are kept in sync manually; `.github/` remains the source of truth for GitHub Copilot. When an adopting project copies in this standards repository:
+
+- Copilot pulls instructions and skills from `.github/`
+- Claude Code pulls the same content from `.claude/` and `CLAUDE.md`
+- Both tools load the same engineering standards, expressed in their native formats
 
 ## Prompt-Driven Development
 
@@ -265,14 +309,22 @@ when an explicit workflow entry point is useful.
 
 ## Validation
 
-Run:
+**Python repository validation:**
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tooling/tests -p 'test_*.py'
 PYTHONDONTWRITEBYTECODE=1 python tooling/scripts/validate_repository.py
 ```
 
-CI runs the same repository-level checks.
+CI runs the same repository-level checks via `.github/workflows/validate.yml`.
+
+**Claude Code plugin validation:**
+
+```bash
+claude plugin validate ./plugin
+```
+
+This validates the plugin manifest and subagent/command/skill structure. Note: `claude plugin validate` is a separate check from the Python validators above and is not currently run in CI — consider adding it to `.github/workflows/validate.yml` in a future update.
 
 Application-specific enforcement such as:
 

@@ -1,7 +1,7 @@
 ---
+name: test-engineer
 description: Design, implement, and verify tests for an approved RED milestone without writing production implementation, then record verified RED progress in Plan.md.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Test Engineer

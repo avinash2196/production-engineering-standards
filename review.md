@@ -101,6 +101,108 @@ When installed, the plugin will be namespaced as:
 - ✔ All skill references use backtick notation (`` `skill-name` ``), which is compatible with namespacing
 - ✔ No cross-file command invocations found that would break under namespace
 
+### Frontmatter Fixes
+
+**Issue:** Initial agent frontmatter was invalid per official Claude Code subagent documentation:
+- Missing required `name` field
+- Incorrect `tools` field format: bracket list `[Read, Edit, ...]` instead of comma-separated string
+
+**Resolution:** Fixed all 16 agent files (8 in `.claude/agents/` and 8 in `plugin/agents/`) with:
+
+1. Added `name` field matching filename (e.g., `name: planner` for `planner.md`)
+2. Converted `tools` from bracket syntax to comma-separated string format
+
+**Example Frontmatter (Before → After):**
+```yaml
+# Before (Invalid)
+---
+description: "..."
+tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
+---
+
+# After (Valid)
+---
+name: planner
+description: "..."
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
+---
+```
+
+**Files Fixed:**
+- `.claude/agents/planner.md`
+- `.claude/agents/code-reviewer.md`
+- `.claude/agents/architecture-reviewer.md`
+- `.claude/agents/codebase-analyst.md`
+- `.claude/agents/implementation-engineer.md`
+- `.claude/agents/production-readiness-reviewer.md`
+- `.claude/agents/refactoring-engineer.md`
+- `.claude/agents/test-engineer.md`
+- `plugin/agents/planner.md`
+- `plugin/agents/code-reviewer.md`
+- `plugin/agents/architecture-reviewer.md`
+- `plugin/agents/codebase-analyst.md`
+- `plugin/agents/implementation-engineer.md`
+- `plugin/agents/production-readiness-reviewer.md`
+- `plugin/agents/refactoring-engineer.md`
+- `plugin/agents/test-engineer.md`
+
+**Validation:** Plugin validation passed after fixes ✔
+
+**Commands & Skills Check:** 
+- Commands: No `tools` field (correct — commands have different frontmatter rules)
+- Skills: No `tools` field (correct — skills have different frontmatter rules)
+- No other invalid bracket syntax found
+
+### README.md Documentation Updates
+
+Updated README.md to document Claude Code support alongside existing Copilot documentation, without removing or rewriting Copilot-specific content.
+
+**Changes Made:**
+
+1. **Line 3 — Opening Description**
+   - Before: "A Copilot-native engineering standards repository..."
+   - After: "A Copilot- and Claude Code-native engineering standards repository..."
+
+2. **Repository Structure Section**
+   - Added introductory note about `CLAUDE.md` at repo root and auto-loading behavior
+   - Added `.claude/` directory block showing agents/, skills/, commands/
+   - Added `plugin/` directory block with manifest and distribution folders
+   - Clarified that `.claude/` and `plugin/` are Claude Code format translations of `.github/`
+
+3. **Mental Model Table**
+   - Converted from single-column ("Location") to three-column table ("Need", "Copilot (GitHub)", "Claude Code")
+   - Mapped each Copilot path to its Claude Code equivalent:
+     - `.github/copilot-instructions.md` → `CLAUDE.md`
+     - `.github/instructions/` → `CLAUDE.md` (path sections)
+     - `.github/skills/` → `.claude/skills/`
+     - `.github/agents/` → `.claude/agents/`
+     - `.github/prompts/` → `.claude/commands/`
+
+4. **New "Using with Claude Code" Section**
+   - Documented `.claude/` as drop-in configuration (auto-loaded, no install)
+   - Documented `plugin/` as installable plugin with `claude plugin validate ./plugin` and `claude plugin install ./plugin`
+   - Explained namespacing: `/production-engineering-standards:<name>`
+   - Clarified sync model: `.github/` is source of truth; `.claude/` and `plugin/` are translations kept in sync manually
+   - Noted that both Copilot and Claude Code load the same standards in their native formats
+
+5. **Validation Section**
+   - Separated Python validation (existing) from plugin validation (new)
+   - Added `claude plugin validate ./plugin` command
+   - Flagged that plugin validation is not currently run in CI (`.github/workflows/validate.yml`)
+   - Suggested adding it to CI as a future enhancement (no changes made to workflow itself)
+
+**Preserved (Not Modified):**
+- PDD lifecycle diagrams
+- Artifact authority section
+- Scope control section
+- Skills as Knowledge Layer section
+- Agents as Responsibilities section
+- Adopting the Standards Repository section
+- Oracle to PostgreSQL Modernization section
+- Human Review section
+
+---
+
 ### Commands vs. Skills Assessment
 
 The 12 commands are workflow-phase-specific or domain-workflow hybrids. Plugin system recommends skills over commands for new plugins. Candidates for future restructuring:

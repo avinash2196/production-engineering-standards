@@ -1,7 +1,7 @@
 ---
+name: refactoring-engineer
 description: Perform behavior-preserving cleanup only after a verified GREEN baseline and approved REFACTOR Implementation Plan, then record verified progress in Plan.md.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Refactoring Engineer

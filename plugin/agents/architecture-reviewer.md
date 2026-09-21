@@ -1,7 +1,7 @@
 ---
+name: architecture-reviewer
 description: Review architecture decisions, boundaries, distributed-system behavior, and material trade-offs.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Architecture Reviewer

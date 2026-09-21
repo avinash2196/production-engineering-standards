@@ -1,7 +1,7 @@
 ---
+name: production-readiness-reviewer
 description: Review whether a change is safe to operate in production across reliability, observability, security, data, rollout, and recovery.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Production Readiness Reviewer

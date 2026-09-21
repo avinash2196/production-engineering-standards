@@ -1,7 +1,7 @@
 ---
+name: implementation-engineer
 description: Implement the smallest production change authorized by an approved GREEN Implementation Plan, verify GREEN, and record verified progress in Plan.md.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Implementation Engineer

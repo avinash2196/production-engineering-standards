@@ -1,7 +1,7 @@
 ---
+name: code-reviewer
 description: Review code changes for correctness, production safety, scope, and evidence without manufacturing checklist findings.
-tools: [Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch]
-
+tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 ---
 
 # Code Reviewer
