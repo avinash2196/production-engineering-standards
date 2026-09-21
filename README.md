@@ -14,11 +14,22 @@ The repository separates five concerns:
 
 For work that adopts this repository's Prompt-Driven Development model:
 
-> **Requirements → Plan → Human Review → API/External Contract when applicable → Human Review → Implementation Plan → Human Review → RED → GREEN → optional REFACTOR → Final Review**
+```text
+Requirements
+→ Plan
+→ Human Review
+→ API / External Contract when applicable
+→ Human Review
+→ FOR EACH IMPLEMENTATION MILESTONE:
+    RED Implementation Plan → Human Review → RED
+    → GREEN Implementation Plan → Human Review → GREEN
+    → optional REFACTOR Implementation Plan → Human Review → REFACTOR
+→ Final Review
+```
 
-RED, GREEN, and optional REFACTOR are separate authorization boundaries.
+Each Implementation Plan authorizes exactly one phase of exactly one milestone — never RED and GREEN together, and never more than one milestone. RED, GREEN, and optional REFACTOR are separate authorization boundaries. Completing one phase does not automatically authorize the next.
 
-Completing one phase does not automatically authorize the next.
+How many milestones a piece of work needs is decided in `Plan.md`, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use a single RED/GREEN pair, while larger work is decomposed into multiple sequential milestone cycles. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 Material ambiguity is also a blocking boundary:
 
@@ -142,43 +153,7 @@ claude plugin install production-engineering-standards@pes-marketplace --scope u
 
 ## Prompt-Driven Development
 
-The repository preserves the controlled development lifecycle used throughout the Prompt-Driven Development approach.
-
-For behavior-changing work:
-
-```text
-Requirements
-    ↓
-resolve material ambiguity
-    ↓
-Plan
-    ↓
-Human Review
-    ↓
-API / External Contract when applicable
-    ↓
-Human Review
-    ↓
-RED Implementation Plan
-    ↓
-Human Review
-    ↓
-RED tests/checks
-    ↓
-Verified RED evidence
-    ↓
-GREEN Implementation Plan
-    ↓
-Human Review
-    ↓
-Minimum implementation
-    ↓
-Verified GREEN evidence
-    ↓
-Optional REFACTOR
-    ↓
-Final Review
-```
+The repository preserves the controlled development lifecycle described above under "Core Development Lifecycle" — each phase (RED, GREEN, optional REFACTOR) gets its own Implementation Plan and its own Human Review gate, and that RED → GREEN → optional REFACTOR sequence repeats once per implementation milestone the Plan defines.
 
 The separation matters because requirements, planning, contract definition, testing, implementation, and refactoring represent different authorization boundaries.
 
@@ -267,7 +242,7 @@ An application using these standards should remain its own repository.
 The application owns:
 
 ```text
-.github/copilot-instructions.md
+.github/copilot-instructions.md (Copilot) or CLAUDE.md (Claude Code)
 requirements
 docs/.ai/Plan.md
 docs/.ai/<API-or-external-contract>.md
@@ -278,13 +253,14 @@ build configuration
 application-specific CI
 ```
 
-Use:
+Use whichever template matches the adopting application's tool:
 
 ```text
-.github/skills/prompt-driven-development/templates/application-copilot-instructions.md
+.github/skills/prompt-driven-development/templates/application-copilot-instructions.md  (→ .github/copilot-instructions.md)
+.github/skills/prompt-driven-development/templates/application-claude-instructions.md   (→ CLAUDE.md)
 ```
 
-as a starter for the adopting application's persistent PDD rules.
+as a starter for the adopting application's persistent PDD rules — both carry the same workflow and the same no-code-change-without-approval rule.
 
 The standards repository provides reusable:
 

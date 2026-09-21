@@ -42,7 +42,7 @@ They do not belong in the standards repository.
 
 ## 3. Start from the PDD Application Instruction Template
 
-Use:
+For Copilot, use:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md
@@ -53,6 +53,20 @@ as a starter for the adopting application's:
 ```text
 .github/copilot-instructions.md
 ```
+
+For Claude Code, use the equivalent template instead:
+
+```text
+.github/skills/prompt-driven-development/templates/application-claude-instructions.md
+```
+
+as a starter for the adopting application's:
+
+```text
+CLAUDE.md
+```
+
+(repo root). Both templates carry the same PDD workflow and the same no-code-change-without-approval rule — pick the one matching the tool the adopting project actually uses.
 
 Then add only application-specific facts such as:
 
@@ -104,19 +118,18 @@ For a new application or a change whose requirements are not yet captured:
 1. `/capture-requirements`
 2. resolve all material ambiguity
 3. human requirements review
-4. `/create-plan`
+4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8) based on complexity, responsibility boundaries, risk, and independent verifiability; a small cohesive change may need only one, larger work several
 5. human Plan review
 6. `/create-api-contract` when externally visible behavior must be defined before implementation
 7. human contract review
-8. create milestone-specific Implementation Plans
-9. execute RED, GREEN, and optional REFACTOR as separate authorization phases
-10. final code and production-readiness review as applicable
+8. for each milestone defined in the Plan, run the Behavior-Changing Milestone Flow (section 6) in sequence
+9. final code and production-readiness review as applicable
 
 For an existing application with already-approved requirements, start from the earliest artifact that needs to change.
 
 ## 6. Behavior-Changing Milestone Flow
 
-A typical behavior-changing milestone is:
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per phase, never one Implementation Plan covering more than one phase:
 
 1. `/create-implementation-plan` for RED
 2. human review
@@ -129,6 +142,8 @@ A typical behavior-changing milestone is:
 9. create a separate REFACTOR Implementation Plan only when justified
 10. `/refactor-code`
 11. final review
+
+If the Plan defines more than one milestone, repeat this entire flow for the next milestone before starting Final Review on the whole feature.
 
 The important control is not the command names.
 
@@ -144,7 +159,26 @@ are separate authorization boundaries.
 
 Completing one phase does not authorize the next.
 
-## 7. Clarification Is a Blocking Gate
+## 7. Adaptive Milestone Decomposition — Illustrative Examples
+
+This section illustrates how the milestone boundaries in section 6 might be chosen for different kinds of work. It is documentation only — the runtime rule lives in the `prompt-driven-development` skill's Adaptive Milestone Decomposition, and `Plan.md` records the actual decision made for a given task, with its rationale.
+
+Possible milestone boundaries include:
+
+- persistence/data access
+- domain/service behavior
+- API/controller behavior
+- validation
+- concurrency
+- integration
+- migration
+- infrastructure/configuration
+
+A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED/GREEN pair.
+
+A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN cycles — for example, persistence and domain model together, validation rules as their own milestone, and the HTTP API last since it depends on everything else. The exact boundaries depend on the actual complexity and risk of the work, not a fixed template — do not mechanically create one milestone per class or architectural layer.
+
+## 8. Clarification Is a Blocking Gate
 
 When material information is missing, ambiguous, or contradictory:
 
@@ -160,7 +194,7 @@ Do not create or finalize the dependent artifact.
 
 Do not use an Open Questions section as a substitute for required clarification.
 
-## 8. Artifact Authority
+## 9. Artifact Authority
 
 Use this authority model:
 
@@ -182,7 +216,7 @@ If authoritative artifacts materially conflict, stop and surface the conflict fo
 
 Do not silently rewrite one artifact to match another.
 
-## 9. Oracle to PostgreSQL Modernization
+## 10. Oracle to PostgreSQL Modernization
 
 For Oracle → PostgreSQL modernization, use:
 
@@ -213,7 +247,7 @@ It may be used by multiple responsibility-focused agents during:
 
 Oracle → PostgreSQL is therefore a skill rather than a dedicated migration agent.
 
-## 10. Where Examples Belong
+## 11. Where Examples Belong
 
 Do not create placeholder root-level examples simply to demonstrate folder structure.
 
@@ -229,7 +263,7 @@ A valid whole-project example should include meaningful source code, tests, buil
 
 Until such an example exists, the repository does not need a root `examples/` directory.
 
-## 11. Validate Before Publishing Changes
+## 12. Validate Before Publishing Changes
 
 Run:
 

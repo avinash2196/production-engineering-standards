@@ -32,6 +32,7 @@ When the task is Plan creation or milestone planning:
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.
+- Apply the PDD skill's Adaptive Milestone Decomposition rules when deciding implementation milestone granularity.
 - Produce only the planning artifacts requested by the current task.
 - Do not implement production code or tests.
 - Do not approve requirements, plans, contracts, or Implementation Plans yourself.

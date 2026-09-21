@@ -26,15 +26,21 @@ If applicable, state the required contract artifact and the approved scope it mu
 
 ## Milestones
 
+Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide granularity for this work.
+
 For each milestone record:
 
+- capability: the independently reviewable unit of behavior this milestone covers
+- rationale: why this boundary was chosen
 - phase: FOUNDATION | CONTRACT | RED | GREEN | REFACTOR | OTHER
-- predecessor
+- predecessor (dependency/order)
 - scope
 - explicit exclusions
 - success criteria
 
 A milestone must not authorize work from a later milestone.
+
+FOUNDATION and OTHER do not independently authorize repository code changes. They exist only for milestones with no behavior yet to test-drive (e.g. initial project scaffolding with no business logic) — they still require their own approved Implementation Plan and Human Review before any repository change, exactly like RED/GREEN/REFACTOR. They are not a way to change code outside the RED/GREEN/REFACTOR cycle or without approval.
 
 ## Execution Status
 

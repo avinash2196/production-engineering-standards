@@ -9,11 +9,24 @@ Use this skill when the adopting repository explicitly follows the PDD lifecycle
 
 ## Lifecycle
 
-**Requirements → Plan → Human Review → API/External Contract when applicable → Human Review → RED Implementation Plan → Human Review → RED → GREEN Implementation Plan → Human Review → GREEN → optional REFACTOR Implementation Plan → Human Review → REFACTOR → Final Review**
+```
+Requirements
+→ Plan
+→ Human Review
+→ API / External Contract when applicable
+→ Human Review
+→ FOR EACH IMPLEMENTATION MILESTONE:
+    RED Implementation Plan → Human Review → RED
+    → GREEN Implementation Plan → Human Review → GREEN
+    → optional REFACTOR Implementation Plan → Human Review → REFACTOR
+→ Final Review
+```
 
 The API/external contract stage is required when externally observable behavior must be defined before implementation, such as an HTTP API or another stable consumer-facing interface.
 
-Each repository-changing phase gets its own human-reviewed Implementation Plan. Completing one phase never authorizes the next phase.
+A single Implementation Plan authorizes exactly one phase (RED, GREEN, or REFACTOR) of exactly one milestone — it never authorizes more than one phase, and it never authorizes work for a different milestone. Each repository-changing phase gets its own human-reviewed Implementation Plan. Completing one phase never authorizes the next phase.
+
+This RED → GREEN → optional REFACTOR sequence repeats once per implementation milestone. See "Adaptive Milestone Decomposition" under Phase Controls for how many milestones a given piece of work should use.
 
 ## Artifact Authority
 
@@ -25,6 +38,7 @@ Each artifact has a distinct responsibility:
 - Implementation Plan defines the concrete proposed changes for one authorized milestone and phase based on the current repository state.
 - Tests/checks provide executable evidence of expected behavior.
 - Production code implements the approved behavior.
+- Final Review evaluates completed work against approved artifacts and produces findings and recommendations, not authorized changes.
 
 Do not silently reconcile material contradictions between authoritative artifacts.
 
@@ -81,10 +95,20 @@ If execution reveals that the approved Plan itself must change, stop for replann
 
 ## Phase Controls
 
+### Adaptive Milestone Decomposition
+
+For larger changes, decompose implementation into independently reviewable RED → GREEN → optional REFACTOR cycles based on complexity, risk, responsibility boundaries, and independent verifiability.
+
+A small cohesive change may use one RED/GREEN pair.
+
+Do not default either to one giant RED/GREEN pair for the whole feature or mechanically create one pair per class/layer.
+
+Boundaries may include persistence, business behavior, API behavior, integration, or another independently testable capability. See `docs/getting-started.md` for fuller illustrative examples — this skill states the rule, not an exhaustive catalog of boundaries.
+
 - Each repository-changing milestone and phase gets its own Implementation Plan.
 - RED, GREEN, and REFACTOR are separate authorization boundaries.
 - RED Implementation Plans propose test/check changes only.
-- RED execution writes tests/checks only and establishes valid RED evidence.
+- RED execution writes tests/checks only and establishes valid RED evidence. In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 - GREEN Implementation Plans start from valid RED evidence and propose the smallest production change needed to satisfy it.
 - GREEN execution implements only the approved production change.
 - REFACTOR is optional, behavior-preserving, and requires a verified GREEN baseline plus its own approved Implementation Plan.
@@ -101,6 +125,14 @@ After an approved phase is successfully executed and verified:
 - do not rewrite requirements, milestone scope, architecture, exclusions, success criteria, or future milestones.
 
 If verification fails or does not demonstrate the intended phase evidence, do not mark the phase complete.
+
+## Final Review Authority
+
+Final Review (code review, production-readiness review, or any review command) produces findings and recommendations only. A finding is not an authorized change.
+
+- Do not apply a Final Review finding directly to production code, tests, or configuration.
+- A finding that requires a change must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation.
+- The only exception is a trivial, zero-behavior-change correction (e.g. a typo, a formatting fix) — anything that changes what the system does or validates is not trivial.
 
 ## Task Prompt Boundary
 

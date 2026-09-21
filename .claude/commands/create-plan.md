@@ -12,7 +12,9 @@ Create/update only `docs/.ai/Plan.md`.
 
 Define approved scope, milestones, predecessors, explicit exclusions, success criteria, and execution-status tracking.
 
-For behavior changes, keep RED and GREEN as separate milestones and add REFACTOR only when justified.
+If the work involves externally observable behavior (an HTTP API, message contract, or other stable consumer-facing interface), include an API/External Contract step in the milestone sequence, positioned before the first Implementation Plan, with its own predecessor and an Execution Status row.
+
+Apply the Adaptive Milestone Decomposition rules from the `prompt-driven-development` skill when creating Plan.md. Explicitly document the chosen milestone boundaries and the reason for that granularity.
 
 Do not implement production code or tests.
 Do not create phase-specific Implementation Plans in this step.

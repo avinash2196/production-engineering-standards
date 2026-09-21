@@ -1,4 +1,6 @@
-# Application Copilot Instructions
+# Application Claude Code Instructions
+
+Use this as the starting content for the adopting application's `CLAUDE.md` (repo root). It is the Claude Code equivalent of `application-copilot-instructions.md` — same rules, same PDD workflow, expressed for Claude Code instead of Copilot.
 
 ## Project Context
 
@@ -73,7 +75,7 @@ If approved artifacts materially conflict, stop and surface the conflict for hum
 
 ## External Engineering Standards
 
-Use externally configured agents, skills, and prompts from `production-engineering-standards`.
+Use the `production-engineering-standards` skills, agents, and commands — either installed as a Claude Code plugin (invoked as `/production-engineering-standards:<name>`, e.g. `/production-engineering-standards:create-plan`) or provided via this project's own `.claude/` directory if the standards were copied in directly rather than installed as a plugin.
 
 Do not convert recommendations from skills into project requirements without requirement or repository evidence.
 

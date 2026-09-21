@@ -55,6 +55,7 @@ Proposed code may be included inside the Implementation Plan. Do not apply the p
 - propose test/check changes only;
 - identify why the expected failure demonstrates missing approved behavior;
 - do not propose production implementation.
+- In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 
 ### GREEN
 
