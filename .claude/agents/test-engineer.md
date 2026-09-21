@@ -24,6 +24,7 @@ Run the relevant tests after creating them.
 
 For a valid RED milestone:
 
+- verify every approved RED Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria;
 - confirm that the intended test fails;
 - distinguish the expected failure from unrelated compilation, configuration, or environment failures;
 - record why the failure demonstrates the intended missing approved behavior;

@@ -65,6 +65,11 @@ must go through the normal chain (contract update if scope is affected
 exception is a trivial, zero-behavior-change correction (typo,
 formatting).
 
+**Later correction: this executable-code exception was removed.** The
+current framework requires every executable/code change to trace to a
+human-approved Implementation Plan. Documentation-only work retains the
+explicitly defined documentation exception.
+
 **Why this fixes it:** It closes the loophole at its source — the
 review command itself now has an explicit, unambiguous authority
 statement to defer to, instead of an implicit "well, review-code doesn't
@@ -458,6 +463,8 @@ relying on the abstract principle alone, if it recurs.
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**
+
+**Current status: resolved in subsequent hardening; skill synchronization is now validator-enforced.**
 
 ### Was both Copilot and Claude Code changed?
 

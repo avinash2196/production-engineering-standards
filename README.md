@@ -21,13 +21,14 @@ Requirements
 → API / External Contract when applicable
 → Human Review
 → FOR EACH IMPLEMENTATION MILESTONE:
+    optional FOUNDATION Implementation Plan → Human Review → FOUNDATION → Verification
     RED Implementation Plan → Human Review → RED
     → GREEN Implementation Plan → Human Review → GREEN
     → optional REFACTOR Implementation Plan → Human Review → REFACTOR
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one phase of exactly one milestone — never RED and GREEN together, and never more than one milestone. RED, GREEN, and optional REFACTOR are separate authorization boundaries. Completing one phase does not automatically authorize the next.
+Each Implementation Plan authorizes exactly one phase of exactly one milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are separate authorization boundaries. Completing one phase does not automatically authorize the next.
 
 How many milestones a piece of work needs is decided in `Plan.md`, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use a single RED/GREEN pair, while larger work is decomposed into multiple sequential milestone cycles. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
@@ -153,7 +154,7 @@ claude plugin install production-engineering-standards@pes-marketplace --scope u
 
 ## Prompt-Driven Development
 
-The repository preserves the controlled development lifecycle described above under "Core Development Lifecycle" — each phase (RED, GREEN, optional REFACTOR) gets its own Implementation Plan and its own Human Review gate, and that RED → GREEN → optional REFACTOR sequence repeats once per implementation milestone the Plan defines.
+The repository preserves the controlled development lifecycle described above under "Core Development Lifecycle" — each phase (optional FOUNDATION, RED, GREEN, optional REFACTOR) gets its own Implementation Plan and its own Human Review gate, and that FOUNDATION → RED → GREEN → optional REFACTOR sequence repeats once per implementation milestone the Plan defines.
 
 The separation matters because requirements, planning, contract definition, testing, implementation, and refactoring represent different authorization boundaries.
 

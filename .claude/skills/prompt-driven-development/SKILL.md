@@ -16,6 +16,7 @@ Requirements
 → API / External Contract when applicable
 → Human Review
 → FOR EACH IMPLEMENTATION MILESTONE:
+    optional FOUNDATION Implementation Plan → Human Review → FOUNDATION → Verification
     RED Implementation Plan → Human Review → RED
     → GREEN Implementation Plan → Human Review → GREEN
     → optional REFACTOR Implementation Plan → Human Review → REFACTOR
@@ -24,7 +25,7 @@ Requirements
 
 The API/external contract stage is required when externally observable behavior must be defined before implementation, such as an HTTP API or another stable consumer-facing interface.
 
-A single Implementation Plan authorizes exactly one phase (RED, GREEN, or REFACTOR) of exactly one milestone — it never authorizes more than one phase, and it never authorizes work for a different milestone. Each repository-changing phase gets its own human-reviewed Implementation Plan. Completing one phase never authorizes the next phase.
+A single Implementation Plan authorizes exactly one phase (FOUNDATION, RED, GREEN, or REFACTOR) of exactly one milestone — it never authorizes more than one phase, and it never authorizes work for a different milestone. Each repository-changing phase gets its own human-reviewed Implementation Plan. Completing one phase never authorizes the next phase. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most milestones proceed directly to RED.
 
 This RED → GREEN → optional REFACTOR sequence repeats once per implementation milestone. See "Adaptive Milestone Decomposition" under Phase Controls for how many milestones a given piece of work should use.
 
@@ -56,7 +57,9 @@ Before creating an Implementation Plan:
 1. read the approved Requirements, Plan, and applicable API/external contract;
 2. inspect the current repository structure and relevant implementation;
 3. read current Plan execution status and completed predecessor evidence;
-4. establish the actual current-state baseline for the authorized milestone and phase.
+4. establish the actual current-state baseline for the authorized milestone and phase, including prerequisites/dependencies, contracts or interfaces the milestone depends on, relevant test entry points, and any unresolved blockers.
+
+This inspection is preparation for planning, not a separate implementation phase — it does not introduce a formal step before RED. If it discovers that repository code must change before the milestone's own work can proceed, that change still requires its own approved Implementation Plan; inspection alone never authorizes a change.
 
 Do not plan from an assumed repository structure or from the original Plan alone when earlier milestones have changed the codebase.
 
@@ -72,6 +75,7 @@ For the authorized milestone and phase, it must contain:
 - concrete proposed tests or production changes;
 - relevant classes, methods, interfaces, signatures, structures, or configuration changes;
 - code snippets, pseudocode, or patch-level detail where practical and useful for human review;
+- explicit Acceptance / Completion Criteria for the specific phase — what must be true for it to be considered complete, distinct from the verification that demonstrates it;
 - verification commands and expected phase evidence;
 - risks and explicit exclusions.
 
@@ -101,12 +105,18 @@ For larger changes, decompose implementation into independently reviewable RED �
 
 A small cohesive change may use one RED/GREEN pair.
 
-Do not default either to one giant RED/GREEN pair for the whole feature or mechanically create one pair per class/layer.
+Do not default to one giant RED/GREEN pair for the whole feature. Do not mechanically create one pair per class or file.
 
 Boundaries may include persistence, business behavior, API behavior, integration, or another independently testable capability. See `docs/getting-started.md` for fuller illustrative examples — this skill states the rule, not an exhaustive catalog of boundaries.
 
+For complex requirements that span multiple independently testable architectural layers, create separate layer-wise implementation milestones rather than one feature-wide RED/GREEN cycle. In a typical layered application, this may result in separate milestones for persistence/data access, domain/service behavior, API/controller behavior, and cross-layer integration. Each such milestone follows its own RED → GREEN → optional REFACTOR lifecycle, with separate phase-specific Implementation Plans and human review before execution. Before starting RED for each layer, determine whether prerequisite SETUP/FOUNDATION work is required — see "Conditional SETUP / FOUNDATION" below.
+
+Layer-wise decomposition is not a mandatory architectural template. If the system is better decomposed by capability, workflow, domain aggregate, integration boundary, migration step, concurrency concern, or another independently reviewable responsibility, use that boundary instead.
+
+The governing rule is: decompose complex work into the smallest meaningful independently reviewable implementation milestones. When the complexity crosses architectural layers, prefer separate layer-wise milestones over one feature-wide cycle — but do not force layer boundaries onto an architecture that does not support them.
+
 - Each repository-changing milestone and phase gets its own Implementation Plan.
-- RED, GREEN, and REFACTOR are separate authorization boundaries.
+- FOUNDATION (when required), RED, GREEN, and REFACTOR are separate authorization boundaries.
 - RED Implementation Plans propose test/check changes only.
 - RED execution writes tests/checks only and establishes valid RED evidence. In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 - GREEN Implementation Plans start from valid RED evidence and propose the smallest production change needed to satisfy it.
@@ -114,6 +124,41 @@ Boundaries may include persistence, business behavior, API behavior, integration
 - REFACTOR is optional, behavior-preserving, and requires a verified GREEN baseline plus its own approved Implementation Plan.
 - A completed phase never implies approval of the next phase.
 - A single end-to-end request does not remove these boundaries.
+
+### Conditional SETUP / FOUNDATION
+
+SETUP/FOUNDATION exists only when executable prerequisites must be established before meaningful RED work can begin for a milestone. It is conditional, never a default or mandatory phase, and most milestones will not need one.
+
+Before starting RED for a milestone, determine whether the current repository state is sufficient to begin RED:
+
+- If yes, proceed directly: RED → GREEN → optional REFACTOR.
+- If no, because executable prerequisites are genuinely missing, precede it with SETUP/FOUNDATION: SETUP/FOUNDATION → RED → GREEN → optional REFACTOR.
+
+Apply this same current-state-driven decision to both new and existing repositories — do not decide FOUNDATION from whether the project is labeled greenfield or brownfield. Do not assume a new project automatically requires FOUNDATION: if a new project's build/test infrastructure has already been set up, RED can often proceed directly. Do not assume an existing project automatically has every prerequisite: an established codebase can still be missing something a new milestone specifically needs. Determine FOUNDATION solely from whether the current repository state actually provides what that milestone's RED needs — inspected each time, not assumed from the project's age.
+
+Examples of valid SETUP/FOUNDATION work: required build/dependency setup; module or project structure required by the layer; test framework/infrastructure needed before tests can run; required configuration; infrastructure/bootstrap required before the layer is testable; a prerequisite contract/interface established by an earlier architectural decision; a migration/framework prerequisite; or another executable prerequisite without which RED cannot meaningfully begin.
+
+**Missing production symbols do not, by themselves, require SETUP.** Do not create a SETUP/FOUNDATION milestone merely because the production class, service, repository, controller, method, or interface under test does not yet exist — that absence is itself the expected RED condition (a compilation failure caused by an intentionally absent approved production type, method, or signature is valid RED evidence, per RED execution above), and creating that type with real behavior is GREEN's job, not SETUP's. Distinguish:
+
+- missing behavior/type that RED is intended to drive — not a SETUP trigger, from
+- missing infrastructure/prerequisite that prevents RED from meaningfully testing the behavior at all — a genuine SETUP trigger.
+
+SETUP/FOUNDATION still requires the same authorization as any other code change. Every SETUP change to production source, test infrastructure, configuration, dependencies, build files, schema/migrations, scripts, or runtime/infrastructure artifacts requires its own approved SETUP/FOUNDATION Implementation Plan and human review before execution, exactly like RED, GREEN, and REFACTOR:
+
+```
+SETUP/FOUNDATION Implementation Plan
+→ Human Review
+→ SETUP/FOUNDATION execution
+→ verification
+→ inspect current repository state
+→ RED Implementation Plan
+→ Human Review
+→ RED
+```
+
+Do not accept an instruction to "make whatever setup changes are necessary" as authorization — SETUP/FOUNDATION work requires its own approved Implementation Plan like any other code change.
+
+SETUP/FOUNDATION is not RED (it does not write tests) and is not GREEN (it does not implement approved behavior). Do not use GREEN to hide prerequisite work that should have been approved before RED. Do not treat FOUNDATION as a general-purpose coding phase — its only purpose is to establish the minimum approved prerequisite necessary to make the next RED milestone executable, nothing more.
 
 ## Plan Progress
 
@@ -131,8 +176,7 @@ If verification fails or does not demonstrate the intended phase evidence, do no
 Final Review (code review, production-readiness review, or any review command) produces findings and recommendations only. A finding is not an authorized change.
 
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
-- A finding that requires a change must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation.
-- The only exception is a trivial, zero-behavior-change correction (e.g. a typo, a formatting fix) — anything that changes what the system does or validates is not trivial.
+- A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
 
 ## Task Prompt Boundary
 

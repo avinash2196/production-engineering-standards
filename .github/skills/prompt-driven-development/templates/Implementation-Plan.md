@@ -32,6 +32,10 @@ The proposed content in this section is for review only and must not be applied 
 
 ## Execution Steps
 
+## Acceptance / Completion Criteria
+
+State exactly what must be true for this specific phase to be considered complete.
+
 ## Verification
 
 ### Commands

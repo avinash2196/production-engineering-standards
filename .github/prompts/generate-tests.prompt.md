@@ -26,6 +26,8 @@ In statically typed languages, a compilation failure is valid RED evidence when 
 
 Run the verification commands required by the approved Implementation Plan and establish valid RED evidence.
 
+Before marking RED complete, verify every approved RED Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution. If an approved criterion cannot be satisfied without work outside the approved Implementation Plan, stop and report it to planning rather than changing the criterion.
+
 Confirm that the observed failure demonstrates the intended missing approved behavior rather than an unrelated compilation, configuration, or environment problem.
 
 After valid RED is actually established, update only the corresponding execution/status information in `docs/.ai/Plan.md` with completion and concise actual evidence.

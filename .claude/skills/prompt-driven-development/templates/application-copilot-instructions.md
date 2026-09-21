@@ -33,17 +33,18 @@ Requirements
 → API / External Contract when applicable
 → Human Review
 → FOR EACH IMPLEMENTATION MILESTONE:
+    optional FOUNDATION Implementation Plan → Human Review → FOUNDATION → Verification
     RED Implementation Plan → Human Review → RED
     → GREEN Implementation Plan → Human Review → GREEN
     → optional REFACTOR Implementation Plan → Human Review → REFACTOR
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one phase of exactly one milestone — never RED and GREEN together, and never more than one milestone. RED, GREEN, and REFACTOR are separate authorization boundaries.
+Each Implementation Plan authorizes exactly one phase of exactly one milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are separate authorization boundaries.
 
 Completion of one phase does not authorize the next.
 
-How many milestones this work needs is decided in the Plan, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use one RED/GREEN pair; larger work should use multiple sequential milestone cycles. Do not default to one pair for the whole feature, and do not default to one pair per class or architectural layer.
+How many milestones this work needs is decided in the Plan, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use one RED/GREEN pair; larger work should use multiple sequential milestone cycles. Do not default to one pair for the whole feature. Do not mechanically create one milestone per class or architectural layer — but for complex requirements spanning independently testable architectural layers, prefer separate layer-wise milestones, as defined by the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 ## No Code Change Without Approval
 
@@ -67,7 +68,7 @@ Plan defines WHAT is delivered.
 
 The external contract defines approved externally observable behavior when applicable.
 
-Each Implementation Plan defines HOW one approved milestone is executed.
+Each Implementation Plan defines HOW one approved phase of one milestone will change the repository.
 
 If approved artifacts materially conflict, stop and surface the conflict for human review.
 

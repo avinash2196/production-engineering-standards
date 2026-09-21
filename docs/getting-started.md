@@ -129,7 +129,18 @@ For an existing application with already-approved requirements, start from the e
 
 ## 6. Behavior-Changing Milestone Flow
 
-Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per phase, never one Implementation Plan covering more than one phase:
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per phase, never one Implementation Plan covering more than one phase.
+
+If `Plan.md` records this milestone's `setup required` as Yes:
+
+1. Create the FOUNDATION Implementation Plan (`/create-implementation-plan`).
+2. Human reviews and approves it.
+3. Execute only the approved FOUNDATION changes (`/implement-approved-plan`).
+4. Verify the FOUNDATION Acceptance / Completion Criteria.
+5. Stop.
+6. Then proceed to the separate RED Implementation Plan below.
+
+If `setup required` is No, proceed directly to RED.
 
 1. `/create-implementation-plan` for RED
 2. human review
@@ -176,7 +187,44 @@ Possible milestone boundaries include:
 
 A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED/GREEN pair.
 
-A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN cycles — for example, persistence and domain model together, validation rules as their own milestone, and the HTTP API last since it depends on everything else. The exact boundaries depend on the actual complexity and risk of the work, not a fixed template — do not mechanically create one milestone per class or architectural layer.
+A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN cycles. For requirements that span multiple independently testable architectural layers, prefer separate layer-wise milestones over one feature-wide RED/GREEN cycle — this is the common case for a layered application:
+
+```text
+Complex Spring Boot feature
+
+Milestone 1 — Persistence / Repository
+  Setup/Foundation — only if genuinely required
+  RED
+  GREEN
+  optional REFACTOR
+
+Milestone 2 — Domain / Service
+  Setup/Foundation — only if genuinely required
+  RED
+  GREEN
+  optional REFACTOR
+
+Milestone 3 — API / Controller
+  Setup/Foundation — only if genuinely required
+  RED
+  GREEN
+  optional REFACTOR
+
+Milestone 4 — Integration
+  Setup/Foundation — only if genuinely required
+  RED
+  GREEN
+  optional REFACTOR
+```
+
+This is a common layered decomposition, not a mandatory template. The real rule is independent reviewability, not architectural layering for its own sake — a different system might instead need capability-oriented milestones (e.g. one per business capability), workflow-oriented milestones (e.g. one per user journey), or milestones around a migration step, integration boundary, or concurrency concern. Choose whichever boundary makes each milestone genuinely reviewable and testable on its own. Do not mechanically create one milestone per class or file, and do not force layer boundaries onto an architecture that does not support them.
+
+**Setup/Foundation is conditional, not automatic, for each layer:**
+
+- Most milestones need no setup at all — proceed straight to RED.
+- A missing production class, service, repository, controller, method, or interface is never, by itself, a reason for setup — that absence is the expected RED condition (a compilation failure caused by an intentionally absent approved production symbol is valid RED evidence), and creating the real thing is GREEN's job.
+- Setup exists only for genuine executable prerequisites that prevent RED from meaningfully running at all — e.g. required build/dependency setup, test framework/infrastructure that doesn't exist yet, required configuration, or a prerequisite contract established by an earlier architectural decision.
+- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, and REFACTOR — setup is never a way to change code without approval.
 
 ## 8. Clarification Is a Blocking Gate
 

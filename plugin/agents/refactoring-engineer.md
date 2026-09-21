@@ -21,6 +21,8 @@ Own optional REFACTOR work.
 
 Run the relevant tests before and after the refactoring when practical.
 
+Verify every approved REFACTOR Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution.
+
 The resulting system must remain GREEN.
 
 If observable behavior changes, treat the work as behavior-changing rather than refactoring and stop for replanning.
