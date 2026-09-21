@@ -106,17 +106,33 @@ The repository provides three parallel pieces for Claude Code:
 
 **`.claude/` directory** — Drop-in project configuration automatically loaded when this repository (or any adopting project that includes it) is opened in Claude Code. No installation step required.
 
-**`plugin/` directory** — Packages the same skills, agents, and commands as an installable Claude Code plugin for distribution or local testing:
+**`plugin/` directory** — Packages the same skills, agents, and commands as an installable Claude Code plugin. The repository root also carries `.claude-plugin/marketplace.json`, which registers this repo itself as a Claude Code plugin marketplace with `plugin/` as its one entry.
+
+Validate the plugin manifest:
 
 ```bash
-# Validate the plugin manifest
 claude plugin validate ./plugin
-
-# Install and test locally
-claude plugin install ./plugin
 ```
 
-When installed as a plugin, skills, agents, and commands are namespaced as `/production-engineering-standards:<name>` (e.g., `/production-engineering-standards:create-plan`, `/production-engineering-standards:code-review`).
+Try it ad hoc, for a single session only (must be passed every time you launch `claude`):
+
+```bash
+claude --plugin-dir ./plugin
+```
+
+Install it persistently, so it loads automatically in every future Claude Code session (`claude plugin install` takes a `<plugin>@<marketplace>` name, not a bare path — it always needs a marketplace registered first, even a local one):
+
+```bash
+# From a local checkout of this repo
+claude plugin marketplace add ./
+claude plugin install production-engineering-standards@pes-marketplace --scope user
+
+# Or directly from GitHub, with no local checkout needed
+claude plugin marketplace add avinash2196/production-engineering-standards
+claude plugin install production-engineering-standards@pes-marketplace --scope user
+```
+
+`--scope user` makes the plugin available in every project on the current machine; use `--scope project` or `--scope local` to limit it to one repo. When installed, skills, agents, and commands are namespaced as `/production-engineering-standards:<name>` (e.g., `/production-engineering-standards:create-plan`, `/production-engineering-standards:code-review`).
 
 **`.claude/` and `plugin/` as translations** — Both directories contain translations of `.github/` content into Claude Code's format. They are kept in sync manually; `.github/` remains the source of truth for GitHub Copilot. When an adopting project copies in this standards repository:
 
