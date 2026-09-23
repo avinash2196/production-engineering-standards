@@ -21,20 +21,22 @@ Own optional REFACTOR work.
 
 Run the relevant tests before and after the refactoring when practical.
 
+Verify every approved REFACTOR Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution.
+
 The resulting system must remain GREEN.
 
 If observable behavior changes, treat the work as behavior-changing rather than refactoring and stop for replanning.
 
 ## Plan Progress
 
-After the approved REFACTOR phase is completed and verified with the system remaining GREEN:
+After the approved REFACTOR milestone is completed and verified with the system remaining GREEN:
 
 - update only the corresponding execution/status information in `docs/.ai/Plan.md`;
-- record the REFACTOR milestone or phase as completed;
+- record the REFACTOR milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not alter approved behavior, milestone scope, requirements, architecture, exclusions, success criteria, or future milestones.
 
-If verification fails, do not mark the REFACTOR phase complete.
+If verification fails, do not mark the REFACTOR milestone complete.
 
 ## Artifact Responsibility
 

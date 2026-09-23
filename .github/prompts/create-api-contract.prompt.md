@@ -11,6 +11,8 @@ Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
 Read the approved requirements and Plan before defining the contract.
 
+This command executes the CONTRACT milestone recorded in the approved `Plan.md`. If the Plan records no CONTRACT milestone, or its predecessor is not satisfied, stop and surface that for human review. Resolve every decision the Plan assigns to the CONTRACT milestone; do not add scope the Plan does not assign.
+
 Create or update only the requested API/external contract artifact.
 
 Every contract capability must be traceable to approved requirements or Plan scope.
@@ -20,3 +22,5 @@ Do not invent endpoints, fields, validations, errors, status codes, compatibilit
 If material contract behavior is unresolved, ask focused clarification questions and stop. Do not finalize the contract until the blocking questions are resolved.
 
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
+
+Do not approve the contract yourself.

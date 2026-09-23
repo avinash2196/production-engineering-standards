@@ -23,8 +23,10 @@ Do not add features, expand contracts, or pull future milestone work into the re
 
 Run the approved verification commands and confirm the system remains GREEN.
 
-After successful verification, update only the corresponding execution/status information in `docs/.ai/Plan.md` with completion and concise actual evidence.
+Before marking REFACTOR complete, verify every approved REFACTOR Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution. Confirm the existing GREEN baseline remains passing and observable behavior is preserved.
 
-If behavior changes or verification fails, do not mark the REFACTOR phase complete. Stop for replanning when required.
+After successful verification, update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the REFACTOR milestone as completed with concise actual evidence.
+
+If behavior changes or verification fails, do not mark the REFACTOR milestone complete. Stop for replanning when required.
 
 Report the commands actually executed and the observed evidence.

@@ -16,6 +16,7 @@ Own RED test execution and RED evidence.
 - Make only the test changes authorized by the approved RED milestone.
 - Do not write production implementation to make the tests pass.
 - Do not pull GREEN or later milestone work into RED.
+- In statically typed languages, a compilation failure is valid RED evidence when it is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (e.g. a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make tests compile — an unrelated compilation, configuration, dependency, or environment failure is not valid RED evidence.
 
 ## RED Verification
 
@@ -23,9 +24,12 @@ Run the relevant tests after creating them.
 
 For a valid RED milestone:
 
+- verify every approved RED Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria;
 - confirm that the intended test fails;
 - distinguish the expected failure from unrelated compilation, configuration, or environment failures;
 - record why the failure demonstrates the intended missing approved behavior;
+- confirm each assertion represents the approved requirement or contract behavior, not the current unimplemented state — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting a required exception or value, is not valid RED evidence even if it technically fails for an unrelated reason;
+- confirm the test is not accidentally passing;
 - do not claim RED was established unless the test was actually executed.
 
 If the failure does not demonstrate the intended missing behavior, stop and report the problem rather than treating it as valid RED evidence.
@@ -35,11 +39,11 @@ If the failure does not demonstrate the intended missing behavior, stop and repo
 After valid RED evidence is actually established:
 
 - update only the corresponding execution/status information in `docs/.ai/Plan.md`;
-- record the RED milestone or phase as completed;
+- record the RED milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not change milestone scope, requirements, architecture, exclusions, success criteria, or future milestones.
 
-If valid RED cannot be established, do not mark the milestone or phase complete.
+If valid RED cannot be established, do not mark the RED milestone complete.
 
 ## Artifact Responsibility
 

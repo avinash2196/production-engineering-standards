@@ -42,7 +42,7 @@ They do not belong in the standards repository.
 
 ## 3. Start from the PDD Application Instruction Template
 
-Use:
+For Copilot, use:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md
@@ -53,6 +53,20 @@ as a starter for the adopting application's:
 ```text
 .github/copilot-instructions.md
 ```
+
+For Claude Code, use the equivalent template instead:
+
+```text
+.github/skills/prompt-driven-development/templates/application-claude-instructions.md
+```
+
+as a starter for the adopting application's:
+
+```text
+CLAUDE.md
+```
+
+(repo root). Both templates carry the same PDD workflow and the same no-code-change-without-approval rule — pick the one matching the tool the adopting project actually uses.
 
 Then add only application-specific facts such as:
 
@@ -104,47 +118,107 @@ For a new application or a change whose requirements are not yet captured:
 1. `/capture-requirements`
 2. resolve all material ambiguity
 3. human requirements review
-4. `/create-plan`
+4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8) based on complexity, responsibility boundaries, risk, and independent verifiability; a small cohesive change may need only one, larger work several
 5. human Plan review
 6. `/create-api-contract` when externally visible behavior must be defined before implementation
 7. human contract review
-8. create milestone-specific Implementation Plans
-9. execute RED, GREEN, and optional REFACTOR as separate authorization phases
-10. final code and production-readiness review as applicable
+8. for each milestone defined in the Plan, run the Behavior-Changing Milestone Flow (section 6) in sequence
+9. final code and production-readiness review as applicable
 
 For an existing application with already-approved requirements, start from the earliest artifact that needs to change.
 
 ## 6. Behavior-Changing Milestone Flow
 
-A typical behavior-changing milestone is:
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
 
-1. `/create-implementation-plan` for RED
+For a FOUNDATION milestone (only when `Plan.md` records one as genuinely required):
+
+1. `/create-implementation-plan` for the FOUNDATION milestone.
+2. Human reviews and approves it.
+3. Execute only the approved FOUNDATION changes (`/implement-approved-plan`).
+4. Verify the FOUNDATION Acceptance / Completion Criteria.
+5. Stop. The following RED milestone is a separate milestone requiring its own Implementation Plan and Human Review — FOUNDATION never flows automatically into it.
+
+For a RED milestone:
+
+1. `/create-implementation-plan` for the RED milestone.
 2. human review
 3. `/generate-tests`
 4. verify valid RED evidence
-5. `/create-implementation-plan` for GREEN
-6. human review
-7. `/implement-approved-plan`
-8. verify GREEN
-9. create a separate REFACTOR Implementation Plan only when justified
-10. `/refactor-code`
-11. final review
+
+For a GREEN milestone:
+
+1. `/create-implementation-plan` for the GREEN milestone.
+2. human review
+3. `/implement-approved-plan`
+4. verify GREEN
+
+For an optional REFACTOR milestone (only when justified):
+
+1. `/create-implementation-plan` for the REFACTOR milestone.
+2. human review
+3. `/refactor-code`
+4. verify the system remains GREEN
+
+Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After every milestone for the feature is complete, proceed to Final Review.
 
 The important control is not the command names.
 
 The important control is that:
 
 ```text
+FOUNDATION
 RED
 GREEN
 REFACTOR
 ```
 
-are separate authorization boundaries.
+are each separate milestones and separate authorization boundaries.
 
-Completing one phase does not authorize the next.
+Completing one milestone does not authorize the next.
 
-## 7. Clarification Is a Blocking Gate
+## 7. Adaptive Milestone Decomposition — Illustrative Examples
+
+This section illustrates how the milestone boundaries in section 6 might be chosen for different kinds of work. It is documentation only — the runtime rule lives in the `prompt-driven-development` skill's Adaptive Milestone Decomposition, and `Plan.md` records the actual decision made for a given task, with its rationale.
+
+Possible milestone boundaries include:
+
+- persistence/data access
+- domain/service behavior
+- API/controller behavior
+- validation
+- concurrency
+- integration
+- migration
+- infrastructure/configuration
+
+A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED milestone / GREEN milestone pair.
+
+A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
+
+```text
+Complex Spring Boot feature
+
+M1 — Persistence prerequisite setup — FOUNDATION (only if genuinely required)
+M2 — Persistence behavior tests — RED
+M3 — Persistence implementation — GREEN
+M4 — Service behavior tests — RED
+M5 — Service implementation — GREEN
+M6 — API behavior tests — RED
+M7 — API implementation — GREEN
+optional REFACTOR milestones — only when justified, after their preceding GREEN milestone
+```
+
+This is a common layered decomposition, not a mandatory template. The real rule is independent reviewability, not architectural layering for its own sake — a different system might instead need capability-oriented milestones (e.g. one per business capability), workflow-oriented milestones (e.g. one per user journey), or milestones around a migration step, integration boundary, or concurrency concern. Choose whichever boundary makes each milestone genuinely reviewable and testable on its own. Do not mechanically create one milestone per class or file, and do not force layer boundaries onto an architecture that does not support them.
+
+**Setup/Foundation is conditional, not automatic, for each layer:**
+
+- Most milestones need no setup at all — proceed straight to RED.
+- A missing production class, service, repository, controller, method, or interface is never, by itself, a reason for setup — that absence is the expected RED condition (a compilation failure caused by an intentionally absent approved production symbol is valid RED evidence), and creating the real thing is GREEN's job.
+- Setup exists only for genuine executable prerequisites that prevent RED from meaningfully running at all — e.g. required build/dependency setup, test framework/infrastructure that doesn't exist yet, required configuration, or a prerequisite contract established by an earlier architectural decision.
+- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, and REFACTOR — setup is never a way to change code without approval.
+
+## 8. Clarification Is a Blocking Gate
 
 When material information is missing, ambiguous, or contradictory:
 
@@ -160,7 +234,7 @@ Do not create or finalize the dependent artifact.
 
 Do not use an Open Questions section as a substitute for required clarification.
 
-## 8. Artifact Authority
+## 9. Artifact Authority
 
 Use this authority model:
 
@@ -182,7 +256,7 @@ If authoritative artifacts materially conflict, stop and surface the conflict fo
 
 Do not silently rewrite one artifact to match another.
 
-## 9. Oracle to PostgreSQL Modernization
+## 10. Oracle to PostgreSQL Modernization
 
 For Oracle → PostgreSQL modernization, use:
 
@@ -213,7 +287,7 @@ It may be used by multiple responsibility-focused agents during:
 
 Oracle → PostgreSQL is therefore a skill rather than a dedicated migration agent.
 
-## 10. Where Examples Belong
+## 11. Where Examples Belong
 
 Do not create placeholder root-level examples simply to demonstrate folder structure.
 
@@ -229,7 +303,7 @@ A valid whole-project example should include meaningful source code, tests, buil
 
 Until such an example exists, the repository does not need a root `examples/` directory.
 
-## 11. Validate Before Publishing Changes
+## 12. Validate Before Publishing Changes
 
 Run:
 

@@ -7,11 +7,17 @@ This repository provides production-engineering customizations. Apply these rule
 - Do not invent requirements, non-functional requirements, business rules, validation rules, or architecture decisions when material behavior is unclear.
 - Do not mark a Plan, API/external contract, or Implementation Plan approved on behalf of a human reviewer.
 - Do not claim tests, commands, validators, migrations, builds, or deployments passed unless they were actually executed or evidence was supplied.
-- Keep behavior-changing RED, GREEN, and optional REFACTOR phases separate when the adopting project uses the PDD workflow.
+- Keep behavior-changing RED, GREEN, and optional REFACTOR milestones separate when the adopting project uses the PDD workflow.
 - Prefer the smallest safe change that satisfies the approved scope.
 - Preserve public contracts unless an approved plan explicitly changes them.
 - Do not pull future milestone work into the current task.
 - Do not rewrite approved project artifacts merely to make them match an implementation.
+<!-- PDD-CONTROL:NO-CODE-CHANGE-WITHOUT-APPROVAL:START -->
+- Every code change must be traceable to a human-approved, milestone-specific Implementation Plan — this applies regardless of which command, prompt, or free-form request produced the change. Do not modify production source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable repository artifacts from a free-form request, review finding, failing test, or inferred fix alone.
+- If no approved Implementation Plan authorizes the requested change, do not implement it; route the work through the appropriate PDD planning and human-review boundary first.
+- The size and detail of an Implementation Plan should be proportional to the change — small changes may use a very small Implementation Plan, but they do not bypass human approval. This applies to all code changes, not only behavior-changing ones.
+- Documentation-only changes clearly outside executable/code artifacts may follow the project's normal documentation workflow; do not invent exceptions to the above for source, tests, configuration, dependencies, or other executable artifacts.
+<!-- PDD-CONTROL:NO-CODE-CHANGE-WITHOUT-APPROVAL:END -->
 
 ## Clarification Before Action
 
@@ -72,4 +78,4 @@ Examples:
 
 Human review remains required for requirement interpretation, Plan approval, API/external contract approval, Implementation Plan approval, architecture trade-offs, production-readiness decisions, and exceptions.
 
-A completed phase does not authorize the next phase unless the workflow explicitly says so.
+A completed milestone does not authorize the next milestone unless the workflow explicitly says so.
