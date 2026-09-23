@@ -26,6 +26,6 @@ Do not approve the Plan yourself.
 
 Project-specific choices (for example a preferred decomposition) come only from the task prompt or approved project artifacts; this command stays project-neutral.
 
-Before stopping, check the Plan against each Plan Content Rule and every milestone field the template requires. Fix any violation in the Plan, then report the result rule by rule (pass, or what was fixed) with your summary.
+Before stopping, check the Plan against each Plan Content Rule and every milestone field the template requires. The check must be evidence-based: re-read the written Plan and search it for each prohibited item the rules name (for example HTTP methods, paths, status codes, class, package, annotation, or library names, and alternatives the requirements exclude). Fix every violation in the Plan and re-check. Report the result rule by rule — pass, or the offending text and how it was fixed. Never report a rule as passing without having searched for its violations.
 
 If a material decision required for the Plan is unresolved, ask focused clarification questions and stop.

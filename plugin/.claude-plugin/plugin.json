@@ -2,7 +2,7 @@
   "name": "production-engineering-standards",
   "displayName": "Production Engineering Standards",
   "description": "Implements repository-wide engineering standards for requirements clarity, scope control, artifact authority, and human review, with specialized skills for architecture, testing, implementation planning, and production readiness.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": {
     "name": "Avinash Srivastava"
   }
