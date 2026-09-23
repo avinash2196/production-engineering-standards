@@ -13,8 +13,7 @@ Use this skill when the adopting repository explicitly follows the PDD lifecycle
 Requirements
 → Plan
 → Human Review
-→ API / External Contract when applicable
-→ Human Review
+→ CONTRACT milestone when applicable: API / External Contract → Human Review
 → FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
     optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
     RED milestone: Implementation Plan → Human Review → execution → Verification
@@ -23,9 +22,11 @@ Requirements
 → Final Review
 ```
 
-The API/external contract stage is required when externally observable behavior must be defined before implementation, such as an HTTP API or another stable consumer-facing interface.
+The API/external contract is required when externally observable behavior must be defined before implementation, such as an HTTP API or another stable consumer-facing interface. When required, it is delivered by a CONTRACT milestone recorded in `Plan.md`.
 
-FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
+A CONTRACT milestone, when present, is always the first milestone after Plan approval. It precedes every FOUNDATION, RED, GREEN, and REFACTOR milestone, because no repository-changing milestone may start before the externally observable behavior it depends on is approved. Its deliverable is the API/external contract artifact itself; it changes no executable artifact, so it has no Implementation Plan — the contract artifact is the human-reviewed deliverable.
+
+CONTRACT, FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
 
 A RED milestone is followed by a GREEN milestone, then an optional REFACTOR milestone, once per independently reviewable capability/layer. See "Adaptive Milestone Decomposition" below for how many such milestone sequences a given piece of work should use.
 
@@ -34,7 +35,7 @@ A RED milestone is followed by a GREEN milestone, then an optional REFACTOR mile
 Each artifact has a distinct responsibility:
 
 - Requirements define intended behavior, constraints, and explicit exclusions.
-- Plan defines approved scope, milestone sequence, completion criteria, and execution status.
+- Plan defines approved scope, milestone sequence, requirement ownership, completion criteria, and execution status. After approval it is the single source of truth for the complete development: every contract, Implementation Plan, test, and production change must trace to a milestone recorded in it, and nothing outside it is authorized.
 - API/external contract defines approved externally observable behavior when applicable.
 - Implementation Plan defines the concrete proposed changes for one authorized milestone based on the current repository state.
 - Tests/checks provide executable evidence of expected behavior.
@@ -82,6 +83,21 @@ For the authorized milestone, it must contain:
 The proposed code belongs inside the Implementation Plan so a human can review the intended change before repository implementation is modified.
 
 The planner may write proposed code in the Implementation Plan, but must not apply those proposed changes to production source, tests, build configuration, deployment configuration, or runtime configuration.
+
+## Plan Content Rules
+
+The Plan defines WHAT is delivered and in which milestone order. It does not define HOW (Implementation Plans) or externally observable behavior (the API/external contract). When creating or revising a Plan:
+
+1. **Milestone order.** Record every milestone in one strictly linear sequence. Each milestone has exactly one predecessor — Plan approval for the first milestone, otherwise one earlier milestone. Do not record parallel, optional, or "logically but not strictly required" predecessors. When a CONTRACT milestone exists it is the first milestone; any FOUNDATION milestone follows it.
+2. **Contract-owned decisions stay in the contract.** Do not fix endpoint paths, operations/methods, status codes, parameter or field names, request/response schemas, validation rules, error behavior, or any decision the requirements defer to the contract. Reference the contract artifact instead. A decision the requirements explicitly defer to a CONTRACT milestone is owned by that milestone; it does not block Plan approval and must not be resolved, narrowed, or presumed in the Plan.
+3. **No internal design.** Do not name classes, files, methods, interfaces, test classes, mocking strategies, or internal layering within a milestone. Describe each milestone by the behavior and requirements it covers. Naming a decomposition boundary (for example a layer or capability chosen under Adaptive Milestone Decomposition) is allowed; prescribing its internal structure is not.
+4. **RED milestones deliver tests/checks only.** State the behaviors the tests must verify. Never list production types, scaffolding, or configuration as RED deliverables.
+5. **GREEN milestones deliver behavior.** State the behavior that makes the predecessor RED evidence pass. Do not list production classes or components.
+6. **FOUNDATION is prerequisite-only.** Limit it to the build, dependency, bootstrap, configuration, or test-infrastructure prerequisites the following RED milestone needs to execute. The domain model, schema derived from it, and target behavior belong to GREEN.
+7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
+8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability.
+9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, or constraints that are not in approved requirements or repository evidence. Risks and mitigations must not weaken, reinterpret, or contradict a requirement.
+10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
 
 ## Plan Integrity
 

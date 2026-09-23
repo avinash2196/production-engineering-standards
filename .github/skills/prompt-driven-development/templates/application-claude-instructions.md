@@ -39,8 +39,7 @@ For behavior-changing work:
 Requirements
 → Plan
 → Human Review
-→ API / External Contract when applicable
-→ Human Review
+→ CONTRACT milestone when applicable: API / External Contract → Human Review
 → FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
     optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
     RED milestone: Implementation Plan → Human Review → execution → Verification
@@ -50,6 +49,8 @@ Requirements
 ```
 
 Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries.
+
+When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan: the first milestone after Plan approval, before any FOUNDATION, RED, GREEN, or REFACTOR milestone. It changes no executable artifact and has no Implementation Plan; the contract artifact itself is the human-reviewed deliverable.
 
 Completion of one milestone does not authorize the next.
 
@@ -75,7 +76,7 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 * Implementation Plans: `docs/.ai/NNN_Implementation_Plan_<Milestone>.md`
 
 <!-- FIXED — preserve verbatim -->
-Plan defines WHAT is delivered.
+Plan defines WHAT is delivered. After approval it is the single source of truth for the complete development: every contract, Implementation Plan, test, and production change must trace to a milestone recorded in it.
 
 The external contract defines approved externally observable behavior when applicable.
 

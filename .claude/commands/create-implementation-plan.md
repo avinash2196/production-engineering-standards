@@ -6,7 +6,7 @@ Act as an implementation planner and create exactly one detailed Implementation 
 
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
-This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, or REFACTOR) — it does not decide or change the milestone type.
+This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, or REFACTOR) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
 
 Before planning:
 

@@ -32,6 +32,8 @@ When the task is Plan creation or milestone planning:
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.
+- Follow the PDD skill's Plan Content Rules and the Plan template. When an API/external contract is required, record it as a CONTRACT milestone, first after Plan approval and before any FOUNDATION milestone.
+- Before finishing a Plan, check it against each Plan Content Rule and fix violations before reporting.
 - Apply the PDD skill's Adaptive Milestone Decomposition rules when deciding how many milestones this work needs. For complex layered work, decompose by independently reviewable architectural layer, creating a separate RED milestone and GREEN milestone for each layer (with an optional preceding FOUNDATION milestone and optional following REFACTOR milestone), as defined by the PDD skill.
 - For complex layered work, before each layer's RED milestone determine whether a preceding FOUNDATION milestone is genuinely required, without using FOUNDATION merely to create production scaffolding that RED should drive.
 - Produce only the planning artifacts requested by the current task.

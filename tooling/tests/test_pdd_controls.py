@@ -325,7 +325,9 @@ class PddControlsTest(unittest.TestCase):
             "as internal phases",
             text,
         )
-        self.assertIn("milestone type: FOUNDATION | RED | GREEN | REFACTOR | OTHER", text)
+        self.assertIn(
+            "milestone type: CONTRACT | FOUNDATION | RED | GREEN | REFACTOR | OTHER", text
+        )
         self.assertNotIn("lifecycle:", text)
         self.assertNotIn("setup required:", text)
 
@@ -628,6 +630,88 @@ class PddControlsTest(unittest.TestCase):
             text,
         )
 
+
+    # --- Contract-as-milestone and Plan Content Rules pass.
+
+    def test_contract_is_first_milestone_before_foundation(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("CONTRACT milestone when applicable", skill)
+        self.assertIn("always the first milestone after Plan approval", skill)
+        self.assertIn("so it has no Implementation Plan", skill)
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "record a CONTRACT milestone as the first milestone after Plan approval",
+                text,
+            )
+            self.assertNotIn("positioned before the first Implementation Plan", text)
+
+    def test_pdd_skill_defines_plan_content_rules(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Plan Content Rules", skill)
+        for token in [
+            "Each milestone has exactly one predecessor",
+            "Contract-owned decisions stay in the contract",
+            "RED milestones deliver tests/checks only",
+            "GREEN milestones deliver behavior",
+            "FOUNDATION is prerequisite-only",
+            "Every approved requirement and cross-cutting concern has exactly one owning delivery milestone",
+            "Risks and mitigations must not weaken",
+            "records every milestone as Pending",
+        ]:
+            self.assertIn(token, skill)
+
+    def test_plan_is_single_source_of_truth(self):
+        for rel in [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Plan.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("single source of truth for the complete development", text, rel)
+
+    def test_plan_template_has_traceability_and_linear_order(self):
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Requirement Traceability", text)
+        self.assertIn("predecessor: exactly one", text)
+        self.assertIn("strictly linear order", text)
+
+    def test_create_plan_self_checks_and_stays_project_neutral(self):
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("check the Plan against each Plan Content Rule", text)
+            self.assertIn("this command stays project-neutral", text)
+
+    def test_contract_milestone_has_no_implementation_plan(self):
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("A CONTRACT milestone has no Implementation Plan", text)
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("executes the CONTRACT milestone recorded in the approved", text)
 
 if __name__ == "__main__":
     unittest.main()

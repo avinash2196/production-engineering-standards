@@ -18,8 +18,7 @@ For work that adopts this repository's Prompt-Driven Development model:
 Requirements
 → Plan
 → Human Review
-→ API / External Contract when applicable
-→ Human Review
+→ CONTRACT milestone when applicable: API / External Contract → Human Review
 → FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
     optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
     RED milestone: Implementation Plan → Human Review → execution → Verification
@@ -29,6 +28,8 @@ Requirements
 ```
 
 Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries. Completing one milestone does not automatically authorize the next.
+
+When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
 How many milestones a piece of work needs is decided in `Plan.md`, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use a single RED milestone / GREEN milestone pair, while larger work is decomposed into multiple sequential milestone sequences, for example: `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN`. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
