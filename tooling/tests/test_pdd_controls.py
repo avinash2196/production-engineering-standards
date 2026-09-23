@@ -71,8 +71,13 @@ class PddControlsTest(unittest.TestCase):
         # layer-wise decomposition is the expected pattern for complex layered work
         self.assertIn("layer-wise implementation milestones", text)
         self.assertIn("independently testable architectural layers", text)
-        # each such milestone gets its own separate RED/GREEN/REFACTOR cycle
-        self.assertIn("own RED → GREEN → optional REFACTOR lifecycle", text)
+        # a layer contributes separate RED/GREEN milestones, not one
+        # containing milestone that owns them as internal phases
+        self.assertIn(
+            "There is no containing \"capability milestone\" that owns "
+            "these as internal phases",
+            text,
+        )
         # layering is not a mandatory template
         self.assertIn("not a mandatory architectural template", text)
 
@@ -87,8 +92,8 @@ class PddControlsTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn("Conditional SETUP / FOUNDATION", text)
-        # setup is conditional, not a default/mandatory phase
-        self.assertIn("never a default or mandatory phase", text)
+        # setup is conditional, not a default/mandatory milestone
+        self.assertIn("never a default or mandatory milestone", text)
         # a missing production symbol alone is not a setup trigger — it's
         # still valid RED evidence, per the existing compile-failure rule
         self.assertIn("do not, by themselves, require SETUP", text)
@@ -103,15 +108,22 @@ class PddControlsTest(unittest.TestCase):
     # executable phase, alongside RED/GREEN/REFACTOR. Each test below
     # targets exactly one of the four conflicts this pass resolved.
 
-    def test_foundation_is_a_recognized_executable_phase(self):
+    def test_foundation_is_a_recognized_executable_milestone_type(self):
         # Conflict 1: the authorization-defining sentence used to enumerate
         # only (RED, GREEN, or REFACTOR), contradicting the conditional-setup
-        # rule elsewhere in the same document.
+        # rule elsewhere in the same document. FOUNDATION, RED, GREEN, and
+        # REFACTOR are each their own milestone (not phases of a containing
+        # milestone), and a single Implementation Plan authorizes exactly
+        # one of them.
         skill_text = (
             ROOT / ".github/skills/prompt-driven-development/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "authorizes exactly one phase (FOUNDATION, RED, GREEN, or REFACTOR)",
+            "FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone",
+            skill_text,
+        )
+        self.assertIn(
+            "A single Implementation Plan authorizes exactly one milestone",
             skill_text,
         )
 
@@ -142,7 +154,7 @@ class PddControlsTest(unittest.TestCase):
             ROOT / ".github/skills/prompt-driven-development/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn("FOUNDATION is conditional", text)
-        self.assertIn("most milestones proceed directly to RED", text)
+        self.assertIn("most sequences proceed directly to a RED milestone", text)
 
     def test_missing_production_class_alone_does_not_require_foundation(self):
         planning_text = (
@@ -217,17 +229,20 @@ class PddControlsTest(unittest.TestCase):
         )
 
     def test_planning_not_execution_selects_foundation(self):
-        # Planner/Plan.md decides FOUNDATION; the Implementation Planner and
-        # executor only read and validate that decision, never make it.
+        # Planner/Plan.md decides whether a FOUNDATION milestone exists in
+        # the sequence; the Implementation Planner and executor only read
+        # and validate that decision (via the milestone type Plan.md
+        # already recorded), never make it themselves.
         planning_text = (
             ROOT / ".github/skills/implementation-planning/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "it does not decide which phase a milestone needs", planning_text
+            "it does not decide or change the milestone type", planning_text
         )
         self.assertIn(
-            "Create a FOUNDATION Implementation Plan only when `Plan.md` "
-            "has already recorded this milestone's setup required as Yes",
+            "Create a FOUNDATION Implementation Plan only when the "
+            "milestone approved for this Implementation Plan is itself a "
+            "FOUNDATION milestone, as recorded in `Plan.md`",
             planning_text,
         )
 
@@ -235,28 +250,28 @@ class PddControlsTest(unittest.TestCase):
             ROOT / ".github/prompts/create-implementation-plan.prompt.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "it does not decide which phase a milestone needs", prompt_text
+            "it does not decide or change the milestone type", prompt_text
         )
 
         plan_template_text = (
             ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "Whether FOUNDATION is required is a planning decision recorded "
-            "here, in Plan.md",
+            "There is no containing milestone that owns several of these "
+            "as internal phases",
             plan_template_text,
         )
 
-    def test_executor_reads_phase_and_does_not_decide_it(self):
+    def test_executor_reads_milestone_type_and_does_not_decide_it(self):
         text = (
             ROOT / ".github/prompts/implement-approved-plan.prompt.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "First read which phase the approved Implementation Plan "
-            "declares",
+            "First read which milestone type the approved Implementation "
+            "Plan declares",
             text,
         )
-        self.assertIn("Do not decide the phase yourself", text)
+        self.assertIn("Do not decide the milestone type yourself", text)
         self.assertIn("Do not decide whether FOUNDATION is required", text)
 
     def test_executor_stops_on_unapproved_prerequisite_or_unmet_criteria(self):
@@ -293,16 +308,26 @@ class PddControlsTest(unittest.TestCase):
             planning_text,
         )
 
-    def test_plan_milestone_owns_lifecycle_not_a_single_phase(self):
+    def test_plan_milestone_is_a_single_execution_boundary_not_a_lifecycle_container(self):
+        # Reversed from an earlier pass: a milestone is FOUNDATION, RED,
+        # GREEN, or REFACTOR itself — not a capability/layer container that
+        # owns a lifecycle of those as internal phases.
         text = (
             ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "A milestone represents one independently reviewable capability "
-            "or layer — not one execution phase.",
+            "A milestone represents one independently approved execution "
+            "boundary",
             text,
         )
-        self.assertIn("lifecycle: the phases this milestone will go through", text)
+        self.assertIn(
+            "There is no containing milestone that owns several of these "
+            "as internal phases",
+            text,
+        )
+        self.assertIn("milestone type: FOUNDATION | RED | GREEN | REFACTOR | OTHER", text)
+        self.assertNotIn("lifecycle:", text)
+        self.assertNotIn("setup required:", text)
 
     def test_application_instructions_prefer_layers_without_forcing_them(self):
         # Conflict 3: "do not default... per architectural layer" could be
@@ -315,28 +340,27 @@ class PddControlsTest(unittest.TestCase):
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn(
-                "Do not mechanically create one milestone per class or "
-                "architectural layer",
+                "Do not mechanically create one milestone per class",
                 text,
             )
-            self.assertIn("prefer separate layer-wise milestones", text)
+            self.assertIn(
+                "create a separate RED milestone and GREEN milestone for "
+                "each layer",
+                text,
+            )
 
-    def test_other_phase_removed_from_plan_template(self):
-        # OTHER had no defined, necessary, executable workflow — removed
-        # rather than retained as a generic escape hatch. A milestone also
-        # no longer carries a single "phase:" field (that implied one
-        # milestone == one phase); it owns a "lifecycle" of phases instead.
+    def test_plan_execution_status_is_milestone_based(self):
+        # Reversed from an earlier pass that removed OTHER as a milestone
+        # classification: OTHER is restored (milestone type is a
+        # classification field, not an executable-workflow enum), and
+        # Execution Status tracks milestones directly, never a nested
+        # phase-status field.
         text = (
             ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("OTHER", text)
-        self.assertNotIn("phase: FOUNDATION", text)
-        self.assertIn("lifecycle:", text)
-        self.assertIn(
-            "A milestone represents one independently reviewable capability "
-            "or layer — not one execution phase.",
-            text,
-        )
+        self.assertIn("OTHER", text)
+        self.assertIn("| Milestone | Status | Evidence / Notes |", text)
+        self.assertNotIn("phase-status", text.lower())
 
     def test_adaptive_decomposition_not_duplicated_as_exhaustive_list(self):
         # The full boundary catalog (persistence/domain/service/controller/
@@ -440,7 +464,8 @@ class PddControlsTest(unittest.TestCase):
             ROOT / ".github/agents/implementation-engineer.agent.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "Execute an approved FOUNDATION or GREEN Implementation Plan",
+            "Execute an approved FOUNDATION or GREEN milestone's "
+            "Implementation Plan",
             text,
         )
         self.assertIn("## FOUNDATION Branch", text)
@@ -469,8 +494,8 @@ class PddControlsTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("## Acceptance / Completion Criteria", text)
         self.assertIn(
-            "State exactly what must be true for this specific phase to "
-            "be considered complete.",
+            "State exactly what must be true for this specific milestone "
+            "to be considered complete.",
             text,
         )
         # Distinct from, and ordered before, Verification/Expected Evidence.
@@ -481,6 +506,8 @@ class PddControlsTest(unittest.TestCase):
         self.assertLess(verification_pos, evidence_pos)
 
     def test_application_lifecycle_descriptions_include_conditional_foundation(self):
+        # The two live application templates and README.md all use the
+        # corrected milestone-per-type diagram.
         for rel in [
             ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
@@ -488,33 +515,45 @@ class PddControlsTest(unittest.TestCase):
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn(
-                "optional FOUNDATION Implementation Plan → Human Review "
-                "→ FOUNDATION → Verification",
+                "optional FOUNDATION milestone: Implementation Plan → "
+                "Human Review → execution → Verification",
                 text,
             )
 
     def test_getting_started_has_conditional_foundation_before_red(self):
+        # Reversed from an earlier pass: FOUNDATION is its own milestone
+        # with its own flow section, documented before the RED milestone's
+        # flow section, not a conditional sub-branch of one milestone's
+        # lifecycle.
         text = (ROOT / "docs/getting-started.md").read_text(encoding="utf-8")
-        self.assertIn("If `Plan.md` records this milestone's `setup required` as Yes", text)
-        self.assertIn("If `setup required` is No, proceed directly to RED.", text)
-        foundation_pos = text.index("If `Plan.md` records this milestone's `setup required`")
-        red_pos = text.index("`/create-implementation-plan` for RED")
+        self.assertIn(
+            "For a FOUNDATION milestone (only when `Plan.md` records one "
+            "as genuinely required):",
+            text,
+        )
+        self.assertIn("For a RED milestone:", text)
+        foundation_pos = text.index("For a FOUNDATION milestone (only when")
+        red_pos = text.index("`/create-implementation-plan` for the RED milestone.")
         self.assertLess(foundation_pos, red_pos)
 
-    def test_application_templates_describe_implementation_plan_as_phase_specific(self):
+    def test_application_templates_describe_implementation_plan_as_milestone_specific(self):
+        # Reversed from an earlier pass: FOUNDATION/RED/GREEN/REFACTOR are
+        # each their own milestone, not phases within a containing
+        # milestone, so an Implementation Plan authorizes one milestone —
+        # not "one phase of one milestone."
         for rel in [
             ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn(
-                "Each Implementation Plan defines HOW one approved phase "
-                "of one milestone will change the repository.",
+                "Each Implementation Plan defines HOW one approved "
+                "milestone will change the repository.",
                 text,
             )
             self.assertNotIn(
-                "Each Implementation Plan defines HOW one approved "
-                "milestone is executed.",
+                "Each Implementation Plan defines HOW one approved phase "
+                "of one milestone will change the repository.",
                 text,
             )
 

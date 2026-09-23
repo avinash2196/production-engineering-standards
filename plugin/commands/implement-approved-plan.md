@@ -12,7 +12,7 @@ Read:
 - the current repository state;
 - the approved Implementation Plan (FOUNDATION or GREEN).
 
-First read which phase the approved Implementation Plan declares (FOUNDATION or GREEN), and follow only that branch. Do not decide the phase yourself — it was already decided in `Plan.md` and fixed by the approved Implementation Plan. Do not treat a GREEN Implementation Plan as needing FOUNDATION first, and do not decide mid-execution that setup is needed; if that turns out to be true, stop (see below) rather than acting on it.
+First read which milestone type the approved Implementation Plan declares (FOUNDATION or GREEN), and follow only that branch. Do not decide the milestone type yourself — it was already decided in `Plan.md` and fixed by the approved Implementation Plan. Do not treat a GREEN Implementation Plan as needing FOUNDATION first, and do not decide mid-execution that setup is needed; if that turns out to be true, stop (see below) rather than acting on it.
 
 **If the approved Implementation Plan is FOUNDATION:**
 
@@ -20,7 +20,7 @@ First read which phase the approved Implementation Plan declares (FOUNDATION or 
 - do not implement target feature/business behavior — that is RED's and GREEN's job, not FOUNDATION's;
 - do not create speculative production scaffolding for behavior no RED has driven yet;
 - before marking FOUNDATION complete, verify every approved FOUNDATION Acceptance / Completion Criterion using the approved verification commands and confirm the evidence demonstrates the prerequisite is established (RED can now meaningfully begin) — do not invent, weaken, reinterpret, or modify the criteria during execution;
-- update only the corresponding execution/status information in `docs/.ai/Plan.md` with completion and concise actual evidence;
+- update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the FOUNDATION milestone as completed with concise actual evidence;
 - stop. Do not begin RED. A FOUNDATION execution never flows automatically into RED — RED still requires its own RED Implementation Plan and human approval.
 
 **If the approved Implementation Plan is GREEN**, also read valid predecessor RED evidence, then:
@@ -30,9 +30,9 @@ First read which phase the approved Implementation Plan declares (FOUNDATION or 
 - do not introduce unrelated refactoring, infrastructure, dependencies, abstractions, or future milestone work;
 - before marking GREEN complete, verify every approved GREEN Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution;
 - confirm that the previously valid RED behavior is now GREEN, that existing relevant tests remain GREEN, and that no unapproved changes were introduced;
-- after GREEN is actually verified, update only the corresponding execution/status information in `docs/.ai/Plan.md` with completion and concise actual evidence.
+- after GREEN is actually verified, update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the GREEN milestone as completed with concise actual evidence.
 
-For either phase: if verification fails, do not mark the milestone or phase complete.
+For either milestone type: if verification fails, do not mark that milestone complete.
 
 If implementation requires changing approved scope or materially conflicts with an authoritative artifact, stop for replanning and human review. This includes: discovering during execution that an additional, unapproved prerequisite (dependency, configuration, or other change) is needed — do not add it automatically; stop and report it to planning. It also includes discovering that an approved Acceptance/Completion Criterion cannot be satisfied without work outside the approved Implementation Plan — do not change the criterion or broaden the implementation to cover it; stop and report the unmet criterion and the required unapproved work to planning.
 

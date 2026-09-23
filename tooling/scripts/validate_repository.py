@@ -22,7 +22,7 @@ NO_CODE_CHANGE_CONTROL_ID = "NO-CODE-CHANGE-WITHOUT-APPROVAL"
 
 CANONICAL_NO_CODE_CHANGE_BLOCK = (
     "Every code change must be traceable to a human-approved, "
-    "phase-specific Implementation Plan — this applies regardless of "
+    "milestone-specific Implementation Plan — this applies regardless of "
     "which command, prompt, or free-form request produced the change. "
     "Do not modify production source, tests, configuration, "
     "dependencies, schemas, migrations, scripts, or other executable "

@@ -2,7 +2,9 @@
 
 ## Milestone
 
-## Phase
+## Milestone Type
+
+FOUNDATION | RED | GREEN | REFACTOR
 
 ## Authoritative References
 
@@ -34,7 +36,7 @@ The proposed content in this section is for review only and must not be applied 
 
 ## Acceptance / Completion Criteria
 
-State exactly what must be true for this specific phase to be considered complete.
+State exactly what must be true for this specific milestone to be considered complete.
 
 ## Verification
 

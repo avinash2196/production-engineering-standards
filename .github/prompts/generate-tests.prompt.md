@@ -30,9 +30,11 @@ Before marking RED complete, verify every approved RED Acceptance / Completion C
 
 Confirm that the observed failure demonstrates the intended missing approved behavior rather than an unrelated compilation, configuration, or environment problem.
 
-After valid RED is actually established, update only the corresponding execution/status information in `docs/.ai/Plan.md` with completion and concise actual evidence.
+After valid RED is actually established, update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the RED milestone as completed with concise actual evidence.
 
-If RED is invalid or verification fails unexpectedly, do not mark the milestone or phase complete.
+If RED is invalid or verification fails unexpectedly, do not mark the RED milestone complete.
+
+Completing the RED milestone does not complete or authorize GREEN. GREEN is a separate milestone that still requires its own approved Implementation Plan and Human Review.
 
 Before reporting completion, re-read every test/check assertion you wrote or changed and confirm each one still asserts the actual approved behavior (not the current unimplemented state) — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting the required exception/value, is not valid RED evidence even if it fails for an unrelated reason.
 

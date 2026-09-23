@@ -39,11 +39,11 @@ If the failure does not demonstrate the intended missing behavior, stop and repo
 After valid RED evidence is actually established:
 
 - update only the corresponding execution/status information in `docs/.ai/Plan.md`;
-- record the RED milestone or phase as completed;
+- record the RED milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not change milestone scope, requirements, architecture, exclusions, success criteria, or future milestones.
 
-If valid RED cannot be established, do not mark the milestone or phase complete.
+If valid RED cannot be established, do not mark the RED milestone complete.
 
 ## Artifact Responsibility
 

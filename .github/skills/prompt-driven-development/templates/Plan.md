@@ -26,25 +26,24 @@ If applicable, state the required contract artifact and the approved scope it mu
 
 ## Milestones
 
-Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide granularity for this work.
+Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide how many milestones this work needs.
 
-A milestone represents one independently reviewable capability or layer — not one execution phase. Each milestone owns a lifecycle of phases; it is not itself a phase.
+A milestone represents one independently approved execution boundary — FOUNDATION, RED, GREEN, REFACTOR, or OTHER. There is no containing milestone that owns several of these as internal phases; a capability or layer that needs more than one milestone type gets a separate milestone entry for each (for example: Persistence RED, then Persistence GREEN, as two entries, not one "Persistence" milestone with a RED/GREEN lifecycle).
 
 For each milestone record:
 
-- capability: the independently reviewable unit of behavior this milestone covers
+- capability / purpose: the independently reviewable unit of behavior this milestone covers
 - rationale: why this boundary was chosen
-- predecessor (dependency/order — e.g. another milestone this one depends on)
-- setup required: Yes | No
-- setup reason: why prerequisite FOUNDATION work is or is not needed before this milestone's RED can meaningfully begin, determined from the current repository state — a missing production type/behavior that RED itself is meant to drive is not a reason to answer Yes
-- lifecycle: the phases this milestone will go through — conditional FOUNDATION (only when setup required is Yes), RED, GREEN, optional REFACTOR
+- milestone type: FOUNDATION | RED | GREEN | REFACTOR | OTHER
+- predecessor (dependency/order — e.g. another milestone this one depends on, such as a preceding FOUNDATION milestone or the RED milestone a GREEN milestone depends on)
 - scope
+- owned requirements / concerns: the approved requirements and cross-cutting concerns (e.g. validation, authorization, error mapping, observability, persistence behavior — illustrative only) explicitly assigned to this milestone. A GREEN milestone may own delivery of an approved behavioral requirement while its predecessor RED milestone verifies that same requirement without being treated as its implementation owner.
 - explicit exclusions
-- milestone success criteria: what successful completion of the whole milestone means
+- success criteria: what successful completion of this milestone means
 
-A milestone must not authorize work from a later milestone. Recording a milestone's lifecycle here does not itself authorize any phase — each phase in that lifecycle (FOUNDATION when required, RED, GREEN, optional REFACTOR) still requires its own separate phase-specific Implementation Plan, Human Review, and execution, in that order.
+A milestone must not authorize work from a later milestone. Recording a milestone here does not itself authorize it — each milestone still requires its own Implementation Plan, Human Review, and execution, in that order.
 
-FOUNDATION requires its own approved Implementation Plan and Human Review before any repository change, exactly like RED/GREEN/REFACTOR. It is conditional — use it only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup), never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR cycle or without approval. Whether FOUNDATION is required is a planning decision recorded here, in Plan.md — it is not decided by whoever executes an Implementation Plan.
+A FOUNDATION milestone requires its own approved Implementation Plan and Human Review before any repository change, exactly like a RED, GREEN, or REFACTOR milestone. It is conditional — include one only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup) that the following RED milestone needs, never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR sequence or without approval.
 
 ## Execution Status
 

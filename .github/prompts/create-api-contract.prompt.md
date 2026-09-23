@@ -20,3 +20,5 @@ Do not invent endpoints, fields, validations, errors, status codes, compatibilit
 If material contract behavior is unresolved, ask focused clarification questions and stop. Do not finalize the contract until the blocking questions are resolved.
 
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
+
+Do not approve the contract yourself.

@@ -129,46 +129,53 @@ For an existing application with already-approved requirements, start from the e
 
 ## 6. Behavior-Changing Milestone Flow
 
-Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per phase, never one Implementation Plan covering more than one phase.
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
 
-If `Plan.md` records this milestone's `setup required` as Yes:
+For a FOUNDATION milestone (only when `Plan.md` records one as genuinely required):
 
-1. Create the FOUNDATION Implementation Plan (`/create-implementation-plan`).
+1. `/create-implementation-plan` for the FOUNDATION milestone.
 2. Human reviews and approves it.
 3. Execute only the approved FOUNDATION changes (`/implement-approved-plan`).
 4. Verify the FOUNDATION Acceptance / Completion Criteria.
-5. Stop.
-6. Then proceed to the separate RED Implementation Plan below.
+5. Stop. The following RED milestone is a separate milestone requiring its own Implementation Plan and Human Review — FOUNDATION never flows automatically into it.
 
-If `setup required` is No, proceed directly to RED.
+For a RED milestone:
 
-1. `/create-implementation-plan` for RED
+1. `/create-implementation-plan` for the RED milestone.
 2. human review
 3. `/generate-tests`
 4. verify valid RED evidence
-5. `/create-implementation-plan` for GREEN
-6. human review
-7. `/implement-approved-plan`
-8. verify GREEN
-9. create a separate REFACTOR Implementation Plan only when justified
-10. `/refactor-code`
-11. final review
 
-If the Plan defines more than one milestone, repeat this entire flow for the next milestone before starting Final Review on the whole feature.
+For a GREEN milestone:
+
+1. `/create-implementation-plan` for the GREEN milestone.
+2. human review
+3. `/implement-approved-plan`
+4. verify GREEN
+
+For an optional REFACTOR milestone (only when justified):
+
+1. `/create-implementation-plan` for the REFACTOR milestone.
+2. human review
+3. `/refactor-code`
+4. verify the system remains GREEN
+
+Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After every milestone for the feature is complete, proceed to Final Review.
 
 The important control is not the command names.
 
 The important control is that:
 
 ```text
+FOUNDATION
 RED
 GREEN
 REFACTOR
 ```
 
-are separate authorization boundaries.
+are each separate milestones and separate authorization boundaries.
 
-Completing one phase does not authorize the next.
+Completing one milestone does not authorize the next.
 
 ## 7. Adaptive Milestone Decomposition — Illustrative Examples
 
@@ -185,36 +192,21 @@ Possible milestone boundaries include:
 - migration
 - infrastructure/configuration
 
-A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED/GREEN pair.
+A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED milestone / GREEN milestone pair.
 
-A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN cycles. For requirements that span multiple independently testable architectural layers, prefer separate layer-wise milestones over one feature-wide RED/GREEN cycle — this is the common case for a layered application:
+A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
 
 ```text
 Complex Spring Boot feature
 
-Milestone 1 — Persistence / Repository
-  Setup/Foundation — only if genuinely required
-  RED
-  GREEN
-  optional REFACTOR
-
-Milestone 2 — Domain / Service
-  Setup/Foundation — only if genuinely required
-  RED
-  GREEN
-  optional REFACTOR
-
-Milestone 3 — API / Controller
-  Setup/Foundation — only if genuinely required
-  RED
-  GREEN
-  optional REFACTOR
-
-Milestone 4 — Integration
-  Setup/Foundation — only if genuinely required
-  RED
-  GREEN
-  optional REFACTOR
+M1 — Persistence prerequisite setup — FOUNDATION (only if genuinely required)
+M2 — Persistence behavior tests — RED
+M3 — Persistence implementation — GREEN
+M4 — Service behavior tests — RED
+M5 — Service implementation — GREEN
+M6 — API behavior tests — RED
+M7 — API implementation — GREEN
+optional REFACTOR milestones — only when justified, after their preceding GREEN milestone
 ```
 
 This is a common layered decomposition, not a mandatory template. The real rule is independent reviewability, not architectural layering for its own sake — a different system might instead need capability-oriented milestones (e.g. one per business capability), workflow-oriented milestones (e.g. one per user journey), or milestones around a migration step, integration boundary, or concurrency concern. Choose whichever boundary makes each milestone genuinely reviewable and testable on its own. Do not mechanically create one milestone per class or file, and do not force layer boundaries onto an architecture that does not support them.

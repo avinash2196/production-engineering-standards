@@ -1,5 +1,5 @@
 ---
-description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete phase-specific Implementation Plans without implementing them.
+description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete milestone-specific Implementation Plans without implementing them.
 tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
 
 ---
@@ -32,8 +32,8 @@ When the task is Plan creation or milestone planning:
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.
-- Apply the PDD skill's Adaptive Milestone Decomposition rules when deciding implementation milestone granularity. For complex layered work, prefer separate milestones for independently reviewable architectural layers, with each milestone receiving its own RED → GREEN → optional REFACTOR lifecycle as defined by the PDD skill.
-- For complex layered work, before each layer's RED phase determine whether prerequisite SETUP/FOUNDATION work is genuinely required, without using setup merely to create production scaffolding that RED should drive.
+- Apply the PDD skill's Adaptive Milestone Decomposition rules when deciding how many milestones this work needs. For complex layered work, decompose by independently reviewable architectural layer, creating a separate RED milestone and GREEN milestone for each layer (with an optional preceding FOUNDATION milestone and optional following REFACTOR milestone), as defined by the PDD skill.
+- For complex layered work, before each layer's RED milestone determine whether a preceding FOUNDATION milestone is genuinely required, without using FOUNDATION merely to create production scaffolding that RED should drive.
 - Produce only the planning artifacts requested by the current task.
 - Do not implement production code or tests.
 - Do not approve requirements, plans, contracts, or Implementation Plans yourself.

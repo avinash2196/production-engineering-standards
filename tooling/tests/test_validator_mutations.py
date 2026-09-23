@@ -174,7 +174,7 @@ class NoBypassControlBlockTest(ValidatorMutationTestCase):
         text = path.read_text(encoding="utf-8")
         text = text.replace(
             "Every code change must be traceable to a human-approved, "
-            "phase-specific Implementation Plan",
+            "milestone-specific Implementation Plan",
             "Most code changes should ideally reference an Implementation "
             "Plan where a free-form request makes that convenient",
         )

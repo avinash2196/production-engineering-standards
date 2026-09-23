@@ -1,13 +1,13 @@
 ---
 name: implementation-planning
-description: Use when translating one approved Plan milestone and phase into a concrete human-reviewable Implementation Plan based on the current repository state.
+description: Use when translating one approved Plan milestone into a concrete human-reviewable Implementation Plan based on the current repository state.
 ---
 
 # Implementation Planning
 
-Create a plan for one milestone and one phase only.
+Create an Implementation Plan for exactly one approved milestone.
 
-Implementation Planning receives the approved milestone and the already-selected phase (FOUNDATION, RED, GREEN, or REFACTOR) from `Plan.md` — it does not decide which phase a milestone needs. Whether a milestone requires FOUNDATION is a planning decision recorded in `Plan.md`'s `setup required` field for that milestone, made before this skill is applied.
+Implementation Planning receives one approved milestone and its already-recorded milestone type (FOUNDATION, RED, GREEN, or REFACTOR) from `Plan.md` — it does not decide or change the milestone type; that decision belongs to planning and is fixed once `Plan.md` is approved.
 
 ## Current-State Analysis
 
@@ -17,20 +17,22 @@ Before planning:
 - inspect the current repository structure;
 - inspect relevant existing source, tests, configuration, and completed milestone work;
 - read current Plan execution status;
-- verify predecessor evidence and actual repository progress;
-- verify that the requested phase matches what `Plan.md` records for this milestone.
+- verify predecessor milestone evidence and actual repository progress;
+- verify that the milestone type being planned matches what `Plan.md` records for this milestone.
 
 Prefer repository evidence over assumed structure or previously proposed implementation.
 
 Do not plan from an assumed project state.
 
-If the repository materially conflicts with authoritative artifacts or predecessor evidence, stop and surface the conflict for human review. If repository evidence contradicts the phase `Plan.md` selected for this milestone (for example, `Plan.md` says setup is not required but a genuine prerequisite is actually missing, or says it is required but the repository already provides it), do not silently plan a different phase — stop and report the mismatch back to planning for a `Plan.md` update and re-approval.
+A material ambiguity may remain unresolved while no milestone yet depends on a concrete decision about it. Before creating an Implementation Plan for a milestone whose FOUNDATION, RED, GREEN, or REFACTOR work actually depends on resolving that ambiguity, resolve it through the existing PDD clarification/human-review mechanisms rather than carrying it forward unresolved into typed code, test assertions, or configuration. Examples of such ambiguity include field representation, nullability, identifier semantics, precision, validation behavior, persistence representation, or external contract behavior — these examples are illustrative only and do not themselves introduce new requirements. Do not force premature resolution of such decisions during Requirements Capture.
+
+If the repository materially conflicts with authoritative artifacts or predecessor evidence, stop and surface the conflict for human review. If repository evidence contradicts the milestone type `Plan.md` recorded for this milestone (for example, `Plan.md` records this milestone as RED but a genuine prerequisite is actually missing, or records a FOUNDATION milestone that the repository shows is no longer needed), do not silently plan a different milestone type — stop and report the mismatch back to planning for a `Plan.md` update and re-approval.
 
 ## Implementation Plan Content
 
 Include:
 
-- milestone and phase;
+- milestone, including its milestone type (FOUNDATION, RED, GREEN, or REFACTOR);
 - authoritative artifact references;
 - predecessor evidence;
 - current repository state relevant to the milestone;
@@ -41,24 +43,26 @@ Include:
 - concrete proposed tests or production code;
 - relevant method, class, interface, schema, or configuration signatures;
 - code snippets, pseudocode, or patch-level detail where practical and useful for review;
-- explicit Acceptance / Completion Criteria for this specific phase — what must be true for this FOUNDATION, RED, GREEN, or REFACTOR phase to be considered complete;
+- explicit Acceptance / Completion Criteria for this specific milestone — what must be true for this FOUNDATION, RED, GREEN, or REFACTOR milestone to be considered complete;
 - verification commands that demonstrate those criteria;
 - expected FOUNDATION, RED, GREEN, or REFACTOR evidence;
 - rollback or recovery where relevant;
 - risks;
 - explicit exclusions.
 
-Acceptance / Completion Criteria and verification are distinct: the criteria state what must be true for the phase to be complete; verification commands and expected evidence demonstrate whether the approved changes actually satisfied those criteria. Verification does not replace stating the criteria explicitly. Do not invent or modify Acceptance / Completion Criteria during execution — that belongs to planning.
+Acceptance / Completion Criteria and verification are distinct: the criteria state what must be true for the milestone to be complete; verification commands and expected evidence demonstrate whether the approved changes actually satisfied those criteria. Verification does not replace stating the criteria explicitly. Do not invent or modify Acceptance / Completion Criteria during execution — that belongs to planning.
+
+Expected evidence stated in the Implementation Plan is a prediction, not proof — label it Expected / Predicted — Not Yet Verified. Treat it as verified only when: (1) the milestone has actually been executed; (2) the stated verification commands/checks have actually been run; and (3) the resulting evidence supports the expected outcome. Running a verification command is not sufficient by itself if it fails or produces evidence that contradicts the expected outcome.
 
 The Implementation Plan must contain enough implementation detail for a human to review the proposed change before repository code is modified. Proposed changes must be exact (e.g. the specific file and the specific change to make), not a restated intent such as "implement the feature" or "add test infrastructure."
 
 Proposed code may be included inside the Implementation Plan. Do not apply the proposed changes while planning.
 
-## Phase Boundaries
+## Milestone Type Boundaries
 
 ### FOUNDATION (conditional)
 
-Create a FOUNDATION Implementation Plan only when `Plan.md` has already recorded this milestone's setup required as Yes. FOUNDATION exists for a genuine executable prerequisite that prevents the milestone's RED from meaningfully beginning — not merely because the production class, service, repository, controller, method, or behavior under test does not yet exist (that absence may itself be valid RED evidence; see RED below).
+Create a FOUNDATION Implementation Plan only when the milestone approved for this Implementation Plan is itself a FOUNDATION milestone, as recorded in `Plan.md`. FOUNDATION milestones exist only for a genuine executable prerequisite that prevents the following RED milestone from meaningfully beginning — not merely because the production class, service, repository, controller, method, or behavior under test does not yet exist (that absence may itself be valid RED evidence; see RED below).
 
 A FOUNDATION Implementation Plan must:
 
@@ -66,10 +70,10 @@ A FOUNDATION Implementation Plan must:
 - identify the exact files/artifacts allowed to change;
 - contain the minimum setup required — nothing more;
 - explicitly exclude the target feature/business behavior; do not propose production scaffolding for the behavior RED is meant to drive;
-- define Acceptance/Completion Criteria and verification proving the prerequisite is established and RED can now begin;
-- stop after verification — do not propose RED, GREEN, or REFACTOR work in the same Implementation Plan. FOUNDATION never automatically continues into RED; RED requires its own RED Implementation Plan and human approval.
+- define Acceptance/Completion Criteria and verification proving the prerequisite is established and the following RED milestone can now begin;
+- stop after verification — do not propose RED, GREEN, or REFACTOR work in the same Implementation Plan. FOUNDATION never automatically continues into RED; RED is a separate milestone requiring its own RED Implementation Plan and human approval.
 
-If `Plan.md` records this milestone's setup required as No, do not propose a FOUNDATION Implementation Plan; propose RED directly.
+If the milestone approved for this Implementation Plan is a RED milestone with no preceding FOUNDATION milestone recorded in `Plan.md`, propose RED directly.
 
 ### RED
 
