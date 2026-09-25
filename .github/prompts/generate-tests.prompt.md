@@ -41,3 +41,5 @@ Before reporting completion, re-read every test/check assertion you wrote or cha
 Report the commands actually executed and the observed evidence.
 
 Do not begin GREEN.
+
+If the approved Implementation Plan lists Pre-authorized Contingencies, apply one only when its exact trigger actually occurs, and report for each contingency whether its trigger occurred and whether it was applied. Any other deviation — including a change to the approach — stops execution for re-approval. When the Implementation Plan requires a repeat run of the verification commands without cleaning, perform it and report both runs; a pass that is not repeatable is not verified.

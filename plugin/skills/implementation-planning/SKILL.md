@@ -17,6 +17,7 @@ Before planning:
 - inspect the current repository structure;
 - inspect relevant existing source, tests, configuration, and completed milestone work;
 - read current Plan execution status;
+- read every previously approved Implementation Plan and carry its decisions (versions, mechanisms, conventions, configuration and test-infrastructure choices) forward as approved inputs;
 - verify predecessor milestone evidence and actual repository progress;
 - verify that the milestone type being planned matches what `Plan.md` records for this milestone.
 
@@ -46,6 +47,8 @@ Include:
 - explicit Acceptance / Completion Criteria for this specific milestone — what must be true for this FOUNDATION, RED, GREEN, or REFACTOR milestone to be considered complete;
 - verification commands that demonstrate those criteria;
 - expected FOUNDATION, RED, GREEN, or REFACTOR evidence;
+- carried-forward decisions from earlier approved Implementation Plans;
+- pre-authorized contingencies, if any;
 - rollback or recovery where relevant;
 - risks;
 - explicit exclusions.
@@ -109,3 +112,19 @@ When an Implementation Plan introduces or changes a dependency, framework, plugi
 - cite the source used to confirm support and compatibility;
 - never choose a version because it is already in a local cache, offline, or otherwise convenient in the current environment — environment availability is an execution concern, not a selection criterion;
 - if current support cannot be verified, ask a focused clarification question and stop instead of choosing.
+
+## Carried-Forward Decisions
+
+Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. List the ones this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
+
+## Pre-authorized Contingencies
+
+An Implementation Plan may pre-authorize a contingency only in a dedicated Pre-authorized Contingencies section. Each contingency states an exact observable trigger, the exact file, and the exact change. Nothing broader is authorized: a change to the approach, an additional file, or an additional dependency that is not listed returns to planning for re-approval. Execution reports, for each contingency, whether its trigger occurred and whether it was applied.
+
+## File Scope and Plan Status
+
+Acceptance criteria that limit which files may change always exclude the milestone's own Execution Status update in `Plan.md`, which the PDD workflow performs after verified execution.
+
+## Repeatable, Isolated Verification
+
+When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.

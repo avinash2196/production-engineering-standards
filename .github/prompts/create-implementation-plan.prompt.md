@@ -16,6 +16,7 @@ Before planning:
 1. read the approved Requirements, Plan, and applicable API/external contract;
 2. inspect the current repository structure and relevant current implementation;
 3. read current Plan execution status;
+3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
 4. verify predecessor milestone evidence and actual completed progress;
 5. verify the milestone type being planned matches what `Plan.md` records for this milestone.
 
@@ -66,3 +67,5 @@ When the plan introduces or changes a dependency, framework, plugin, or tool ver
 
 Do not implement the milestone.
 Do not approve the Implementation Plan yourself.
+
+Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.

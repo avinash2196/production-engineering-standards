@@ -819,5 +819,57 @@ class PddControlsTest(unittest.TestCase):
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("Dependency and Version Selection", text)
 
+    # --- Carry-forward, contingencies, file scope, repeatable verification pass.
+
+    def test_implementation_planning_carries_forward_prior_decisions(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Carried-Forward Decisions", skill)
+        self.assertIn("read every previously approved Implementation Plan", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Carried-Forward Decisions", template)
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("read every previously approved Implementation Plan", text)
+
+    def test_contingencies_are_exact_and_reported(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Pre-authorized Contingencies", skill)
+        self.assertIn("exact observable trigger", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Pre-authorized Contingencies", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [
+                f".github/prompts/{cmd}.prompt.md",
+                f".claude/commands/{cmd}.md",
+                f"plugin/commands/{cmd}.md",
+            ]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("whether its trigger occurred and whether it was applied", text, rel)
+                self.assertIn("a pass that is not repeatable is not verified", text, rel)
+
+    def test_file_scope_excludes_plan_status_update(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## File Scope and Plan Status", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("exclude this milestone's own Execution Status update", template)
+
+    def test_verification_must_be_repeatable_and_isolated(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Repeatable, Isolated Verification", skill)
+        self.assertIn("a second time without cleaning", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("must assert that the isolation is actually in effect", testing)
+        self.assertIn("must pass on repeated runs without cleanup", testing)
+
 if __name__ == "__main__":
     unittest.main()
