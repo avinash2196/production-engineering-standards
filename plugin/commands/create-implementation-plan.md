@@ -38,12 +38,12 @@ The artifact must contain enough proposed implementation detail for human code r
 
 For a FOUNDATION milestone, create it only if the milestone approved for this Implementation Plan is itself recorded in `Plan.md` as FOUNDATION, and all of these can be answered:
 
-1. Why can the following RED milestone not meaningfully proceed from the current repository state?
+1. Why can the RED milestone(s) this FOUNDATION serves, as recorded in `Plan.md`, not meaningfully proceed from the current repository state?
 2. What exact prerequisite must be established?
 3. What files/artifacts may change?
 4. What target feature behavior is explicitly excluded?
 5. How will completion be verified?
-6. What evidence will show the repository is ready for the following RED milestone?
+6. What evidence will show the repository is ready for every RED milestone this FOUNDATION serves?
 
 If the milestone approved for this Implementation Plan is a RED milestone with no preceding FOUNDATION milestone recorded in `Plan.md`, do not create a FOUNDATION Implementation Plan — including whenever the only reason under consideration is that the production class, service, repository, controller, method, or behavior under test does not yet exist; propose RED directly instead.
 
@@ -56,6 +56,8 @@ Proposed code may be written inside the Implementation Plan for review.
 Do not modify production code, tests, build configuration, deployment configuration, or runtime configuration while creating the Implementation Plan.
 
 If the current repository state materially conflicts with approved artifacts or predecessor evidence, or contradicts the milestone type `Plan.md` recorded for this milestone, stop and surface the conflict for human review — do not silently plan a different milestone type.
+
+When the plan introduces or changes a dependency, framework, plugin, or tool version, apply the `implementation-planning` skill's Dependency and Version Selection rules: a currently supported release with a cited source, never one chosen for local-cache or offline convenience; ask and stop if support cannot be verified.
 
 Do not implement the milestone.
 Do not approve the Implementation Plan yourself.

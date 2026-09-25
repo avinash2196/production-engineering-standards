@@ -62,7 +62,7 @@ Proposed code may be included inside the Implementation Plan. Do not apply the p
 
 ### FOUNDATION (conditional)
 
-Create a FOUNDATION Implementation Plan only when the milestone approved for this Implementation Plan is itself a FOUNDATION milestone, as recorded in `Plan.md`. FOUNDATION milestones exist only for a genuine executable prerequisite that prevents the following RED milestone from meaningfully beginning — not merely because the production class, service, repository, controller, method, or behavior under test does not yet exist (that absence may itself be valid RED evidence; see RED below).
+Create a FOUNDATION Implementation Plan only when the milestone approved for this Implementation Plan is itself a FOUNDATION milestone, as recorded in `Plan.md`. FOUNDATION milestones exist only for a genuine executable prerequisite that prevents a RED milestone this FOUNDATION serves (as recorded in `Plan.md`) from meaningfully beginning — not merely because the production class, service, repository, controller, method, or behavior under test does not yet exist (that absence may itself be valid RED evidence; see RED below).
 
 A FOUNDATION Implementation Plan must:
 
@@ -70,7 +70,7 @@ A FOUNDATION Implementation Plan must:
 - identify the exact files/artifacts allowed to change;
 - contain the minimum setup required — nothing more;
 - explicitly exclude the target feature/business behavior; do not propose production scaffolding for the behavior RED is meant to drive;
-- define Acceptance/Completion Criteria and verification proving the prerequisite is established and the following RED milestone can now begin;
+- define Acceptance/Completion Criteria and verification proving the prerequisite is established and every RED milestone this FOUNDATION serves can begin;
 - stop after verification — do not propose RED, GREEN, or REFACTOR work in the same Implementation Plan. FOUNDATION never automatically continues into RED; RED is a separate milestone requiring its own RED Implementation Plan and human approval.
 
 If the milestone approved for this Implementation Plan is a RED milestone with no preceding FOUNDATION milestone recorded in `Plan.md`, propose RED directly.
@@ -100,3 +100,12 @@ For distributed changes, include idempotency, concurrency, retries, and partial 
 
 Do not implement while creating the Implementation Plan.
 Do not approve the Implementation Plan on behalf of a human reviewer.
+
+## Dependency and Version Selection
+
+When an Implementation Plan introduces or changes a dependency, framework, plugin, or tool version:
+
+- choose a release that is currently supported by its maintainers and compatible with the approved technology stack;
+- cite the source used to confirm support and compatibility;
+- never choose a version because it is already in a local cache, offline, or otherwise convenient in the current environment — environment availability is an execution concern, not a selection criterion;
+- if current support cannot be verified, ask a focused clarification question and stop instead of choosing.

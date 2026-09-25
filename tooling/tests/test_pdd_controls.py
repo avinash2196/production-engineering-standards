@@ -776,5 +776,48 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("record each answered clarification in Decisions Resolved", text)
             self.assertIn("exactly one row per `api-design` Contract Completeness question", text)
 
+    # --- Projected prerequisite coverage and version selection pass.
+
+    def test_plan_rules_require_prerequisite_coverage_for_every_red(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Prerequisite coverage for every RED milestone", skill)
+        self.assertIn("projected after all of its predecessor milestones complete", skill)
+        self.assertIn("Record which RED milestones each FOUNDATION milestone serves", skill)
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("not only the current state", text)
+            self.assertNotIn("determine whether the current repository state is sufficient to begin RED", text)
+
+    def test_foundation_is_not_limited_to_the_immediately_following_red(self):
+        for rel in [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Plan.md",
+            ".github/skills/implementation-planning/SKILL.md",
+            ".github/prompts/create-implementation-plan.prompt.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertNotIn("the following RED milestone", text, rel)
+
+    def test_dependency_versions_must_be_supported_not_cache_convenient(self):
+        skill = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Dependency and Version Selection", skill)
+        self.assertIn("currently supported by its maintainers", skill)
+        self.assertIn("never choose a version because it is already in a local cache", skill)
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Dependency and Version Selection", text)
+
 if __name__ == "__main__":
     unittest.main()

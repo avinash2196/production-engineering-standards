@@ -49,7 +49,7 @@ For each milestone record:
 
 A milestone must not authorize work from a later milestone. Recording a milestone here does not itself authorize it — each repository-changing milestone still requires its own Implementation Plan, Human Review, and execution, in that order. A CONTRACT milestone changes no executable artifact and has no Implementation Plan; its human-reviewed deliverable is the contract artifact itself.
 
-A FOUNDATION milestone requires its own approved Implementation Plan and Human Review before any repository change, exactly like a RED, GREEN, or REFACTOR milestone. It is conditional — include one only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup) that the following RED milestone needs, never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR sequence or without approval.
+A FOUNDATION milestone requires its own approved Implementation Plan and Human Review before any repository change, exactly like a RED, GREEN, or REFACTOR milestone. It is conditional — include one only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup) that the RED milestones it serves need (record which ones), never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR sequence or without approval.
 
 ## Requirement Traceability
 
