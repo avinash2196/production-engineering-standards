@@ -753,5 +753,28 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("this command stays project-neutral", text)
             self.assertIn("check the contract with evidence", text)
 
+    # --- Revision handling pass.
+
+    def test_contract_and_plan_commands_define_revision_handling(self):
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("treat it as a revision, not a fresh draft", text, rel)
+            self.assertIn("compare against the previous version", text, rel)
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("record each answered clarification in Decisions Resolved", text)
+            self.assertIn("exactly one row per `api-design` Contract Completeness question", text)
+
 if __name__ == "__main__":
     unittest.main()
