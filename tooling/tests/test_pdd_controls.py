@@ -713,5 +713,45 @@ class PddControlsTest(unittest.TestCase):
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("executes the CONTRACT milestone recorded in the approved", text)
 
+    # --- API contract completeness pass.
+
+    def test_api_design_defines_contract_completeness(self):
+        text = (ROOT / ".github/skills/api-design/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Contract Completeness", text)
+        for token in [
+            "Input parsing",
+            "Absent, null, empty, and blank values",
+            "Read-only and unknown request fields",
+            "Numeric semantics",
+            "Collections",
+            "Matching and filtering",
+            "Error responses",
+            "Identity and existence",
+            "Mutation semantics",
+            "Internal consistency",
+            "Authority",
+            "ask a focused clarification question and stop",
+        ]:
+            self.assertIn(token, text)
+
+    def test_api_contract_template_has_contract_wide_rules(self):
+        text = (
+            ROOT / ".github/skills/api-design/templates/API-Contract.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Contract-Wide Rules", text)
+        self.assertIn("## Decisions Resolved", text)
+        self.assertIn("The approved Plan remains the single source of truth", text)
+
+    def test_create_api_contract_self_checks_completeness(self):
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Contract Completeness question", text)
+            self.assertIn("this command stays project-neutral", text)
+            self.assertIn("check the contract with evidence", text)
+
 if __name__ == "__main__":
     unittest.main()

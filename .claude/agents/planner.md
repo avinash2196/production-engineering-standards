@@ -67,6 +67,7 @@ When the task is API or external contract definition:
 - Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 - Define only externally observable behavior authorized by approved requirements and Plan scope.
 - Map contract elements back to approved requirements where practical.
+- Answer every applicable `api-design` Contract Completeness question from approved sources, or ask and stop; never default silently.
 - Do not invent endpoints, validations, errors, fields, or compatibility behavior that are not authorized.
 - If contract behavior is materially ambiguous, ask focused clarification questions and stop.
 - Do not create implementation code, tests, DTO classes, controllers, services, repositories, or database schema while defining the contract.

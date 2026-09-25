@@ -24,3 +24,7 @@ If material contract behavior is unresolved, ask focused clarification questions
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
 
 Do not approve the contract yourself.
+
+Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
+
+Before stopping, check the contract with evidence: re-read the written contract, confirm each Contract Completeness question is answered or marked not applicable with a reason, and search for statements that contradict each other, the requirements, or the Plan. Fix what the sources already answer; for anything they do not answer, ask focused clarification questions and stop instead of choosing. Report the result question by question.
