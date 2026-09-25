@@ -32,7 +32,7 @@ Include relevant classes, methods, interfaces, signatures, structures, or config
 
 ## Proposed Code / Tests
 
-Include concrete code snippets, pseudocode, or patch-level examples where practical and useful for human review.
+For every file in scope, include the exact code: the complete final content of a created file, and for a modified file either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically. No pseudocode, placeholders, ellipses, or partial fragments. Every change shown here must be named in Proposed Changes, and every change named there must appear here.
 
 The proposed content in this section is for review only and must not be applied during Implementation Plan creation.
 

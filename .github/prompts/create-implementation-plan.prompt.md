@@ -33,7 +33,7 @@ The Implementation Plan must reflect the actual current repository state and inc
 - ordered proposed changes;
 - concrete proposed tests or production code;
 - relevant classes, methods, interfaces, signatures, structures, or configuration changes;
-- code snippets, pseudocode, or patch-level detail where practical and useful for human review;
+- exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
 - explicit Acceptance / Completion Criteria for this milestone — what must be true for it to be considered complete;
 - verification commands and expected milestone evidence demonstrating those criteria;
 - risks and explicit exclusions.
@@ -69,3 +69,5 @@ Do not implement the milestone.
 Do not approve the Implementation Plan yourself.
 
 Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.
+
+Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, and matches the Proposed Changes list.

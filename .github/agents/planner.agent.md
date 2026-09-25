@@ -49,7 +49,7 @@ When creating an Implementation Plan:
 - Read the current Plan execution status and completed predecessor evidence.
 - Base the proposed work on the actual current repository state, not an assumed or original project structure.
 - Identify the exact files to create or modify.
-- Include concrete proposed tests or production code, relevant signatures and structures, and code snippets or patch-level detail where practical.
+- Include the exact code for every file in scope — complete final content for created files; complete final content or a complete unified diff covering every changed line for modified files — never pseudocode, placeholders, or partial fragments.
 - Include enough detail for a human to review the intended implementation before execution.
 - For RED, propose tests/checks only.
 - For GREEN, start from valid RED evidence and propose the smallest production change needed to satisfy it.

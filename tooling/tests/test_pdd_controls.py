@@ -871,5 +871,38 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("must assert that the isolation is actually in effect", testing)
         self.assertIn("must pass on repeated runs without cleanup", testing)
 
+    # --- Exact code pass.
+
+    def test_implementation_plans_require_exact_code_not_pseudocode(self):
+        files = [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/implementation-planning/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Implementation-Plan.md",
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+            ".github/agents/planner.agent.md",
+            ".claude/agents/planner.md",
+            "plugin/agents/planner.md",
+        ]
+        for rel in files:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertNotIn("pseudocode, or patch-level", text, rel)
+            self.assertNotIn("code snippets or patch-level", text, rel)
+            self.assertIn("complete unified diff covering every changed line", text, rel)
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Exact Code", skill)
+        self.assertIn("A change that appears only in the code, or only in the list, is a defect", skill)
+
+    def test_executors_apply_code_exactly(self):
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [
+                f".github/prompts/{cmd}.prompt.md",
+                f".claude/commands/{cmd}.md",
+                f"plugin/commands/{cmd}.md",
+            ]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("Apply the code exactly as the approved Implementation Plan writes it", text, rel)
+
 if __name__ == "__main__":
     unittest.main()

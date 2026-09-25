@@ -75,7 +75,7 @@ For the authorized milestone, it must contain:
 - ordered proposed changes;
 - concrete proposed tests or production changes;
 - relevant classes, methods, interfaces, signatures, structures, or configuration changes;
-- code snippets, pseudocode, or patch-level detail where practical and useful for human review;
+- exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
 - explicit Acceptance / Completion Criteria for the specific milestone — what must be true for it to be considered complete, distinct from the verification that demonstrates it;
 - verification commands and expected milestone evidence;
 - risks and explicit exclusions.

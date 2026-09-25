@@ -43,7 +43,7 @@ Include:
 - ordered proposed changes;
 - concrete proposed tests or production code;
 - relevant method, class, interface, schema, or configuration signatures;
-- code snippets, pseudocode, or patch-level detail where practical and useful for review;
+- exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
 - explicit Acceptance / Completion Criteria for this specific milestone — what must be true for this FOUNDATION, RED, GREEN, or REFACTOR milestone to be considered complete;
 - verification commands that demonstrate those criteria;
 - expected FOUNDATION, RED, GREEN, or REFACTOR evidence;
@@ -128,3 +128,11 @@ Acceptance criteria that limit which files may change always exclude the milesto
 ## Repeatable, Isolated Verification
 
 When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
+
+## Exact Code
+
+An Implementation Plan is reviewed as the exact code that will be written. For every file in scope it contains the complete final content of a created file, and for a modified file either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically. Pseudocode, placeholders, ellipses, "unchanged" gaps, and partial fragments are not allowed for any code, test, configuration, or build file that will be written.
+
+The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
+
+Before stopping, check each file in scope: complete content or a complete diff is present, it contains no placeholder or pseudocode, and it matches the Proposed Changes list. Report the result per file.
