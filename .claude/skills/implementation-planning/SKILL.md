@@ -73,6 +73,7 @@ A FOUNDATION Implementation Plan must:
 - identify the exact files/artifacts allowed to change;
 - contain the minimum setup required — nothing more;
 - explicitly exclude the target feature/business behavior; do not propose production scaffolding for the behavior RED is meant to drive;
+- list, as explicit decisions for human review with their alternatives, every choice that binds the RED milestones this FOUNDATION serves and that those RED milestones cannot change themselves — for example test tooling, test libraries, test clients, and the test-isolation mechanism;
 - define Acceptance/Completion Criteria and verification proving the prerequisite is established and every RED milestone this FOUNDATION serves can begin;
 - stop after verification — do not propose RED, GREEN, or REFACTOR work in the same Implementation Plan. FOUNDATION never automatically continues into RED; RED is a separate milestone requiring its own RED Implementation Plan and human approval.
 
@@ -119,7 +120,7 @@ Decisions recorded in earlier approved Implementation Plans are approved inputs 
 
 ## Pre-authorized Contingencies
 
-An Implementation Plan may pre-authorize a contingency only in a dedicated Pre-authorized Contingencies section. Each contingency states an exact observable trigger, the exact file, and the exact change. Nothing broader is authorized: a change to the approach, an additional file, or an additional dependency that is not listed returns to planning for re-approval. Execution reports, for each contingency, whether its trigger occurred and whether it was applied.
+An Implementation Plan may pre-authorize a contingency only in a dedicated Pre-authorized Contingencies section. Each contingency states an exact observable trigger, the exact file, and the exact change. Nothing broader is authorized: a change to the approach, an additional file, or an additional dependency that is not listed returns to planning for re-approval. A contingency may never remove, loosen, or otherwise weaken a test assertion or an Acceptance / Completion Criterion — relaxing a check because it fails changes the evidence rather than the code; a failing check stops execution and returns to planning. Execution reports, for each contingency, whether its trigger occurred and whether it was applied.
 
 ## File Scope and Plan Status
 
@@ -132,6 +133,8 @@ When tests touch persistent state (files, databases, caches, temporary directori
 ## Exact Code
 
 An Implementation Plan is reviewed as the exact code that will be written. For every file in scope it contains the complete final content of a created file, and for a modified file either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically. Pseudocode, placeholders, ellipses, "unchanged" gaps, and partial fragments are not allowed for any code, test, configuration, or build file that will be written.
+
+Path patterns — ignore rules, globs, and configured file or directory paths — must match only what they are intended to match; anchor a pattern to the repository root when it is meant for a root-level path.
 
 The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
 

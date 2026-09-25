@@ -34,3 +34,5 @@ Report the commands actually executed and the observed evidence.
 If the approved Implementation Plan lists Pre-authorized Contingencies, apply one only when its exact trigger actually occurs, and report for each contingency whether its trigger occurred and whether it was applied. Any other deviation — including a change to the approach — stops execution for re-approval. When the Implementation Plan requires a repeat run of the verification commands without cleaning, perform it and report both runs; a pass that is not repeatable is not verified.
 
 Apply the code exactly as the approved Implementation Plan writes it. Any difference between the resulting files and the plan's exact code — including formatting-independent structural changes — is a deviation: stop and report it for re-approval rather than applying it.
+
+Never remove, loosen, or weaken a test assertion or an Acceptance / Completion Criterion to make verification pass, even under a pre-authorized contingency; a failing check stops execution for re-approval.

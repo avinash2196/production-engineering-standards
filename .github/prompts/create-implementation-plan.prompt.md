@@ -51,6 +51,8 @@ For a FOUNDATION milestone, create it only if the milestone approved for this Im
 5. How will completion be verified?
 6. What evidence will show the repository is ready for every RED milestone this FOUNDATION serves?
 
+Also list, as explicit decisions for review with alternatives, every FOUNDATION choice that binds the RED milestones it serves and that they cannot change themselves (test tooling, test libraries, test clients, test-isolation mechanism).
+
 If the milestone approved for this Implementation Plan is a RED milestone with no preceding FOUNDATION milestone recorded in `Plan.md`, do not create a FOUNDATION Implementation Plan — including whenever the only reason under consideration is that the production class, service, repository, controller, method, or behavior under test does not yet exist; propose RED directly instead.
 
 For RED, propose test/check changes only.
@@ -71,3 +73,5 @@ Do not approve the Implementation Plan yourself.
 Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.
 
 Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, and matches the Proposed Changes list.
+
+Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

@@ -904,5 +904,36 @@ class PddControlsTest(unittest.TestCase):
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("Apply the code exactly as the approved Implementation Plan writes it", text, rel)
 
+    # --- No-weakening, labels, binding FOUNDATION decisions, path patterns pass.
+
+    def test_contingencies_never_weaken_checks(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("A contingency may never remove, loosen, or otherwise weaken a test assertion", skill)
+        template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
+        self.assertIn("A contingency may never remove, loosen, or weaken a test assertion", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("Never remove, loosen, or weaken a test assertion", text, rel)
+
+    def test_artifact_labels_must_not_collide(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("must not reuse a label already defined by an approved artifact it references", skill)
+        for cmd in ["create-plan", "create-api-contract", "create-implementation-plan"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("reuses a label already defined by an approved artifact", text, rel)
+
+    def test_foundation_lists_binding_decisions(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("every choice that binds the RED milestones this FOUNDATION serves", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("binds the RED milestones it serves", text, rel)
+
+    def test_path_patterns_match_only_intended_paths(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("anchor a pattern to the repository root", skill)
+
 if __name__ == "__main__":
     unittest.main()

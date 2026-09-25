@@ -56,7 +56,7 @@ When tests touch persistent state or override configuration, include a second ru
 
 ## Pre-authorized Contingencies
 
-Optional. Each entry: exact observable trigger, exact file, exact change. Anything not listed returns to planning.
+Optional. Each entry: exact observable trigger, exact file, exact change. Anything not listed returns to planning. A contingency may never remove, loosen, or weaken a test assertion or an Acceptance / Completion Criterion.
 
 ## Rollback / Recovery
 

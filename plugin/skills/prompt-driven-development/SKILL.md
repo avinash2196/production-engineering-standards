@@ -42,6 +42,8 @@ Each artifact has a distinct responsibility:
 - Production code implements the approved behavior.
 - Final Review evaluates completed work against approved artifacts and produces findings and recommendations, not authorized changes.
 
+Labels and identifiers an artifact introduces (requirement, constraint, decision, clarification, criterion, or contingency IDs) must not reuse a label already defined by an approved artifact it references; use a distinct prefix so every reference is unambiguous.
+
 Do not silently reconcile material contradictions between authoritative artifacts.
 
 If approved artifacts materially conflict:

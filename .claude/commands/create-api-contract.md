@@ -30,3 +30,5 @@ When revising an existing contract (for example to fold in clarification answers
 - record each answered clarification in Decisions Resolved with its source;
 - if the contract contains a completeness checklist, give it exactly one row per `api-design` Contract Completeness question, never a self-invented list;
 - in the self-check, compare against the previous version and report what changed and that every affected reference was updated.
+
+Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).
