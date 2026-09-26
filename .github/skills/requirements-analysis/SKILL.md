@@ -41,6 +41,10 @@ When a material unresolved decision exists:
 
 A material unresolved decision must not be hidden in an Open Questions section while the workflow continues as if the artifact were complete.
 
+## Recording Resolved Decisions
+
+An answer to a clarification question is a decision, not conversation. A review that only analyzes requirements writes no files: it ends by listing each resolved decision with the requirement text it changes, and states that the requirements artifact must record them (through requirements capture) before planning relies on them. Downstream artifacts trace to the requirements artifact, never to conversation history.
+
 ## Non-Blocking Decisions
 
 If a decision does not affect correctness or approved scope of the current task:

@@ -8,6 +8,7 @@ tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 
 Own RED test execution and RED evidence.
 
+- Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
 - Work only from the approved RED Implementation Plan when the PDD workflow applies.
 - Read the authoritative artifacts and current repository state before editing tests.
 - Apply relevant testing and domain skills.

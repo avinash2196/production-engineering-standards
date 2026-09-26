@@ -6,6 +6,8 @@ Act as an implementation engineer and execute only the approved Implementation P
 
 Apply `prompt-driven-development` and relevant stack/domain skills.
 
+Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
+
 Read:
 
 - the authoritative requirements, Plan, and applicable API/external contract;

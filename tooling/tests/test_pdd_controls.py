@@ -935,5 +935,61 @@ class PddControlsTest(unittest.TestCase):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("anchor a pattern to the repository root", skill)
 
+    # --- Approval gate, recorded decisions, exclusions, traced settings,
+    # --- safe rollback, RED expectations, and Final Review artifact pass.
+
+    def test_execution_requires_user_approval(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("### Approval Status", skill)
+        self.assertIn("the AI never approves its own artifact", skill)
+        self.assertIn("Never infer approval from a commit message", skill)
+        template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
+        self.assertIn("The only status field in this artifact", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("confirm the Implementation Plan is approved", text, rel)
+        for agent in ["test-engineer", "implementation-engineer", "refactoring-engineer"]:
+            for rel in [f".github/agents/{agent}.agent.md", f".claude/agents/{agent}.md", f"plugin/agents/{agent}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("confirm the Implementation Plan is approved", text, rel)
+
+    def test_resolved_decisions_are_recorded_before_planning(self):
+        skill = (ROOT / ".github/skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Recording Resolved Decisions", skill)
+        self.assertIn("never to conversation history", skill)
+        for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md", "plugin/commands/review-requirements.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Resolved decisions to record", text, rel)
+
+    def test_absence_requirements_are_exclusions(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("A requirement that states an absence", skill)
+        self.assertIn("appears in that RED milestone's scope", skill)
+
+    def test_introduced_settings_are_traced_and_rollback_is_scoped(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Every dependency, plugin, and configuration setting the exact code introduces must trace", skill)
+        self.assertIn("never repository-wide reset, clean, or checkout operations", skill)
+        self.assertIn("must come from actual inspection", skill)
+        self.assertIn("must not silently depend on a shared resource", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("traces every dependency, plugin, and configuration setting", text, rel)
+
+    def test_red_expectations_and_contract_coverage(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("as a class of failure attributable to the missing behavior", skill)
+        self.assertIn("map every normative rule of the approved contract", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("verify it at least once through the real transport", testing)
+
+    def test_final_review_is_written_to_an_artifact(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("docs/.ai/Final-Review.md", skill)
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("docs/.ai/Final-Review.md", text, rel)
+
 if __name__ == "__main__":
     unittest.main()

@@ -60,10 +60,12 @@ Optional. Each entry: exact observable trigger, exact file, exact change. Anythi
 
 ## Rollback / Recovery
 
-Include only when relevant.
+Include only when relevant. Reverse only this milestone's changes, file by file; never use repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work.
 
 ## Explicitly Out of Scope
 
 ## Human Review
+
+The only status field in this artifact. Only the user approves; see `prompt-driven-development` Approval Status.
 
 Status: Awaiting human approval

@@ -8,6 +8,7 @@ tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply
 
 Own optional REFACTOR work.
 
+- Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
 - Require a verified GREEN baseline before changing code.
 - Require an approved REFACTOR Implementation Plan when the PDD workflow applies.
 - Read the authoritative artifacts and current repository state.

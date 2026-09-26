@@ -86,6 +86,14 @@ The proposed code belongs inside the Implementation Plan so a human can review t
 
 The planner may write proposed code in the Implementation Plan, but must not apply those proposed changes to production source, tests, build configuration, deployment configuration, or runtime configuration.
 
+### Approval Status
+
+Only the user approves an Implementation Plan; the AI never approves its own artifact. An Implementation Plan records its status in exactly one place — its Human Review section — and does not repeat it elsewhere in the artifact.
+
+Before any execution command changes a file, confirm approval. Approval is either already recorded in the plan's Human Review status, or given by the user in the current conversation in response to a request to approve that specific plan — no particular phrase is required ("go ahead" or "proceed" in that context is approval). Record the approval in the Human Review status before changing any file. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval exists, ask and stop.
+
+After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
+
 ## Plan Content Rules
 
 The Plan defines WHAT is delivered and in which milestone order. It does not define HOW (Implementation Plans) or externally observable behavior (the API/external contract). When creating or revising a Plan:
@@ -97,7 +105,7 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 5. **GREEN milestones deliver behavior.** State the behavior that makes the predecessor RED evidence pass. Do not list production classes or components.
 6. **FOUNDATION is prerequisite-only.** Limit it to the build, dependency, bootstrap, configuration, or test-infrastructure prerequisites that the RED milestones it serves need to execute — which may be more than the immediately following RED milestone (see rule 11) — consistent with approved requirements (never an alternative the requirements exclude). The domain model, schema derived from it, and target behavior belong to GREEN.
 7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
-8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision). No requirement has two owners.
+8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision). No requirement has two owners. A requirement that states an absence (for example "no X is required") is an exclusion: record it as traceable with no owning milestone, verified at Final Review — never assign it to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
 9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone.
 10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
 11. **Prerequisite coverage for every RED milestone.** RED milestones cannot add dependencies, build configuration, or test infrastructure, and GREEN comes after RED, so every prerequisite a RED milestone needs must already exist when it starts. Walk the whole sequence: for each RED milestone, determine what its tests need to compile and run (dependencies, test infrastructure, configuration) given the repository state projected after all of its predecessor milestones complete — not only the current state. If any prerequisite is not provided by a predecessor, either widen an earlier FOUNDATION milestone to provide it or insert a FOUNDATION milestone immediately before that RED milestone. Record which RED milestones each FOUNDATION milestone serves.
@@ -202,6 +210,8 @@ Final Review (code review, production-readiness review, or any review command) p
 
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
+
+When a review is the Final Review of a Plan, write it to `docs/.ai/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file.
 
 ## Task Prompt Boundary
 

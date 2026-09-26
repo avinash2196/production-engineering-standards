@@ -8,6 +8,7 @@ tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 
 Own FOUNDATION and GREEN execution, for the milestone type already declared by the approved Implementation Plan.
 
+- Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
 - The milestone type (FOUNDATION or GREEN) was already selected by planning in `Plan.md` and fixed by the approved Implementation Plan — do not determine or change it.
 - Read the approved Implementation Plan before changing production code.
 - Read the authoritative artifacts and current repository state.

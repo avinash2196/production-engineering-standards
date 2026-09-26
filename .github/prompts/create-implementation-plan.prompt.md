@@ -72,6 +72,6 @@ Do not approve the Implementation Plan yourself.
 
 Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.
 
-Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, and matches the Proposed Changes list.
+Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, matches the Proposed Changes list, and traces every dependency, plugin, and configuration setting it introduces.
 
 Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

@@ -21,7 +21,7 @@ Before planning:
 - verify predecessor milestone evidence and actual repository progress;
 - verify that the milestone type being planned matches what `Plan.md` records for this milestone.
 
-Prefer repository evidence over assumed structure or previously proposed implementation.
+Prefer repository evidence over assumed structure or previously proposed implementation. Repository-state claims such as "clean working tree" must come from actual inspection, not assumption.
 
 Do not plan from an assumed project state.
 
@@ -49,7 +49,7 @@ Include:
 - expected FOUNDATION, RED, GREEN, or REFACTOR evidence;
 - carried-forward decisions from earlier approved Implementation Plans;
 - pre-authorized contingencies, if any;
-- rollback or recovery where relevant;
+- rollback or recovery where relevant, reversing only this milestone's changes — never repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work;
 - risks;
 - explicit exclusions.
 
@@ -83,6 +83,8 @@ If the milestone approved for this Implementation Plan is a RED milestone with n
 
 - propose test/check changes only;
 - identify why the expected failure demonstrates missing approved behavior;
+- state the expected RED failure as a class of failure attributable to the missing behavior, not as one exact value the missing implementation happens to produce;
+- map every normative rule of the approved contract that this milestone verifies to a test, or list it as not tested with the reason; never test behavior the contract leaves undefined;
 - do not propose production implementation.
 - In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 
@@ -130,12 +132,16 @@ Acceptance criteria that limit which files may change always exclude the milesto
 
 When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
 
+Verification must not silently depend on a shared resource being available. Prefer dynamically allocated resources unless the approved artifacts explicitly require a fixed one.
+
 ## Exact Code
 
 An Implementation Plan is reviewed as the exact code that will be written. For every file in scope it contains the complete final content of a created file, and for a modified file either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically. Pseudocode, placeholders, ellipses, "unchanged" gaps, and partial fragments are not allowed for any code, test, configuration, or build file that will be written.
 
 Path patterns — ignore rules, globs, and configured file or directory paths — must match only what they are intended to match; anchor a pattern to the repository root when it is meant for a root-level path.
 
+Every dependency, plugin, and configuration setting the exact code introduces must trace to an approved artifact or to an explicit decision listed in the Implementation Plan for review. A setting that appears only in the code is a defect.
+
 The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
 
-Before stopping, check each file in scope: complete content or a complete diff is present, it contains no placeholder or pseudocode, and it matches the Proposed Changes list. Report the result per file.
+Before stopping, check each file in scope: complete content or a complete diff is present, it contains no placeholder or pseudocode, it matches the Proposed Changes list, and every dependency, plugin, and configuration setting it introduces is traced. Report the result per file.
