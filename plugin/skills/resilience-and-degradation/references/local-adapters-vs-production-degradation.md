@@ -11,7 +11,7 @@ Examples:
 - S3/GCS → local filesystem
 - Vault/Secret Manager → environment-variable provider
 
-Local adapters must be explicit and blocked from accidental production use.
+Local adapters must be explicit and blocked from accidental production use — for example, activated only under an explicit local/test profile, with startup failing if one is active under a production profile.
 
 ## Production degradation
 Defines what the real service does when a real dependency fails.

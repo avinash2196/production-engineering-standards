@@ -52,7 +52,7 @@ When the requirements do not state them and neither the repository nor the produ
 - **Deployment:** one running instance or several. Several instances change whether in-memory state, local locks, local caches, and scheduled jobs are correct.
 - **Availability and latency:** uptime expectation, latency expectation for key operations, and tolerance for downtime during deployment.
 - **Consistency and concurrency:** which operations must never conflict, duplicate, or be lost, and where eventual consistency is acceptable.
-- **Dependency failure:** expected behavior when a downstream system is slow or unavailable.
+- **Dependency failure:** expected behavior when a downstream system is slow or unavailable, and whether the service must run locally or in CI without it (which decides whether local adapters are needed).
 - **Observability:** what must be visible in production — logs, metrics, traces, alerts — and any existing monitoring stack to use.
 
 Rules:

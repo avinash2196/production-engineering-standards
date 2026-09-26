@@ -534,6 +534,36 @@ PASSED, `claude plugin validate ./plugin` PASSED.
 
 ---
 
+## Fix 10 — Fallback guidance did not depend on the dependency's role
+
+**Files changed:** `skills/resilience-and-degradation/SKILL.md` and its
+`references/local-adapters-vs-production-degradation.md`,
+`skills/requirements-analysis/SKILL.md` (all three copies), plus
+`tooling/tests/test_pdd_controls.py`.
+
+**What went wrong:** the skill listed failure options (fail fast, retry,
+queue durably, bypass, ...) without tying them to what the dependency is
+used for. The right fallback for Redis as a cache (bypass to the database)
+is the wrong one for Redis as a lock or rate limiter (fail closed). For
+Kafka, "queue durably" left room for buffering to a local file, which
+loses data on restart and breaks ordering across instances. "Blocked from
+accidental production use" named no mechanism, and the operational
+questions did not ask whether the service must run locally or in CI
+without a dependency.
+
+**Change:** fallback is now chosen by role — cache, coordination or
+protection, messaging (transactional outbox as the durable option), system
+of record — with local files and in-memory stores explicitly excluded as
+production fallbacks for multi-instance or ephemeral deployments. Local
+adapters are gated by an explicit local/test profile with startup failing
+under a production profile. The Dependency failure question now also asks
+whether the service must run locally or in CI without the dependency.
+
+**Verification:** see commit; unit tests, `validate_repository.py`, and
+`claude plugin validate ./plugin` run before commit.
+
+---
+
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**

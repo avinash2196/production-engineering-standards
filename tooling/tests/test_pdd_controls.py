@@ -1033,5 +1033,17 @@ class PddControlsTest(unittest.TestCase):
             for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
                 self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
 
+    def test_fallback_is_chosen_by_dependency_role(self):
+        for tree in [".github", ".claude", "plugin"]:
+            base = ROOT / tree / "skills/resilience-and-degradation"
+            skill = (base / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Choose by the role the dependency plays", skill, tree)
+            self.assertIn("transactional outbox", skill, tree)
+            self.assertIn("are not production fallbacks", skill, tree)
+            ref = (base / "references/local-adapters-vs-production-degradation.md").read_text(encoding="utf-8")
+            self.assertIn("startup failing if one is active under a production profile", ref, tree)
+            ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("must run locally or in CI without it", ra, tree)
+
 if __name__ == "__main__":
     unittest.main()
