@@ -30,13 +30,15 @@ The adopting application should own its own:
 
 ```text
 .github/copilot-instructions.md
-docs/requirements.md                    # or the application's chosen requirements artifact
-docs/.ai/Plan.md
-docs/.ai/<API-or-external-contract>.md  # when applicable
-docs/.ai/NNN_Implementation_Plan_<Milestone>.md
+docs/requirements.md                               # optional product-level requirements, read-only for PDD commands
+docs/.ai/<work-item>/requirements.md
+docs/.ai/<work-item>/Plan.md
+docs/.ai/<work-item>/<API-or-external-contract>.md  # when applicable
+docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md
+docs/.ai/<work-item>/Final-Review.md
 ```
 
-Those files describe the current application and current work.
+Those files describe the current application and current work. Every piece of work — the initial build of a new project and each later enhancement or fix — gets its own `docs/.ai/<work-item>/` folder, and every PDD command takes the work item as an argument (for example `create-plan order-cancellation`). See the `prompt-driven-development` skill's Work-Item Folders.
 
 They do not belong in the standards repository.
 

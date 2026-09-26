@@ -42,7 +42,7 @@ Do not claim validation passed unless the command was actually executed successf
 
 ## Artifact Responsibility
 
-When requested, create or update production-readiness artifacts under the repository documentation area, such as `docs/.ai/`.
+When requested, create or update production-readiness artifacts under the repository documentation area, such as `docs/.ai/<work-item>/`.
 
 The artifact should make clear whether each material readiness concern is:
 

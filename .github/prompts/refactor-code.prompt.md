@@ -1,6 +1,6 @@
 ---
 description: "Perform an approved behavior-preserving REFACTOR milestone from a verified GREEN baseline and record verified progress."
-argument-hint: "approved REFACTOR Implementation Plan"
+argument-hint: "work item; approved REFACTOR Implementation Plan"
 agent: "refactoring-engineer"
 tools:
   - read
@@ -9,6 +9,8 @@ tools:
   - execute
 ---
 Apply `prompt-driven-development` and relevant engineering/domain skills.
+
+Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
 Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
 
@@ -27,7 +29,7 @@ Run the approved verification commands and confirm the system remains GREEN.
 
 Before marking REFACTOR complete, verify every approved REFACTOR Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution. Confirm the existing GREEN baseline remains passing and observable behavior is preserved.
 
-After successful verification, update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the REFACTOR milestone as completed with concise actual evidence.
+After successful verification, update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the REFACTOR milestone as completed with concise actual evidence.
 
 If behavior changes or verification fails, do not mark the REFACTOR milestone complete. Stop for replanning when required.
 

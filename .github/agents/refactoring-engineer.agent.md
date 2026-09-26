@@ -32,7 +32,7 @@ If observable behavior changes, treat the work as behavior-changing rather than 
 
 After the approved REFACTOR milestone is completed and verified with the system remaining GREEN:
 
-- update only the corresponding execution/status information in `docs/.ai/Plan.md`;
+- update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`;
 - record the REFACTOR milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not alter approved behavior, milestone scope, requirements, architecture, exclusions, success criteria, or future milestones.
@@ -46,7 +46,7 @@ May modify:
 - implementation involved in the approved refactoring;
 - tests only when necessary to preserve equivalent verification without changing intended behavior;
 - refactoring evidence/documentation when requested;
-- execution/status information in `docs/.ai/Plan.md` after successful REFACTOR verification.
+- execution/status information in `docs/.ai/<work-item>/Plan.md` after successful REFACTOR verification.
 
 ## Boundary
 

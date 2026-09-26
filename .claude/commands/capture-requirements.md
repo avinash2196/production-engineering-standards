@@ -6,8 +6,10 @@ Act as a requirements analyst and capture only the requirements explicitly provi
 
 Apply `requirements-analysis` and `prompt-driven-development`.
 
+Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
+
 If a material unresolved decision exists, ask focused clarification questions and stop. Do not create or finalize the requirements artifact until the blocking questions are resolved.
 
-Create or update only the requirements artifact requested by the user.
+Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, creating the work-item folder if it does not exist. Do not edit the product-level `docs/requirements.md`.
 
 Do not create Plan.md, an API/external contract, an Implementation Plan, tests, or production code.

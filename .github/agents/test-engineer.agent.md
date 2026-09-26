@@ -39,7 +39,7 @@ If the failure does not demonstrate the intended missing behavior, stop and repo
 
 After valid RED evidence is actually established:
 
-- update only the corresponding execution/status information in `docs/.ai/Plan.md`;
+- update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`;
 - record the RED milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not change milestone scope, requirements, architecture, exclusions, success criteria, or future milestones.
@@ -52,8 +52,8 @@ May create or update:
 
 - test source files authorized by the approved RED milestone;
 - test fixtures owned by the approved milestone;
-- RED evidence or testing artifacts under `docs/.ai/` when requested;
-- execution/status information in `docs/.ai/Plan.md` after valid RED verification.
+- RED evidence or testing artifacts under `docs/.ai/<work-item>/` when requested;
+- execution/status information in `docs/.ai/<work-item>/Plan.md` after valid RED verification.
 
 ## Edit Boundary
 

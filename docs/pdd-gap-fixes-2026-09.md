@@ -460,6 +460,47 @@ relying on the abstract principle alone, if it recurs.
 
 ---
 
+## Fix 8 — Artifacts had one fixed location per repository
+
+**Files changed:** `skills/prompt-driven-development/SKILL.md`,
+`skills/prompt-driven-development/templates/Plan.md`, both application
+instruction templates, every PDD command, and every agent that referenced
+`docs/.ai/` (all three copies of each), plus `README.md`,
+`docs/getting-started.md`, `docs/customization-model.md`, and
+`tooling/tests/test_pdd_controls.py`.
+
+**What went wrong:** every agent, command, and template wrote to fixed
+paths — `docs/requirements.md`, `docs/.ai/Plan.md`,
+`docs/.ai/NNN_Implementation_Plan_*`, `docs/.ai/Final-Review.md`. The
+intended use is one Plan per enhancement, but on an existing project the
+second enhancement had nowhere to go: it would overwrite the first
+enhancement's Plan, append to it (mixing two scopes in one authorization
+artifact), or collide with it when two enhancements ran on separate
+branches. `NNN` numbering had the same problem.
+
+**Change:** added **Work-Item Folders** to the PDD skill. Every piece of
+work — the initial build of a new project and each later enhancement —
+gets `docs/.ai/<work-item>/` holding its own requirements, Plan, contract,
+Implementation Plans (numbered from `001`), and Final Review. Every PDD
+command takes the work item as an explicit argument and asks and stops if
+none is named; it is never inferred from branch names or recent files.
+Another work item's artifacts never authorize the current one. An optional
+product-level `docs/requirements.md` is read-only context. For work on
+existing code, Plan Content Rule 9 and the Plan template now require
+Current State to list the existing behavior the work item affects and the
+existing tests that cover it, so scope problems surface at Plan review
+rather than at Implementation Plan time.
+
+**Verification:** 97 unit tests pass (two new: every copy of the skill and
+every PDD command carries the work-item rule; no fixed repository-wide
+artifact path remains in any copy), `validate_repository.py` PASSED,
+`claude plugin validate ./plugin` PASSED. Pre-existing drift found while
+applying this: the Claude Code copies of `create-api-contract` lacked the
+"create or update only the contract artifact" sentence; the new
+work-item-scoped sentence was added to all three copies.
+
+---
+
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**

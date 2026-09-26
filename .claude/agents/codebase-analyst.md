@@ -16,7 +16,7 @@ Understand the current system before planning changes.
 
 ## Artifact Responsibility
 
-When requested, create or update analysis artifacts under the repository documentation area, such as `docs/.ai/`.
+When requested, create or update analysis artifacts under the repository documentation area, such as `docs/.ai/<work-item>/`.
 
 Analysis artifacts may contain:
 

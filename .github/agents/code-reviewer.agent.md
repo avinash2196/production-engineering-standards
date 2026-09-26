@@ -40,7 +40,7 @@ Do not claim a command passed unless it was actually executed successfully.
 
 ## Artifact Responsibility
 
-When requested, create or update code-review artifacts under the repository documentation area, such as `docs/.ai/`.
+When requested, create or update code-review artifacts under the repository documentation area, such as `docs/.ai/<work-item>/`.
 
 Record:
 

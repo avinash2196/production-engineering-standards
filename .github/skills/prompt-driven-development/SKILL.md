@@ -30,6 +30,26 @@ CONTRACT, FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone, not
 
 A RED milestone is followed by a GREEN milestone, then an optional REFACTOR milestone, once per independently reviewable capability/layer. See "Adaptive Milestone Decomposition" below for how many such milestone sequences a given piece of work should use.
 
+## Work-Item Folders
+
+Every piece of work — the initial build of a new project and every later enhancement or fix — is a work item with its own folder, so new and existing projects use the same structure:
+
+```
+docs/.ai/<work-item>/
+  requirements.md
+  Plan.md
+  <API/external contract>          (when a CONTRACT milestone exists)
+  NNN_Implementation_Plan_<Milestone>.md
+  Final-Review.md
+```
+
+- `<work-item>` is a short kebab-case name chosen by the user (for example `initial-build` or `order-cancellation`), with no numeric prefix.
+- Every PDD command operates on exactly one work item, named explicitly by the user. If no work item is named, or the named folder does not exist when the command needs an existing artifact, ask and stop — do not infer it from branch names, recent files, or other folders.
+- In this skill and in every agent and command, Requirements, `Plan.md`, the API/external contract, Implementation Plans, and `Final-Review.md` mean the files in the current work item's folder.
+- Implementation Plan numbering (`NNN`) is per work item and starts at `001`.
+- Another work item's artifacts never authorize work in the current one. Completed work items are history, not authority.
+- An optional product-level `docs/requirements.md` describes the product as a whole. PDD commands may read it as context but never edit it. The work item's `requirements.md` is authoritative for the work item and states which product-level behavior it changes; any other material conflict between the two stops the workflow for human review.
+
 ## Artifact Authority
 
 Each artifact has a distinct responsibility:
@@ -106,7 +126,7 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 6. **FOUNDATION is prerequisite-only.** Limit it to the build, dependency, bootstrap, configuration, or test-infrastructure prerequisites that the RED milestones it serves need to execute — which may be more than the immediately following RED milestone (see rule 11) — consistent with approved requirements (never an alternative the requirements exclude). The domain model, schema derived from it, and target behavior belong to GREEN.
 7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
 8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision). No requirement has two owners. A requirement that states an absence (for example "no X is required") is an exclusion: record it as traceable with no owning milestone, verified at Final Review — never assign it to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
-9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone.
+9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. When the work item changes existing code, Current State lists the existing behavior the work item affects and the existing tests that cover it; for a new project with no code yet, it says so. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone.
 10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
 11. **Prerequisite coverage for every RED milestone.** RED milestones cannot add dependencies, build configuration, or test infrastructure, and GREEN comes after RED, so every prerequisite a RED milestone needs must already exist when it starts. Walk the whole sequence: for each RED milestone, determine what its tests need to compile and run (dependencies, test infrastructure, configuration) given the repository state projected after all of its predecessor milestones complete — not only the current state. If any prerequisite is not provided by a predecessor, either widen an earlier FOUNDATION milestone to provide it or insert a FOUNDATION milestone immediately before that RED milestone. Record which RED milestones each FOUNDATION milestone serves.
 
@@ -211,7 +231,7 @@ Final Review (code review, production-readiness review, or any review command) p
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
 
-When a review is the Final Review of a Plan, write it to `docs/.ai/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file.
+When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file.
 
 ## Task Prompt Boundary
 

@@ -6,7 +6,11 @@ Act as an API designer and create or update the requested API/external contract.
 
 Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
+Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
+
 Read the approved requirements and Plan before defining the contract.
+
+Create or update only the API/external contract artifact inside the work item's folder.
 
 This command executes the CONTRACT milestone recorded in the approved `Plan.md`. If the Plan records no CONTRACT milestone, or its predecessor is not satisfied, stop and surface that for human review. Resolve every decision the Plan assigns to the CONTRACT milestone; do not add scope the Plan does not assign.
 

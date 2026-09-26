@@ -1,6 +1,6 @@
 ---
 description: "Execute an approved RED Implementation Plan, establish valid RED evidence, and record verified RED progress."
-argument-hint: "approved RED Implementation Plan"
+argument-hint: "work item; approved RED Implementation Plan"
 agent: "test-engineer"
 tools:
   - read
@@ -9,6 +9,8 @@ tools:
   - execute
 ---
 Apply `testing`, `prompt-driven-development`, and relevant domain skills.
+
+Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
 Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
 
@@ -32,7 +34,7 @@ Before marking RED complete, verify every approved RED Acceptance / Completion C
 
 Confirm that the observed failure demonstrates the intended missing approved behavior rather than an unrelated compilation, configuration, or environment problem.
 
-After valid RED is actually established, update only the corresponding execution/status information in `docs/.ai/Plan.md`, recording the RED milestone as completed with concise actual evidence.
+After valid RED is actually established, update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the RED milestone as completed with concise actual evidence.
 
 If RED is invalid or verification fails unexpectedly, do not mark the RED milestone complete.
 

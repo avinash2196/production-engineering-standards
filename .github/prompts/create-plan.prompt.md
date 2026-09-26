@@ -1,6 +1,6 @@
 ---
-description: "Create or update docs/.ai/Plan.md. Planning only."
-argument-hint: "approved requirements or change request"
+description: "Create or update docs/.ai/<work-item>/Plan.md. Planning only."
+argument-hint: "work item; approved requirements or change request"
 agent: "planner"
 tools:
   - read
@@ -9,9 +9,11 @@ tools:
 ---
 Apply `requirements-analysis` and `prompt-driven-development`.
 
-Read the approved requirements and inspect repository evidence relevant to the requested work.
+Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Create/update only `docs/.ai/Plan.md`, using the `prompt-driven-development` skill's `templates/Plan.md` structure and applying its Plan Content Rules.
+Read the work item's approved `docs/.ai/<work-item>/requirements.md` (and the product-level `docs/requirements.md` as read-only context when it exists) and inspect repository evidence relevant to the requested work.
+
+Create/update only `docs/.ai/<work-item>/Plan.md`, using the `prompt-driven-development` skill's `templates/Plan.md` structure and applying its Plan Content Rules.
 
 Define approved scope, milestones, predecessors, explicit exclusions, success criteria, and execution-status tracking. Each milestone is CONTRACT, FOUNDATION, RED, GREEN, or REFACTOR — never a containing milestone that owns several of these as internal phases.
 

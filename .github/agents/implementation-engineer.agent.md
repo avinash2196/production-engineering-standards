@@ -58,7 +58,7 @@ Do not claim FOUNDATION or GREEN is complete unless the relevant verification wa
 
 After the approved FOUNDATION or GREEN milestone is implemented and successfully verified:
 
-- update only the corresponding execution/status information in `docs/.ai/Plan.md`;
+- update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`;
 - record the milestone as completed;
 - record concise actual verification evidence or notes where appropriate;
 - do not rewrite milestone definitions, requirements, architecture, exclusions, success criteria, or future milestones.
@@ -74,7 +74,7 @@ May modify:
 - production implementation required by the approved FOUNDATION or GREEN milestone;
 - configuration explicitly authorized by the milestone;
 - supporting documentation or verification artifacts when requested;
-- execution/status information in `docs/.ai/Plan.md` after successful verification.
+- execution/status information in `docs/.ai/<work-item>/Plan.md` after successful verification.
 
 ## Boundary
 

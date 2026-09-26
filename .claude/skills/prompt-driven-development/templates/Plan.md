@@ -6,6 +6,8 @@ Apply the `prompt-driven-development` skill's Plan Content Rules to every sectio
 
 ## Current State
 
+Describe only what inspection of the repository shows. When this work item changes existing code, list the existing behavior it affects and the existing tests that cover that behavior. For a new project with no code yet, say so.
+
 ## In Scope
 
 ## Out of Scope

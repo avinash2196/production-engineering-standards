@@ -245,10 +245,12 @@ The application owns:
 
 ```text
 .github/copilot-instructions.md (Copilot) or CLAUDE.md (Claude Code)
-requirements
-docs/.ai/Plan.md
-docs/.ai/<API-or-external-contract>.md
-docs/.ai/NNN_Implementation_Plan_<Milestone>.md
+docs/requirements.md (optional product-level requirements)
+docs/.ai/<work-item>/requirements.md
+docs/.ai/<work-item>/Plan.md
+docs/.ai/<work-item>/<API-or-external-contract>.md
+docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md
+docs/.ai/<work-item>/Final-Review.md
 source code
 tests
 build configuration

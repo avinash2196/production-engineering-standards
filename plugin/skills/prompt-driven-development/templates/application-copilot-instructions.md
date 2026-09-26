@@ -69,9 +69,11 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 ## Planning Artifacts
 
 <!-- CUSTOMIZE — project-specific value; use the same path everywhere this artifact is referenced in this file -->
-* Plan: `docs/.ai/Plan.md`
+* Work items: each piece of work (new project or enhancement) has its own folder `docs/.ai/<work-item>/`; PDD commands take the work item as an argument
+* Requirements: `docs/.ai/<work-item>/requirements.md` (optional product-level `docs/requirements.md` is read-only context)
+* Plan: `docs/.ai/<work-item>/Plan.md`
 * API / External Contract: `<path when applicable>`
-* Implementation Plans: `docs/.ai/NNN_Implementation_Plan_<Milestone>.md`
+* Implementation Plans: `docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
 
 <!-- FIXED — preserve verbatim -->
 Plan defines WHAT is delivered. After approval it is the single source of truth for the complete development: every contract, Implementation Plan, test, and production change must trace to a milestone recorded in it.

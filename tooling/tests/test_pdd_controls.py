@@ -986,10 +986,37 @@ class PddControlsTest(unittest.TestCase):
 
     def test_final_review_is_written_to_an_artifact(self):
         skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("docs/.ai/Final-Review.md", skill)
+        self.assertIn("docs/.ai/<work-item>/Final-Review.md", skill)
         for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
-            self.assertIn("docs/.ai/Final-Review.md", text, rel)
+            self.assertIn("docs/.ai/<work-item>/Final-Review.md", text, rel)
+
+    def test_every_work_item_has_its_own_folder(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Work-Item Folders", skill, tree)
+            self.assertIn("named explicitly by the user", skill, tree)
+            self.assertIn("never edit it", skill, tree)
+            self.assertIn("existing tests that cover it", skill, tree)
+        for op in [
+            "capture-requirements",
+            "create-plan",
+            "create-api-contract",
+            "create-implementation-plan",
+            "generate-tests",
+            "implement-approved-plan",
+            "refactor-code",
+        ]:
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("If no work item is named, ask and stop.", text, rel)
+
+    def test_no_repository_wide_fixed_artifact_paths(self):
+        for tree in [".github", ".claude", "plugin"]:
+            for path in (ROOT / tree).rglob("*.md"):
+                text = path.read_text(encoding="utf-8")
+                for fixed in ["docs/.ai/Plan.md", "docs/.ai/Final-Review.md", "docs/.ai/NNN_"]:
+                    self.assertNotIn(fixed, text, str(path.relative_to(ROOT)))
 
 if __name__ == "__main__":
     unittest.main()
