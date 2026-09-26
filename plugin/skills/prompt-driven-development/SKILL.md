@@ -48,7 +48,7 @@ docs/.ai/<work-item>/
 - In this skill and in every agent and command, Requirements, `Plan.md`, the API/external contract, Implementation Plans, and `Final-Review.md` mean the files in the current work item's folder.
 - Implementation Plan numbering (`NNN`) is per work item and starts at `001`.
 - Another work item's artifacts never authorize work in the current one. Completed work items are history, not authority.
-- An optional product-level `docs/requirements.md` describes the product as a whole. PDD commands may read it as context but never edit it. The work item's `requirements.md` is authoritative for the work item and states which product-level behavior it changes; any other material conflict between the two stops the workflow for human review.
+- An optional product-level `docs/requirements.md` describes the product as a whole. PDD commands may read it as context but never edit it. The work item's `requirements.md` is authoritative for the work item and states which product-level behavior it changes; any other material conflict between the two stops the workflow for human review. Only the user updates `docs/requirements.md`; Final Review lists the product-level statements a work item has made out of date.
 
 ## Artifact Authority
 
@@ -231,7 +231,7 @@ Final Review (code review, production-readiness review, or any review command) p
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
 
-When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file.
+When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file. When the work item changed behavior that the product-level `docs/requirements.md` describes, Final-Review.md also lists each product-level statement now out of date, for the user to update; the review does not edit that file.
 
 ## Task Prompt Boundary
 

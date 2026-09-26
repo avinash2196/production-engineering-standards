@@ -564,6 +564,27 @@ whether the service must run locally or in CI without the dependency.
 
 ---
 
+## Fix 11 — Question overload and stale product-level requirements
+
+**Files changed:** `skills/requirements-analysis/SKILL.md`,
+`skills/prompt-driven-development/SKILL.md` (all three copies), plus
+`tooling/tests/test_pdd_controls.py`.
+
+**What went wrong (evidence):** trial runs of `review-requirements` after
+Fixes 9–10 asked 10 questions for `order-management-service` and 17 for a
+Kafka enhancement to `workspace-reservation-service`. Each was justified,
+but blocking and optional questions were mixed, so the user could not see
+what actually blocked planning. The same Kafka trial showed that when an
+enhancement lifts a product-level exclusion, nothing kept the read-only
+product-level `docs/requirements.md` current.
+
+**Change:** clarification questions are presented in two groups — Blocking
+(must be answered before planning) and Answer or mark not required — with
+continuous numbering. Only the user updates `docs/requirements.md`; Final
+Review lists each product-level statement the work item made out of date.
+
+---
+
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**

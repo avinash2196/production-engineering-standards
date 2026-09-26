@@ -63,6 +63,15 @@ Rules:
 - Record every answer in the work item's requirements (Recording Resolved Decisions). Operational requirements are then owned by milestones like any other requirement; `architecture-design`, `distributed-systems`, `observability`, and `resilience-and-degradation` apply when a recorded requirement calls for them.
 - Ask about needs, not solutions. Do not propose technologies, patterns, or infrastructure while asking.
 
+## Presenting Clarification Questions
+
+Present questions in two groups so the user can see what actually blocks planning:
+
+1. **Blocking — must be answered before planning:** material unresolved decisions, including deployment topology and consistency/concurrency. Keep this group to the minimum the current work item needs.
+2. **Answer or mark not required:** applicable operational characteristics that are not blocking. For each, state that "not required for this work item" is a valid answer and will be recorded as an explicit exclusion.
+
+Number questions continuously across both groups so answers can reference them.
+
 ## Recording Resolved Decisions
 
 An answer to a clarification question is a decision, not conversation. A review that only analyzes requirements writes no files: it ends by listing each resolved decision with the requirement text it changes, and states that the requirements artifact must record them (through requirements capture) before planning relies on them. Downstream artifacts trace to the requirements artifact, never to conversation history.

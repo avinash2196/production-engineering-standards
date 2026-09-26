@@ -1045,5 +1045,15 @@ class PddControlsTest(unittest.TestCase):
             ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("must run locally or in CI without it", ra, tree)
 
+    def test_questions_grouped_and_product_requirements_kept_current(self):
+        for tree in [".github", ".claude", "plugin"]:
+            ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Presenting Clarification Questions", ra, tree)
+            self.assertIn("Blocking — must be answered before planning", ra, tree)
+            self.assertIn("Answer or mark not required", ra, tree)
+            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Only the user updates `docs/requirements.md`", pdd, tree)
+            self.assertIn("each product-level statement now out of date", pdd, tree)
+
 if __name__ == "__main__":
     unittest.main()
