@@ -32,6 +32,8 @@ Before stopping, check the Plan against each Plan Content Rule and every milesto
 
 If a material decision required for the Plan is unresolved, ask focused clarification questions and stop.
 
+If the requirements neither answer nor explicitly exclude an applicable operational characteristic (`requirements-analysis` Operational Characteristics), stop and route it back to requirements capture.
+
 When revising an existing Plan (for example to fold in clarification answers or approved replanning), treat it as a revision, not a fresh draft: find every reference to each changed item — status rows, traceability rows, milestone fields, risks, and cross-references — and update all of them; no stale text may remain. In the self-check, compare against the previous version and report what changed and that every affected reference was updated.
 
 Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

@@ -1018,5 +1018,20 @@ class PddControlsTest(unittest.TestCase):
                 for fixed in ["docs/.ai/Plan.md", "docs/.ai/Final-Review.md", "docs/.ai/NNN_"]:
                     self.assertNotIn(fixed, text, str(path.relative_to(ROOT)))
 
+    def test_operational_characteristics_are_asked_not_defaulted(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Operational Characteristics", skill, tree)
+            self.assertIn("deployment topology and consistency/concurrency guarantees", skill, tree)
+            self.assertIn("never defaulted", skill, tree)
+        expected = {
+            "review-requirements": "applicable Operational Characteristics questions",
+            "capture-requirements": "Operational Characteristics check",
+            "create-plan": "stop and route it back to requirements capture",
+        }
+        for op, phrase in expected.items():
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+                self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
+
 if __name__ == "__main__":
     unittest.main()

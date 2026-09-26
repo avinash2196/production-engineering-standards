@@ -501,6 +501,39 @@ work-item-scoped sentence was added to all three copies.
 
 ---
 
+## Fix 9 — Operational characteristics were silently defaulted to the minimum
+
+**Files changed:** `skills/requirements-analysis/SKILL.md`, and the
+`review-requirements`, `capture-requirements`, and `create-plan` commands
+(all three copies of each), plus `tooling/tests/test_pdd_controls.py`.
+
+**What went wrong:** the framework correctly forbade inventing
+non-functional requirements, but nothing told it to ask about them, and
+Non-Blocking Decisions said "prefer the smallest conservative
+interpretation". When requirements were silent on scale, deployment,
+consistency, or observability, the result was always the minimal system —
+single instance, in-memory state, no production visibility — chosen by
+default rather than by the engineer.
+
+**Change:** added **Operational Characteristics** to
+`requirements-analysis`: when requirements, repository, and product-level
+requirements are silent, ask once, before planning, about the applicable
+scale, deployment, availability/latency, consistency/concurrency,
+dependency-failure, and observability characteristics (for an enhancement,
+only those it could change or depends on). Deployment topology and
+consistency/concurrency are material and block planning; the others may be
+answered "not required for this work item", recorded as an explicit
+exclusion. Answers are recorded in requirements and then owned by
+milestones, which is where the architecture, distributed-systems,
+observability, and resilience skills apply. The conservative-default rule
+now excludes operational characteristics. `create-plan` stops if an
+applicable characteristic is neither answered nor explicitly excluded.
+
+**Verification:** 98 unit tests pass (one new), `validate_repository.py`
+PASSED, `claude plugin validate ./plugin` PASSED.
+
+---
+
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**
