@@ -69,6 +69,8 @@ Do not approve the Implementation Plan yourself.
 
 Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.
 
+Apply the `implementation-planning` skill's Planning-Time Dry Run and Pre-existing Failures rules: before stopping, report the dry-run result (or why none was run), and surface any failure found on the unmodified baseline as a question for the user instead of deciding how the criteria treat it. Cite evidence for every causal claim in the plan, and label an unestablished explanation as a hypothesis.
+
 Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, matches the Proposed Changes list, and traces every dependency, plugin, and configuration setting it introduces.
 
 Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

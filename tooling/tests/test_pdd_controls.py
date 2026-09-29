@@ -1055,5 +1055,68 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("Only the user updates `docs/requirements.md`", pdd, tree)
             self.assertIn("each product-level statement now out of date", pdd, tree)
 
+    # --- Lessons from the reservation-events end-to-end trial.
+
+    def test_implementation_plans_are_dry_run_before_review(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Planning-Time Dry Run", skill, tree)
+            self.assertIn("disposable copy of the repository outside the working tree", skill, tree)
+            self.assertIn("not milestone evidence", skill, tree)
+            template = (
+                ROOT / tree / "skills/prompt-driven-development/templates/Implementation-Plan.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("### Planning-Time Dry Run", template, tree)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("report the dry-run result", text, rel)
+
+    def test_causal_claims_require_evidence(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Causal claims", skill)
+        self.assertIn("Label an explanation that has not been established that way as a hypothesis", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            self.assertIn("Cite evidence for every causal claim", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_negative_red_tests_must_not_pass_vacuously(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("passes vacuously while the behavior is absent", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("passes vacuously while the behavior under test is absent", testing)
+        for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md", "plugin/commands/generate-tests.md"]:
+            self.assertIn("passes vacuously in RED", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_pre_existing_failures_are_decided_at_planning_not_rerun(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Pre-existing Failures", skill)
+        self.assertIn("accepts a run only when that named test is the sole failure", skill)
+        self.assertIn("Never rerun verification until it happens to pass", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("fails intermittently on unchanged code is a finding", testing)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                self.assertIn("never rerun verification until it happens to pass", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_final_review_has_template_origin_and_correction_rules(self):
+        for tree in [".github", ".claude", "plugin"]:
+            template = (ROOT / tree / "skills/prompt-driven-development/templates/Final-Review.md").read_text(encoding="utf-8")
+            for heading in [
+                "## Verdict",
+                "## Final Acceptance Criteria and Evidence",
+                "## Exclusions Check",
+                "## Product-Level Statements Now Out of Date",
+                "## Findings",
+                "## User Decision",
+            ]:
+                self.assertIn(heading, template, tree)
+            self.assertIn("pre-existing / introduced", template, tree)
+            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Use `templates/Final-Review.md` for the structure", pdd, tree)
+            self.assertIn("do not edit the approved artifact", pdd, tree)
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("templates/Final-Review.md", text, rel)
+            self.assertIn("mark each finding as pre-existing or introduced", text, rel)
+
 if __name__ == "__main__":
     unittest.main()

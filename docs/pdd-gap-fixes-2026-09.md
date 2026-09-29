@@ -585,6 +585,69 @@ Review lists each product-level statement the work item made out of date.
 
 ---
 
+## Fix 12 — Lessons from the Kafka enhancement end-to-end trial
+
+**Files changed:**
+- `skills/implementation-planning/SKILL.md`, `skills/testing/SKILL.md`, and
+  `skills/prompt-driven-development/SKILL.md`, all three copies;
+- new `skills/prompt-driven-development/templates/Final-Review.md`, and
+  `templates/Implementation-Plan.md`, all three copies;
+- the `create-implementation-plan`, `generate-tests`,
+  `implement-approved-plan`, `refactor-code`, and `review-code` commands, all
+  three environments;
+- `tooling/scripts/validate_repository.py` and
+  `tooling/tests/test_pdd_controls.py`.
+
+**What went wrong (evidence):** the `reservation-events` work item was run
+end to end on a scratch copy of `workspace-reservation-service`, covering
+CONTRACT, FOUNDATION, RED, GREEN, RED, GREEN, and Final Review. It found
+five gaps:
+
+1. **No dry run before review.** Plans were only exercised after approval.
+   The dry runs added informally in this trial caught three defects before
+   review:
+   - a wrong claim that the Kafka producer "connects lazily";
+   - hand-written diff hunk headers that did not match the file;
+   - a pre-existing flaky test.
+
+   A fourth defect was only caught during execution: the FOUNDATION
+   `java -jar` check could not run, because the build never produces a
+   runnable jar.
+2. **Vacuous negative tests.** RED tests asserting "no publish on 400/409"
+   pass while nothing publishes at all, which makes them vacuous RED
+   evidence. They were fixed only by ad hoc design: first perform a
+   successful create, then the rejected one.
+3. **No rule for pre-existing failures.** A pre-existing flaky test (12 of 30
+   baseline runs failed) had no rule. How the acceptance criteria should
+   treat it was improvised mid-planning.
+4. **Unevidenced causal claims.** A plan stated a wrong root cause for that
+   flaky test ("inclusive end times"), and review did not catch it. The
+   product requirements and the code both define half-open overlap. Final
+   Review found the error, but had no rule for how to record a correction to
+   an approved plan.
+5. **No `Final-Review.md` template.** The review structure was invented. The
+   out-of-date product-statement check from Fix 11 did work, finding 3
+   contradicted statements and 1 incomplete section.
+
+**Change:**
+- **Planning-Time Dry Run.** Before review, apply the exact code in a
+  disposable copy and run verification. For RED, also run a stub/probe check.
+  Record the result as "not milestone evidence".
+- **Pre-existing Failures.** Establish the failure on the baseline and ask
+  the user before approval. The only non-blocking form is a named test that
+  is the sole failure. Never rerun until green.
+- **Causal claims.** They must cite evidence, or be labeled a hypothesis.
+- **RED vacuous-negative rule.** Exercise the positive case first, then
+  assert the negative.
+- **Final-Review template.** Adds an Origin column
+  (pre-existing / introduced). Corrections to approved artifacts are
+  recorded as findings, never by editing those artifacts.
+- **Executors** stop on any failure that the plan does not name.
+- **Validator** now requires the new template.
+- **Version** bumped to 0.7.0.
+
+---
+
 ## Known issue found but NOT fixed here — `prompt-driven-development` skill drift
 
 **Not a fix — a separate finding, flagged for its own follow-up.**

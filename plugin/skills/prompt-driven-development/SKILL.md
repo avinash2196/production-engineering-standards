@@ -233,6 +233,10 @@ Final Review (code review, production-readiness review, or any review command) p
 
 When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file. When the work item changed behavior that the product-level `docs/requirements.md` describes, Final-Review.md also lists each product-level statement now out of date, for the user to update; the review does not edit that file.
 
+- Use `templates/Final-Review.md` for the structure.
+- Mark each finding as pre-existing or introduced by the work item.
+- When the review finds an error in an earlier approved artifact (for example a wrong explanation in an Implementation Plan), record the correction as a finding in Final-Review.md; do not edit the approved artifact.
+
 ## Task Prompt Boundary
 
 Persistent instructions, agents, and skills do not replace the active task prompt.

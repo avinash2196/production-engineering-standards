@@ -52,6 +52,10 @@ When tests touch persistent state or override configuration, include a second ru
 
 ### Expected Evidence
 
+### Planning-Time Dry Run
+
+The result of applying this plan's exact code in a disposable copy outside the repository and running the verification commands there (`implementation-planning` Planning-Time Dry Run). This is not milestone evidence. If a dry run was not performed, state why.
+
 ## Risks
 
 ## Pre-authorized Contingencies

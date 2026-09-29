@@ -393,6 +393,7 @@ def validate_pdd_contract(root: Path, errors: list[str]) -> None:
 
     required_templates = [
         ".github/skills/prompt-driven-development/templates/Plan.md",
+        ".github/skills/prompt-driven-development/templates/Final-Review.md",
         ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
         ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
         ".github/skills/api-design/templates/API-Contract.md",

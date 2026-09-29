@@ -23,6 +23,8 @@ Before planning:
 
 Prefer repository evidence over assumed structure or previously proposed implementation. Repository-state claims such as "clean working tree" must come from actual inspection, not assumption.
 
+Causal claims — why something happens, fails, or behaves a certain way (for example why a test is flaky, or how a library behaves at startup) — must cite the code, requirement, or observed output that establishes them. Label an explanation that has not been established that way as a hypothesis; a plausible but unchecked explanation is not evidence.
+
 Do not plan from an assumed project state.
 
 A material ambiguity may remain unresolved while no milestone yet depends on a concrete decision about it. Before creating an Implementation Plan for a milestone whose FOUNDATION, RED, GREEN, or REFACTOR work actually depends on resolving that ambiguity, resolve it through the existing PDD clarification/human-review mechanisms rather than carrying it forward unresolved into typed code, test assertions, or configuration. Examples of such ambiguity include field representation, nullability, identifier semantics, precision, validation behavior, persistence representation, or external contract behavior — these examples are illustrative only and do not themselves introduce new requirements. Do not force premature resolution of such decisions during Requirements Capture.
@@ -85,6 +87,7 @@ If the milestone approved for this Implementation Plan is a RED milestone with n
 - identify why the expected failure demonstrates missing approved behavior;
 - state the expected RED failure as a class of failure attributable to the missing behavior, not as one exact value the missing implementation happens to produce;
 - map every normative rule of the approved contract that this milestone verifies to a test, or list it as not tested with the reason; never test behavior the contract leaves undefined;
+- a test that asserts only that something does not happen (no event, call, write, or message) passes vacuously while the behavior is absent, so it is not RED evidence; in the same test, first exercise the positive case that proves the behavior is active, then assert the negative, so the test fails in RED for the missing behavior and still proves the negative after GREEN;
 - do not propose production implementation.
 - In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 
@@ -133,6 +136,23 @@ Acceptance criteria that limit which files may change always exclude the milesto
 When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
 
 Verification must not silently depend on a shared resource being available. Prefer dynamically allocated resources unless the approved artifacts explicitly require a fixed one.
+
+## Planning-Time Dry Run
+
+Before presenting an Implementation Plan for review, apply its exact code in a disposable copy of the repository outside the working tree and run the plan's verification commands there. Correct the plan from what the dry run shows — for example diff hunks that do not apply, verification commands the build cannot run, or claims about library or framework behavior that the output contradicts.
+
+- For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. The stub or probe never enters the repository.
+- Record the result in the plan, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
+- Never modify the repository during a dry run, and delete the disposable copy afterward.
+- If a dry run cannot be performed, state why in the plan.
+
+## Pre-existing Failures
+
+A check that fails on the unmodified baseline — a flaky or already-broken test outside this milestone's scope — is a finding, not noise.
+
+- Establish it with evidence on the baseline (for example repeated isolated runs of the single test), report it, and ask the user before approval how the Acceptance / Completion Criteria treat it. Do not decide this during execution.
+- The only acceptable non-blocking form names the exact test, records its result in the milestone evidence, and accepts a run only when that named test is the sole failure.
+- Never rerun verification until it happens to pass, and never skip, disable, or weaken the test to make the milestone pass. Fixing it is separate work.
 
 ## Exact Code
 
