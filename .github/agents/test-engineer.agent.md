@@ -1,4 +1,5 @@
 ---
+name: test-engineer
 description: Design, implement, and verify tests for an approved RED milestone without writing production implementation, then record verified RED progress in Plan.md.
 tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
 

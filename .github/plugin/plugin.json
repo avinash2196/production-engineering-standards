@@ -6,5 +6,6 @@
     "name": "Avinash Srivastava"
   },
   "agents": ".github/agents/",
-  "skills": ".github/skills/"
+  "skills": ".github/skills/",
+  "commands": ".github/prompts/"
 }
