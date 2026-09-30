@@ -1,5 +1,5 @@
 ---
-description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete phase-specific Implementation Plans without implementing them.
+description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete milestone-specific Implementation Plans without implementing them.
 tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
 
 ---
@@ -32,6 +32,10 @@ When the task is Plan creation or milestone planning:
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.
+- Follow the PDD skill's Plan Content Rules and the Plan template. When an API/external contract is required, record it as a CONTRACT milestone, first after Plan approval and before any FOUNDATION milestone.
+- Before finishing a Plan, check it against each Plan Content Rule and fix violations before reporting.
+- Apply the PDD skill's Adaptive Milestone Decomposition rules when deciding how many milestones this work needs. For complex layered work, decompose by independently reviewable architectural layer, creating a separate RED milestone and GREEN milestone for each layer (with an optional preceding FOUNDATION milestone and optional following REFACTOR milestone), as defined by the PDD skill.
+- For complex layered work, before each layer's RED milestone determine whether a preceding FOUNDATION milestone is genuinely required, without using FOUNDATION merely to create production scaffolding that RED should drive.
 - Produce only the planning artifacts requested by the current task.
 - Do not implement production code or tests.
 - Do not approve requirements, plans, contracts, or Implementation Plans yourself.
@@ -45,7 +49,7 @@ When creating an Implementation Plan:
 - Read the current Plan execution status and completed predecessor evidence.
 - Base the proposed work on the actual current repository state, not an assumed or original project structure.
 - Identify the exact files to create or modify.
-- Include concrete proposed tests or production code, relevant signatures and structures, and code snippets or patch-level detail where practical.
+- Include the exact code for every file in scope — complete final content for created files; complete final content or a complete unified diff covering every changed line for modified files — never pseudocode, placeholders, or partial fragments.
 - Include enough detail for a human to review the intended implementation before execution.
 - For RED, propose tests/checks only.
 - For GREEN, start from valid RED evidence and propose the smallest production change needed to satisfy it.
@@ -63,6 +67,7 @@ When the task is API or external contract definition:
 - Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 - Define only externally observable behavior authorized by approved requirements and Plan scope.
 - Map contract elements back to approved requirements where practical.
+- Answer every applicable `api-design` Contract Completeness question from approved sources, or ask and stop; never default silently.
 - Do not invent endpoints, validations, errors, fields, or compatibility behavior that are not authorized.
 - If contract behavior is materially ambiguous, ask focused clarification questions and stop.
 - Do not create implementation code, tests, DTO classes, controllers, services, repositories, or database schema while defining the contract.

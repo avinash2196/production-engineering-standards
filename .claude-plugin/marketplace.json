@@ -1,0 +1,13 @@
+{
+  "name": "pes-marketplace",
+  "owner": {
+    "name": "Avinash Srivastava"
+  },
+  "plugins": [
+    {
+      "name": "production-engineering-standards",
+      "source": "./plugin",
+      "description": "Production engineering standards: skills, agents, and commands for Java/Spring Boot, Python/FastAPI, distributed systems, API design, resilience, security, and Oracle-to-PostgreSQL modernization."
+    }
+  ]
+}

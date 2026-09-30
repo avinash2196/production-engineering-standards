@@ -1,7 +1,14 @@
+import importlib.util
+import re
 from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+
+_SCRIPT_PATH = ROOT / "tooling" / "scripts" / "validate_repository.py"
+_spec = importlib.util.spec_from_file_location("validate_repository", _SCRIPT_PATH)
+validate_repository_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(validate_repository_module)
 
 
 class PddControlsTest(unittest.TestCase):
@@ -20,9 +27,12 @@ class PddControlsTest(unittest.TestCase):
             self.assertTrue((ROOT / ".github/prompts" / name).is_file(), name)
 
     def test_pdd_skill_preserves_authorization_boundaries(self):
-        text = (
+        raw = (
             ROOT / ".github/skills/prompt-driven-development/SKILL.md"
         ).read_text(encoding="utf-8")
+        # Normalize spacing around "/" so "API / External Contract" and
+        # "API/External Contract" both satisfy the same token check.
+        text = re.sub(r"\s*/\s*", "/", raw)
 
         for token in [
             "Requirements",
@@ -38,6 +48,401 @@ class PddControlsTest(unittest.TestCase):
 
         self.assertIn("separate authorization boundaries", text)
 
+    def test_pdd_skill_has_adaptive_milestone_decomposition(self):
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Adaptive Milestone Decomposition", text)
+        self.assertIn("one pair per class or file", text)
+
+    def test_pdd_skill_expresses_layer_wise_decomposition_for_complex_work(self):
+        # Deterministic presence checks for the concepts this clarification
+        # is about — not brittle wording, so unrelated future rewording of
+        # the surrounding prose won't break this. Deliberately does not
+        # assert on the illustrative Milestone 1/2/3/4 example text in
+        # getting-started.md, only on the skill's own rule statements.
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        # complex requirements decompose into independently reviewable milestones
+        self.assertIn("independently reviewable implementation milestones", text)
+        # layer-wise decomposition is the expected pattern for complex layered work
+        self.assertIn("layer-wise implementation milestones", text)
+        self.assertIn("independently testable architectural layers", text)
+        # a layer contributes separate RED/GREEN milestones, not one
+        # containing milestone that owns them as internal phases
+        self.assertIn(
+            "There is no containing \"capability milestone\" that owns "
+            "these as internal phases",
+            text,
+        )
+        # layering is not a mandatory template
+        self.assertIn("not a mandatory architectural template", text)
+
+    def test_pdd_skill_defines_conditional_setup_foundation(self):
+        # Deterministic presence checks for the conditional-SETUP concepts —
+        # not brittle wording. This is deliberately narrow: it protects the
+        # core invariants (conditional not mandatory; missing production
+        # symbols are not a setup trigger; setup still requires an approved
+        # Implementation Plan), not the exact prose.
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Conditional SETUP / FOUNDATION", text)
+        # setup is conditional, not a default/mandatory milestone
+        self.assertIn("never a default or mandatory milestone", text)
+        # a missing production symbol alone is not a setup trigger — it's
+        # still valid RED evidence, per the existing compile-failure rule
+        self.assertIn("do not, by themselves, require SETUP", text)
+        # setup still requires its own approved Implementation Plan, same as
+        # RED/GREEN/REFACTOR — this is what prevents setup becoming a bypass
+        self.assertIn(
+            "requires its own approved SETUP/FOUNDATION Implementation Plan",
+            text,
+        )
+
+    # --- Stabilization pass: FOUNDATION formally supported as a fourth
+    # executable phase, alongside RED/GREEN/REFACTOR. Each test below
+    # targets exactly one of the four conflicts this pass resolved.
+
+    def test_foundation_is_a_recognized_executable_milestone_type(self):
+        # Conflict 1: the authorization-defining sentence used to enumerate
+        # only (RED, GREEN, or REFACTOR), contradicting the conditional-setup
+        # rule elsewhere in the same document. FOUNDATION, RED, GREEN, and
+        # REFACTOR are each their own milestone (not phases of a containing
+        # milestone), and a single Implementation Plan authorizes exactly
+        # one of them.
+        skill_text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone",
+            skill_text,
+        )
+        self.assertIn(
+            "A single Implementation Plan authorizes exactly one milestone",
+            skill_text,
+        )
+
+        planning_text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("### FOUNDATION (conditional)", planning_text)
+
+    def test_red_green_refactor_semantics_unchanged(self):
+        # Conflict 1 must add FOUNDATION without weakening the existing
+        # phase semantics — spot-check the load-bearing phrases survived.
+        text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("propose test/check changes only", text)
+        self.assertIn(
+            "require valid predecessor RED evidence when the PDD workflow applies",
+            text,
+        )
+        self.assertIn("require a verified GREEN baseline", text)
+        self.assertIn(
+            "Do not create production-source scaffolding merely to make RED tests compile",
+            text,
+        )
+
+    def test_foundation_remains_conditional_not_mandatory(self):
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("FOUNDATION is conditional", text)
+        self.assertIn("most sequences proceed directly to a RED milestone", text)
+
+    def test_missing_production_class_alone_does_not_require_foundation(self):
+        planning_text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "not merely because the production class, service, repository, "
+            "controller, method, or behavior under test does not yet exist",
+            planning_text,
+        )
+
+        prompt_text = (
+            ROOT / ".github/prompts/create-implementation-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "the only reason under consideration is that the production "
+            "class, service, repository, controller, method, or behavior "
+            "under test does not yet exist",
+            prompt_text,
+        )
+
+    def test_foundation_cannot_implement_target_feature_behavior(self):
+        planning_text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("explicitly exclude the target feature/business behavior", planning_text)
+
+        exec_text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "do not implement target feature/business behavior", exec_text
+        )
+        self.assertIn(
+            "do not create speculative production scaffolding", exec_text
+        )
+
+    def test_implement_approved_plan_branches_foundation_and_green_explicitly(self):
+        text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("If the approved Implementation Plan is FOUNDATION:", text)
+        self.assertIn("If the approved Implementation Plan is GREEN", text)
+        self.assertIn("A FOUNDATION execution never flows automatically into RED", text)
+
+    def test_final_review_has_no_trivial_executable_code_exception(self):
+        # Conflict 2: Final Review previously carved out a trivial
+        # typo/formatting exception to the no-bypass rule — removed.
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("only exception is a trivial", text.lower())
+        self.assertIn("There is no trivial-change exception for executable artifacts", text)
+
+    # --- Final stabilization pass: planning-vs-execution responsibility,
+    # new-vs-existing repository handling, and Acceptance/Completion
+    # Criteria as their own explicit concept.
+
+    def test_same_workflow_applies_to_new_and_existing_repositories(self):
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "Apply this same current-state-driven decision to both new "
+            "and existing repositories",
+            text,
+        )
+        self.assertIn("Do not assume a new project automatically requires FOUNDATION", text)
+        self.assertIn(
+            "Do not assume an existing project automatically has every prerequisite",
+            text,
+        )
+
+    def test_planning_not_execution_selects_foundation(self):
+        # Planner/Plan.md decides whether a FOUNDATION milestone exists in
+        # the sequence; the Implementation Planner and executor only read
+        # and validate that decision (via the milestone type Plan.md
+        # already recorded), never make it themselves.
+        planning_text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "it does not decide or change the milestone type", planning_text
+        )
+        self.assertIn(
+            "Create a FOUNDATION Implementation Plan only when the "
+            "milestone approved for this Implementation Plan is itself a "
+            "FOUNDATION milestone, as recorded in `Plan.md`",
+            planning_text,
+        )
+
+        prompt_text = (
+            ROOT / ".github/prompts/create-implementation-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "it does not decide or change the milestone type", prompt_text
+        )
+
+        plan_template_text = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "There is no containing milestone that owns several of these "
+            "as internal phases",
+            plan_template_text,
+        )
+
+    def test_executor_reads_milestone_type_and_does_not_decide_it(self):
+        text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "First read which milestone type the approved Implementation "
+            "Plan declares",
+            text,
+        )
+        self.assertIn("Do not decide the milestone type yourself", text)
+        self.assertIn("Do not decide whether FOUNDATION is required", text)
+
+    def test_executor_stops_on_unapproved_prerequisite_or_unmet_criteria(self):
+        text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "discovering during execution that an additional, unapproved "
+            "prerequisite",
+            text,
+        )
+        self.assertIn("do not add it automatically", text)
+        self.assertIn(
+            "discovering that an approved Acceptance/Completion Criterion "
+            "cannot be satisfied",
+            text,
+        )
+        self.assertIn(
+            "do not change the criterion or broaden the implementation",
+            text,
+        )
+
+    def test_acceptance_completion_criteria_required_and_distinct_from_verification(self):
+        planning_text = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("explicit Acceptance / Completion Criteria", planning_text)
+        self.assertIn(
+            "Acceptance / Completion Criteria and verification are distinct",
+            planning_text,
+        )
+        self.assertIn(
+            "Do not invent or modify Acceptance / Completion Criteria during execution",
+            planning_text,
+        )
+
+    def test_plan_milestone_is_a_single_execution_boundary_not_a_lifecycle_container(self):
+        # Reversed from an earlier pass: a milestone is FOUNDATION, RED,
+        # GREEN, or REFACTOR itself — not a capability/layer container that
+        # owns a lifecycle of those as internal phases.
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "A milestone represents one independently approved execution "
+            "boundary",
+            text,
+        )
+        self.assertIn(
+            "There is no containing milestone that owns several of these "
+            "as internal phases",
+            text,
+        )
+        self.assertIn(
+            "milestone type: CONTRACT | FOUNDATION | RED | GREEN | REFACTOR | OTHER", text
+        )
+        self.assertNotIn("lifecycle:", text)
+        self.assertNotIn("setup required:", text)
+
+    def test_application_instructions_prefer_layers_without_forcing_them(self):
+        # Conflict 3: "do not default... per architectural layer" could be
+        # misread as opposing layer-wise decomposition. Both principles must
+        # now coexist explicitly: no mechanical forcing, but prefer layering
+        # for genuinely complex layered work.
+        for rel in [
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "Do not mechanically create one milestone per class",
+                text,
+            )
+            self.assertIn(
+                "create a separate RED milestone and GREEN milestone for "
+                "each layer",
+                text,
+            )
+
+    def test_plan_execution_status_is_milestone_based(self):
+        # Reversed from an earlier pass that removed OTHER as a milestone
+        # classification: OTHER is restored (milestone type is a
+        # classification field, not an executable-workflow enum), and
+        # Execution Status tracks milestones directly, never a nested
+        # phase-status field.
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("OTHER", text)
+        self.assertIn("| Milestone | Status | Evidence / Notes |", text)
+        self.assertNotIn("phase-status", text.lower())
+
+    def test_adaptive_decomposition_not_duplicated_as_exhaustive_list(self):
+        # The full boundary catalog (persistence/domain/service/controller/
+        # validation/concurrency/...) belongs only in getting-started.md as
+        # illustrative documentation — runtime prompts should reference the
+        # skill's rule, not redefine an exhaustive list of their own.
+        exhaustive_markers = ["concurrency,", "migration,", "infrastructure/configuration"]
+        runtime_files = [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+            ".github/agents/planner.agent.md",
+            ".claude/agents/planner.md",
+            "plugin/agents/planner.md",
+            ".github/skills/prompt-driven-development/templates/Plan.md",
+        ]
+        for rel in runtime_files:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            found = [m for m in exhaustive_markers if m in text]
+            self.assertEqual(
+                found,
+                [],
+                f"{rel} still duplicates the exhaustive boundary list: {found}",
+            )
+
+    def test_pdd_skill_forbids_red_production_scaffolding(self):
+        skill_texts = "\n".join(
+            (ROOT / rel).read_text(encoding="utf-8")
+            for rel in [
+                ".github/skills/prompt-driven-development/SKILL.md",
+                ".github/skills/implementation-planning/SKILL.md",
+                ".github/agents/test-engineer.agent.md",
+                ".github/prompts/generate-tests.prompt.md",
+            ]
+        )
+
+        self.assertIn("do not propose production implementation", skill_texts.lower())
+        self.assertIn("scaffolding", skill_texts.lower())
+        self.assertNotIn("Skeleton Implementation Plan", skill_texts)
+
+    def test_pdd_skill_copies_are_synchronized(self):
+        canonical_root = ROOT / ".github/skills"
+        mirror_roots = [ROOT / ".claude/skills", ROOT / "plugin/skills"]
+
+        for canonical_file in canonical_root.rglob("*"):
+            if not canonical_file.is_file():
+                continue
+            rel = canonical_file.relative_to(canonical_root)
+            canonical_text = canonical_file.read_text(encoding="utf-8")
+
+            for mirror_root in mirror_roots:
+                mirror_file = mirror_root / rel
+                self.assertTrue(mirror_file.is_file(), f"missing {mirror_file}")
+                self.assertEqual(
+                    canonical_text,
+                    mirror_file.read_text(encoding="utf-8"),
+                    f"{mirror_file} has diverged from {canonical_file}",
+                )
+
+    def test_no_code_change_bypass_control_blocks_match_canonical(self):
+        # This is the global control that closes the free-form-prompt
+        # bypass: a real incident applied unreviewed code changes via a
+        # prompt that never invoked any named PDD command, so this must
+        # live in the always-loaded instruction files, not only inside
+        # command prompts. Compared as a canonical block (single source of
+        # truth in the validator module), not loose keywords — keyword
+        # presence can pass even if a file asserts the opposite of the rule.
+        m = validate_repository_module
+        canonical = m._normalize_control_block(m.CANONICAL_NO_CODE_CHANGE_BLOCK)
+
+        for rel in m.NO_CODE_CHANGE_REQUIRED_FILES:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            block = m._extract_control_block(text, m.NO_CODE_CHANGE_CONTROL_ID)
+            self.assertIsNotNone(block, f"{rel}: missing PDD-CONTROL block")
+            self.assertEqual(
+                m._normalize_control_block(block),
+                canonical,
+                f"{rel}: PDD-CONTROL block diverges from the canonical rule",
+            )
+
     def test_requirements_skill_has_blocking_clarification_gate(self):
         text = (
             ROOT / ".github/skills/requirements-analysis/SKILL.md"
@@ -51,6 +456,667 @@ class PddControlsTest(unittest.TestCase):
         ]:
             self.assertIn(token, text)
 
+    # --- Propagation pass: implementation-engineer aligned with FOUNDATION +
+    # GREEN, the Implementation Plan template gains Acceptance/Completion
+    # Criteria, lifecycle docs propagate conditional FOUNDATION, and every
+    # phase executor verifies approved acceptance criteria before completion.
+
+    def test_implementation_engineer_supports_foundation_and_green(self):
+        text = (
+            ROOT / ".github/agents/implementation-engineer.agent.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "Execute an approved FOUNDATION or GREEN milestone's "
+            "Implementation Plan",
+            text,
+        )
+        self.assertIn("## FOUNDATION Branch", text)
+        self.assertIn("## GREEN Branch", text)
+
+    def test_implementation_engineer_does_not_decide_the_phase(self):
+        text = (
+            ROOT / ".github/agents/implementation-engineer.agent.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "was already selected by planning in `Plan.md` and fixed by "
+            "the approved Implementation Plan — do not determine or "
+            "change it",
+            text,
+        )
+        self.assertIn("Do not add prerequisites, expand scope, or redesign", text)
+        self.assertIn(
+            "stop and return the issue to planning rather than performing it",
+            text,
+        )
+
+    def test_implementation_plan_template_has_acceptance_completion_criteria(self):
+        text = (
+            ROOT
+            / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Acceptance / Completion Criteria", text)
+        self.assertIn(
+            "State exactly what must be true for this specific milestone "
+            "to be considered complete.",
+            text,
+        )
+        # Distinct from, and ordered before, Verification/Expected Evidence.
+        criteria_pos = text.index("## Acceptance / Completion Criteria")
+        verification_pos = text.index("## Verification")
+        evidence_pos = text.index("### Expected Evidence")
+        self.assertLess(criteria_pos, verification_pos)
+        self.assertLess(verification_pos, evidence_pos)
+
+    def test_application_lifecycle_descriptions_include_conditional_foundation(self):
+        # The two live application templates and README.md all use the
+        # corrected milestone-per-type diagram.
+        for rel in [
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+            "README.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "optional FOUNDATION milestone: Implementation Plan → "
+                "Human Review → execution → Verification",
+                text,
+            )
+
+    def test_getting_started_has_conditional_foundation_before_red(self):
+        # Reversed from an earlier pass: FOUNDATION is its own milestone
+        # with its own flow section, documented before the RED milestone's
+        # flow section, not a conditional sub-branch of one milestone's
+        # lifecycle.
+        text = (ROOT / "docs/getting-started.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "For a FOUNDATION milestone (only when `Plan.md` records one "
+            "as genuinely required):",
+            text,
+        )
+        self.assertIn("For a RED milestone:", text)
+        foundation_pos = text.index("For a FOUNDATION milestone (only when")
+        red_pos = text.index("`/create-implementation-plan` for the RED milestone.")
+        self.assertLess(foundation_pos, red_pos)
+
+    def test_application_templates_describe_implementation_plan_as_milestone_specific(self):
+        # Reversed from an earlier pass: FOUNDATION/RED/GREEN/REFACTOR are
+        # each their own milestone, not phases within a containing
+        # milestone, so an Implementation Plan authorizes one milestone —
+        # not "one phase of one milestone."
+        for rel in [
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "Each Implementation Plan defines HOW one approved "
+                "milestone will change the repository.",
+                text,
+            )
+            self.assertNotIn(
+                "Each Implementation Plan defines HOW one approved phase "
+                "of one milestone will change the repository.",
+                text,
+            )
+
+    def test_foundation_executor_verifies_acceptance_criteria(self):
+        text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "verify every approved FOUNDATION Acceptance / Completion "
+            "Criterion",
+            text,
+        )
+
+    def test_red_executor_verifies_acceptance_criteria(self):
+        text = (
+            ROOT / ".github/prompts/generate-tests.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "verify every approved RED Acceptance / Completion Criterion",
+            text,
+        )
+        self.assertIn(
+            "stop and report it to planning rather than changing the criterion",
+            text,
+        )
+
+    def test_green_executor_verifies_acceptance_criteria(self):
+        text = (
+            ROOT / ".github/prompts/implement-approved-plan.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "verify every approved GREEN Acceptance / Completion Criterion",
+            text,
+        )
+
+    def test_refactor_executor_verifies_acceptance_criteria(self):
+        text = (
+            ROOT / ".github/prompts/refactor-code.prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "verify every approved REFACTOR Acceptance / Completion "
+            "Criterion",
+            text,
+        )
+        self.assertIn("existing GREEN baseline remains passing", text)
+
+    def test_executors_stop_rather_than_reinterpret_criteria(self):
+        # None of the four phase executors may invent, weaken, or modify
+        # an approved Acceptance/Completion Criterion during execution.
+        for rel in [
+            ".github/prompts/implement-approved-plan.prompt.md",
+            ".github/prompts/generate-tests.prompt.md",
+            ".github/prompts/refactor-code.prompt.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "do not invent, weaken, reinterpret, or modify",
+                text,
+            )
+
+    def test_historical_doc_no_longer_presents_trivial_exception_as_current(self):
+        text = (
+            ROOT / "docs/pdd-gap-fixes-2026-09.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "Later correction: this executable-code exception was removed.",
+            text,
+        )
+        self.assertIn(
+            "Current status: resolved in subsequent hardening; skill "
+            "synchronization is now validator-enforced.",
+            text,
+        )
+
+
+    # --- Contract-as-milestone and Plan Content Rules pass.
+
+    def test_contract_is_first_milestone_before_foundation(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("CONTRACT milestone when applicable", skill)
+        self.assertIn("always the first milestone after Plan approval", skill)
+        self.assertIn("so it has no Implementation Plan", skill)
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn(
+                "record a CONTRACT milestone as the first milestone after Plan approval",
+                text,
+            )
+            self.assertNotIn("positioned before the first Implementation Plan", text)
+
+    def test_pdd_skill_defines_plan_content_rules(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Plan Content Rules", skill)
+        for token in [
+            "Each milestone has exactly one predecessor",
+            "Contract-owned decisions stay in the contract",
+            "RED milestones deliver tests/checks only",
+            "GREEN milestones deliver behavior",
+            "FOUNDATION is prerequisite-only",
+            "Every approved requirement and cross-cutting concern has exactly one owning delivery milestone",
+            "Risks and mitigations must not weaken",
+            "records every milestone as Pending",
+        ]:
+            self.assertIn(token, skill)
+
+    def test_plan_is_single_source_of_truth(self):
+        for rel in [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Plan.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("single source of truth for the complete development", text, rel)
+
+    def test_plan_template_has_traceability_and_linear_order(self):
+        text = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Requirement Traceability", text)
+        self.assertIn("predecessor: exactly one", text)
+        self.assertIn("strictly linear order", text)
+
+    def test_create_plan_self_checks_and_stays_project_neutral(self):
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("check the Plan against each Plan Content Rule", text)
+            self.assertIn("this command stays project-neutral", text)
+
+    def test_contract_milestone_has_no_implementation_plan(self):
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("A CONTRACT milestone has no Implementation Plan", text)
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("executes the CONTRACT milestone recorded in the approved", text)
+
+    # --- API contract completeness pass.
+
+    def test_api_design_defines_contract_completeness(self):
+        text = (ROOT / ".github/skills/api-design/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Contract Completeness", text)
+        for token in [
+            "Input parsing",
+            "Absent, null, empty, and blank values",
+            "Read-only and unknown request fields",
+            "Numeric semantics",
+            "Collections",
+            "Matching and filtering",
+            "Error responses",
+            "Identity and existence",
+            "Mutation semantics",
+            "Internal consistency",
+            "Authority",
+            "ask a focused clarification question and stop",
+        ]:
+            self.assertIn(token, text)
+
+    def test_api_contract_template_has_contract_wide_rules(self):
+        text = (
+            ROOT / ".github/skills/api-design/templates/API-Contract.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Contract-Wide Rules", text)
+        self.assertIn("## Decisions Resolved", text)
+        self.assertIn("The approved Plan remains the single source of truth", text)
+
+    def test_create_api_contract_self_checks_completeness(self):
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Contract Completeness question", text)
+            self.assertIn("this command stays project-neutral", text)
+            self.assertIn("check the contract with evidence", text)
+
+    # --- Revision handling pass.
+
+    def test_contract_and_plan_commands_define_revision_handling(self):
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("treat it as a revision, not a fresh draft", text, rel)
+            self.assertIn("compare against the previous version", text, rel)
+        for rel in [
+            ".github/prompts/create-api-contract.prompt.md",
+            ".claude/commands/create-api-contract.md",
+            "plugin/commands/create-api-contract.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("record each answered clarification in Decisions Resolved", text)
+            self.assertIn("exactly one row per `api-design` Contract Completeness question", text)
+
+    # --- Projected prerequisite coverage and version selection pass.
+
+    def test_plan_rules_require_prerequisite_coverage_for_every_red(self):
+        skill = (
+            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Prerequisite coverage for every RED milestone", skill)
+        self.assertIn("projected after all of its predecessor milestones complete", skill)
+        self.assertIn("Record which RED milestones each FOUNDATION milestone serves", skill)
+        for rel in [
+            ".github/prompts/create-plan.prompt.md",
+            ".claude/commands/create-plan.md",
+            "plugin/commands/create-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("not only the current state", text)
+            self.assertNotIn("determine whether the current repository state is sufficient to begin RED", text)
+
+    def test_foundation_is_not_limited_to_the_immediately_following_red(self):
+        for rel in [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Plan.md",
+            ".github/skills/implementation-planning/SKILL.md",
+            ".github/prompts/create-implementation-plan.prompt.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertNotIn("the following RED milestone", text, rel)
+
+    def test_dependency_versions_must_be_supported_not_cache_convenient(self):
+        skill = (
+            ROOT / ".github/skills/implementation-planning/SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Dependency and Version Selection", skill)
+        self.assertIn("currently supported by its maintainers", skill)
+        self.assertIn("never choose a version because it is already in a local cache", skill)
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Dependency and Version Selection", text)
+
+    # --- Carry-forward, contingencies, file scope, repeatable verification pass.
+
+    def test_implementation_planning_carries_forward_prior_decisions(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Carried-Forward Decisions", skill)
+        self.assertIn("read every previously approved Implementation Plan", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Carried-Forward Decisions", template)
+        for rel in [
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+        ]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("read every previously approved Implementation Plan", text)
+
+    def test_contingencies_are_exact_and_reported(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Pre-authorized Contingencies", skill)
+        self.assertIn("exact observable trigger", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("## Pre-authorized Contingencies", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [
+                f".github/prompts/{cmd}.prompt.md",
+                f".claude/commands/{cmd}.md",
+                f"plugin/commands/{cmd}.md",
+            ]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("whether its trigger occurred and whether it was applied", text, rel)
+                self.assertIn("a pass that is not repeatable is not verified", text, rel)
+
+    def test_file_scope_excludes_plan_status_update(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## File Scope and Plan Status", skill)
+        template = (
+            ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("exclude this milestone's own Execution Status update", template)
+
+    def test_verification_must_be_repeatable_and_isolated(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Repeatable, Isolated Verification", skill)
+        self.assertIn("a second time without cleaning", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("must assert that the isolation is actually in effect", testing)
+        self.assertIn("must pass on repeated runs without cleanup", testing)
+
+    # --- Exact code pass.
+
+    def test_implementation_plans_require_exact_code_not_pseudocode(self):
+        files = [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/implementation-planning/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/Implementation-Plan.md",
+            ".github/prompts/create-implementation-plan.prompt.md",
+            ".claude/commands/create-implementation-plan.md",
+            "plugin/commands/create-implementation-plan.md",
+            ".github/agents/planner.agent.md",
+            ".claude/agents/planner.md",
+            "plugin/agents/planner.md",
+        ]
+        for rel in files:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertNotIn("pseudocode, or patch-level", text, rel)
+            self.assertNotIn("code snippets or patch-level", text, rel)
+            self.assertIn("complete unified diff covering every changed line", text, rel)
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Exact Code", skill)
+        self.assertIn("A change that appears only in the code, or only in the list, is a defect", skill)
+
+    def test_executors_apply_code_exactly(self):
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [
+                f".github/prompts/{cmd}.prompt.md",
+                f".claude/commands/{cmd}.md",
+                f"plugin/commands/{cmd}.md",
+            ]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("Apply the code exactly as the approved Implementation Plan writes it", text, rel)
+
+    # --- No-weakening, labels, binding FOUNDATION decisions, path patterns pass.
+
+    def test_contingencies_never_weaken_checks(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("A contingency may never remove, loosen, or otherwise weaken a test assertion", skill)
+        template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
+        self.assertIn("A contingency may never remove, loosen, or weaken a test assertion", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("Never remove, loosen, or weaken a test assertion", text, rel)
+
+    def test_artifact_labels_must_not_collide(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("must not reuse a label already defined by an approved artifact it references", skill)
+        for cmd in ["create-plan", "create-api-contract", "create-implementation-plan"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("reuses a label already defined by an approved artifact", text, rel)
+
+    def test_foundation_lists_binding_decisions(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("every choice that binds the RED milestones this FOUNDATION serves", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("binds the RED milestones it serves", text, rel)
+
+    def test_path_patterns_match_only_intended_paths(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("anchor a pattern to the repository root", skill)
+
+    # --- Approval gate, recorded decisions, exclusions, traced settings,
+    # --- safe rollback, RED expectations, and Final Review artifact pass.
+
+    def test_execution_requires_user_approval(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("### Approval Status", skill)
+        self.assertIn("the AI never approves its own artifact", skill)
+        self.assertIn("Never infer approval from a commit message", skill)
+        template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
+        self.assertIn("The only status field in this artifact", template)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("confirm the Implementation Plan is approved", text, rel)
+        for agent in ["test-engineer", "implementation-engineer", "refactoring-engineer"]:
+            for rel in [f".github/agents/{agent}.agent.md", f".claude/agents/{agent}.md", f"plugin/agents/{agent}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("confirm the Implementation Plan is approved", text, rel)
+
+    def test_resolved_decisions_are_recorded_before_planning(self):
+        skill = (ROOT / ".github/skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Recording Resolved Decisions", skill)
+        self.assertIn("never to conversation history", skill)
+        for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md", "plugin/commands/review-requirements.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Resolved decisions to record", text, rel)
+
+    def test_absence_requirements_are_exclusions(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("A requirement that states an absence", skill)
+        self.assertIn("appears in that RED milestone's scope", skill)
+
+    def test_introduced_settings_are_traced_and_rollback_is_scoped(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Every dependency, plugin, and configuration setting the exact code introduces must trace", skill)
+        self.assertIn("never repository-wide reset, clean, or checkout operations", skill)
+        self.assertIn("must come from actual inspection", skill)
+        self.assertIn("must not silently depend on a shared resource", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("traces every dependency, plugin, and configuration setting", text, rel)
+
+    def test_red_expectations_and_contract_coverage(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("as a class of failure attributable to the missing behavior", skill)
+        self.assertIn("map every normative rule of the approved contract", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("verify it at least once through the real transport", testing)
+
+    def test_final_review_is_written_to_an_artifact(self):
+        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("docs/.ai/<work-item>/Final-Review.md", skill)
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("docs/.ai/<work-item>/Final-Review.md", text, rel)
+
+    def test_every_work_item_has_its_own_folder(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Work-Item Folders", skill, tree)
+            self.assertIn("named explicitly by the user", skill, tree)
+            self.assertIn("never edit it", skill, tree)
+            self.assertIn("existing tests that cover it", skill, tree)
+        for op in [
+            "capture-requirements",
+            "create-plan",
+            "create-api-contract",
+            "create-implementation-plan",
+            "generate-tests",
+            "implement-approved-plan",
+            "refactor-code",
+        ]:
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+                text = (ROOT / rel).read_text(encoding="utf-8")
+                self.assertIn("If no work item is named, ask and stop.", text, rel)
+
+    def test_no_repository_wide_fixed_artifact_paths(self):
+        for tree in [".github", ".claude", "plugin"]:
+            for path in (ROOT / tree).rglob("*.md"):
+                text = path.read_text(encoding="utf-8")
+                for fixed in ["docs/.ai/Plan.md", "docs/.ai/Final-Review.md", "docs/.ai/NNN_"]:
+                    self.assertNotIn(fixed, text, str(path.relative_to(ROOT)))
+
+    def test_operational_characteristics_are_asked_not_defaulted(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Operational Characteristics", skill, tree)
+            self.assertIn("deployment topology and consistency/concurrency guarantees", skill, tree)
+            self.assertIn("never defaulted", skill, tree)
+        expected = {
+            "review-requirements": "applicable Operational Characteristics questions",
+            "capture-requirements": "Operational Characteristics check",
+            "create-plan": "stop and route it back to requirements capture",
+        }
+        for op, phrase in expected.items():
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+                self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_fallback_is_chosen_by_dependency_role(self):
+        for tree in [".github", ".claude", "plugin"]:
+            base = ROOT / tree / "skills/resilience-and-degradation"
+            skill = (base / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Choose by the role the dependency plays", skill, tree)
+            self.assertIn("transactional outbox", skill, tree)
+            self.assertIn("are not production fallbacks", skill, tree)
+            ref = (base / "references/local-adapters-vs-production-degradation.md").read_text(encoding="utf-8")
+            self.assertIn("startup failing if one is active under a production profile", ref, tree)
+            ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("must run locally or in CI without it", ra, tree)
+
+    def test_questions_grouped_and_product_requirements_kept_current(self):
+        for tree in [".github", ".claude", "plugin"]:
+            ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Presenting Clarification Questions", ra, tree)
+            self.assertIn("Blocking — must be answered before planning", ra, tree)
+            self.assertIn("Answer or mark not required", ra, tree)
+            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Only the user updates `docs/requirements.md`", pdd, tree)
+            self.assertIn("each product-level statement now out of date", pdd, tree)
+
+    # --- Lessons from the reservation-events end-to-end trial.
+
+    def test_implementation_plans_are_dry_run_before_review(self):
+        for tree in [".github", ".claude", "plugin"]:
+            skill = (ROOT / tree / "skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Planning-Time Dry Run", skill, tree)
+            self.assertIn("disposable copy of the repository outside the working tree", skill, tree)
+            self.assertIn("not milestone evidence", skill, tree)
+            template = (
+                ROOT / tree / "skills/prompt-driven-development/templates/Implementation-Plan.md"
+            ).read_text(encoding="utf-8")
+            self.assertIn("### Planning-Time Dry Run", template, tree)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("report the dry-run result", text, rel)
+
+    def test_causal_claims_require_evidence(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Causal claims", skill)
+        self.assertIn("Label an explanation that has not been established that way as a hypothesis", skill)
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+            self.assertIn("Cite evidence for every causal claim", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_negative_red_tests_must_not_pass_vacuously(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("passes vacuously while the behavior is absent", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("passes vacuously while the behavior under test is absent", testing)
+        for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md", "plugin/commands/generate-tests.md"]:
+            self.assertIn("passes vacuously in RED", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_pre_existing_failures_are_decided_at_planning_not_rerun(self):
+        skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("## Pre-existing Failures", skill)
+        self.assertIn("accepts a run only when that named test is the sole failure", skill)
+        self.assertIn("Never rerun verification until it happens to pass", skill)
+        testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("fails intermittently on unchanged code is a finding", testing)
+        for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+                self.assertIn("never rerun verification until it happens to pass", (ROOT / rel).read_text(encoding="utf-8"), rel)
+
+    def test_final_review_has_template_origin_and_correction_rules(self):
+        for tree in [".github", ".claude", "plugin"]:
+            template = (ROOT / tree / "skills/prompt-driven-development/templates/Final-Review.md").read_text(encoding="utf-8")
+            for heading in [
+                "## Verdict",
+                "## Final Acceptance Criteria and Evidence",
+                "## Exclusions Check",
+                "## Product-Level Statements Now Out of Date",
+                "## Findings",
+                "## User Decision",
+            ]:
+                self.assertIn(heading, template, tree)
+            self.assertIn("pre-existing / introduced", template, tree)
+            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("Use `templates/Final-Review.md` for the structure", pdd, tree)
+            self.assertIn("do not edit the approved artifact", pdd, tree)
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("templates/Final-Review.md", text, rel)
+            self.assertIn("mark each finding as pre-existing or introduced", text, rel)
 
 if __name__ == "__main__":
     unittest.main()

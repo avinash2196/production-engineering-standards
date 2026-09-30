@@ -35,7 +35,7 @@ Do not manufacture distributed-system concerns when the application does not hav
 
 ## Artifact Responsibility
 
-When requested, create or update architecture review artifacts under the repository documentation area, such as `docs/.ai/`.
+When requested, create or update architecture review artifacts under the repository documentation area, such as `docs/.ai/<work-item>/`.
 
 Record findings, trade-offs, unresolved decisions, risks, and recommendations.
 

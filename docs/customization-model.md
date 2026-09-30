@@ -193,10 +193,11 @@ Task-specific artifacts belong to the application performing the work.
 Examples:
 
 ```text
-docs/.ai/Plan.md
-docs/.ai/001_Implementation_Plan_RED.md
-docs/.ai/002_Implementation_Plan_GREEN.md
-docs/.ai/003_Implementation_Plan_REFACTOR.md
+docs/.ai/order-cancellation/requirements.md
+docs/.ai/order-cancellation/Plan.md
+docs/.ai/order-cancellation/001_Implementation_Plan_RED.md
+docs/.ai/order-cancellation/002_Implementation_Plan_GREEN.md
+docs/.ai/order-cancellation/003_Implementation_Plan_REFACTOR.md
 ```
 
 These artifacts represent the scope and authorization of a specific change.

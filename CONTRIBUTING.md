@@ -8,5 +8,5 @@ Keep the repository model small and explicit.
 4. Create a prompt only when an explicit reusable entry point adds value.
 5. Add executable checks to `tooling/` when a rule can be mechanically verified.
 6. Do not create new top-level taxonomies for standards, playbooks, stacks, contracts, or templates.
-7. Preserve human approval boundaries for Plan, Implementation Plan, RED, GREEN, and REFACTOR phases.
+7. Preserve human approval boundaries for Plan, Implementation Plan, RED, GREEN, and REFACTOR milestones.
 8. Run repository validation before proposing a change.
