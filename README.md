@@ -56,17 +56,12 @@ Material ambiguity is also a blocking boundary:
   prompts/                 Explicit reusable workflow entry points
   workflows/               Repository validation CI
 
-.claude/
+.claude/                   Drop-in project configuration AND the installable plugin root
+  .claude-plugin/
+    plugin.json            Installable Claude Code plugin manifest
   agents/                  Same responsibility-focused agents, Claude Code format
   skills/                  Same domain knowledge, Claude Code format
   commands/                Same workflow entry points, Claude Code format
-
-plugin/
-  .claude-plugin/
-    plugin.json            Installable Claude Code plugin manifest
-  agents/                  Mirror of .claude/agents/, packaged for distribution
-  skills/                  Mirror of .claude/skills/, packaged for distribution
-  commands/                Mirror of .claude/commands/, packaged for distribution
 
 tooling/
   scripts/                 Dependency-free validators
@@ -115,22 +110,26 @@ A simple way to think about the model is:
 
 ## Using with Claude Code
 
-The repository provides three parallel pieces for Claude Code:
+The `.claude/` directory is the single Claude Code tree. It serves two uses without duplicating any files:
 
-**`.claude/` directory** — Drop-in project configuration automatically loaded when this repository (or any adopting project that includes it) is opened in Claude Code. No installation step required.
+**Direct (drop-in) usage** — `.claude/` is project configuration loaded automatically when this repository (or any adopting project that copies it in) is opened in Claude Code. No installation step required; commands are unprefixed (e.g., `/create-plan`).
 
-**`plugin/` directory** — Packages the same skills, agents, and commands as an installable Claude Code plugin. The repository root also carries `.claude-plugin/marketplace.json`, which registers this repo itself as a Claude Code plugin marketplace with `plugin/` as its one entry.
+**Plugin usage** — `.claude/` is also the plugin root: `.claude/.claude-plugin/plugin.json` is the plugin manifest, and the repository root carries `.claude-plugin/marketplace.json`, which registers this repo as a Claude Code plugin marketplace with `./.claude` as its one entry. Claude Code does not treat `.claude-plugin/` as project configuration, so it is inert for drop-in usage.
+
+The validator enforces this: the marketplace entry must point at `./.claude`, and a separate `plugin/` copy must not exist.
+
+If the plugin is installed at user scope and you also work inside this repository (or a project that copies `.claude/` in), both load: the same content appears once unprefixed and once as `/production-engineering-standards:<name>`.
 
 Validate the plugin manifest:
 
 ```bash
-claude plugin validate ./plugin
+claude plugin validate ./.claude
 ```
 
 Try it ad hoc, for a single session only (must be passed every time you launch `claude`):
 
 ```bash
-claude --plugin-dir ./plugin
+claude --plugin-dir ./.claude
 ```
 
 Install it persistently, so it loads automatically in every future Claude Code session (`claude plugin install` takes a `<plugin>@<marketplace>` name, not a bare path — it always needs a marketplace registered first, even a local one):
@@ -147,7 +146,7 @@ claude plugin install production-engineering-standards@pes-marketplace --scope u
 
 `--scope user` makes the plugin available in every project on the current machine; use `--scope project` or `--scope local` to limit it to one repo. When installed, skills, agents, and commands are namespaced as `/production-engineering-standards:<name>` (e.g., `/production-engineering-standards:create-plan`, `/production-engineering-standards:code-review`).
 
-**`.claude/` and `plugin/` as translations** — Both directories contain translations of `.github/` content into Claude Code's format. They are kept in sync manually; `.github/` remains the source of truth for GitHub Copilot. When an adopting project copies in this standards repository:
+**`.claude/` as a translation** — `.claude/` contains a translation of `.github/` content into Claude Code's format. It is kept in sync manually; `.github/` remains the source of truth for GitHub Copilot. When an adopting project copies in this standards repository:
 
 - Copilot pulls instructions and skills from `.github/`
 - Claude Code pulls the same content from `.claude/` and `CLAUDE.md`
@@ -317,7 +316,7 @@ CI runs the same repository-level checks via `.github/workflows/validate.yml`.
 **Claude Code plugin validation:**
 
 ```bash
-claude plugin validate ./plugin
+claude plugin validate ./.claude
 ```
 
 This validates the plugin manifest and subagent/command/skill structure. Note: `claude plugin validate` is a separate check from the Python validators above and is not currently run in CI — consider adding it to `.github/workflows/validate.yml` in a future update.

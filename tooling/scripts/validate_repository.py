@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import re
 
 # The repo root when this script is run directly (CLI entry point only —
@@ -50,12 +51,12 @@ NO_CODE_CHANGE_REQUIRED_FILES = [
 
 # ---------------------------------------------------------------------------
 # Skill/command environments. Every skill under .github/skills must exist,
-# byte-identical, under both mirrors. Populate this only if a specific
+# byte-identical, under the .claude mirror. Populate this only if a specific
 # relative path is deliberately allowed to differ or be environment-only —
 # do not weaken the comparison itself to work around an unreviewed drift.
 # ---------------------------------------------------------------------------
 
-SKILL_MIRROR_ENVIRONMENTS = [".github/skills", ".claude/skills", "plugin/skills"]
+SKILL_MIRROR_ENVIRONMENTS = [".github/skills", ".claude/skills"]
 SKILL_SYNC_ALLOWED_DIVERGENCES: set[str] = set()
 
 REQUIRED_PDD_OPERATIONS = [
@@ -72,7 +73,6 @@ REQUIRED_PDD_OPERATIONS = [
 COMMAND_ENVIRONMENTS = {
     ".github/prompts": "{name}.prompt.md",
     ".claude/commands": "{name}.md",
-    "plugin/commands": "{name}.md",
 }
 
 
@@ -169,7 +169,7 @@ def validate_skill_sync(root: Path, errors: list[str]) -> None:
     canonical_root = env_paths[".github/skills"]
     canonical_files = _relative_file_set(canonical_root)
 
-    for mirror_name in (".claude/skills", "plugin/skills"):
+    for mirror_name in (".claude/skills",):
         mirror_root = env_paths[mirror_name]
         mirror_files = _relative_file_set(mirror_root)
 
@@ -196,12 +196,12 @@ def validate_skill_sync(root: Path, errors: list[str]) -> None:
                 errors.append(
                     f"{mirror_name}/{rel} has diverged from "
                     f".github/skills/{rel} — skills must stay "
-                    "behaviorally identical across .github, .claude, and plugin"
+                    "behaviorally identical across .github and .claude"
                 )
 
 
 def validate_pdd_commands_across_environments(root: Path, errors: list[str]) -> None:
-    # A deleted .claude or plugin command must fail validation just as
+    # A deleted .claude command must fail validation just as
     # loudly as a deleted .github prompt — this does not require
     # byte-identical files (environment-specific frontmatter/opening
     # structure legitimately differ), only that the operation exists
@@ -219,6 +219,46 @@ def validate_pdd_commands_across_environments(root: Path, errors: list[str]) -> 
                     f"{env_rel}: missing required PDD command '{operation}' "
                     f"(expected {filename})"
                 )
+
+
+# ---------------------------------------------------------------------------
+# .claude/ is both the drop-in project configuration and the installable
+# plugin. The marketplace must point at it, and no second packaged copy may
+# exist, so there is only one Claude Code tree to maintain.
+# ---------------------------------------------------------------------------
+
+PLUGIN_ROOT = ".claude"
+
+
+def validate_single_claude_tree(root: Path, errors: list[str]) -> None:
+    manifest = root / PLUGIN_ROOT / ".claude-plugin/plugin.json"
+    if not manifest.is_file():
+        errors.append(f"missing plugin manifest: {PLUGIN_ROOT}/.claude-plugin/plugin.json")
+
+    if (root / "plugin").exists():
+        errors.append(
+            "plugin/ must not exist — .claude/ is the plugin root; "
+            "do not reintroduce a duplicated packaged copy"
+        )
+
+    marketplace = root / ".claude-plugin/marketplace.json"
+    if not marketplace.is_file():
+        errors.append("missing marketplace manifest: .claude-plugin/marketplace.json")
+        return
+
+    try:
+        entries = json.loads(marketplace.read_text(encoding="utf-8")).get("plugins", [])
+    except json.JSONDecodeError as exc:
+        errors.append(f".claude-plugin/marketplace.json is not valid JSON: {exc}")
+        return
+
+    for entry in entries:
+        source = entry.get("source")
+        if source != f"./{PLUGIN_ROOT}":
+            errors.append(
+                f".claude-plugin/marketplace.json: plugin '{entry.get('name')}' "
+                f"source is {source!r}, expected './{PLUGIN_ROOT}'"
+            )
 
 
 def validate_agent_and_prompt_names(root: Path, errors: list[str]) -> None:
@@ -438,6 +478,7 @@ VALIDATORS = [
     validate_skills,
     validate_skill_sync,
     validate_pdd_commands_across_environments,
+    validate_single_claude_tree,
     validate_agent_and_prompt_names,
     validate_prompt_agent_bindings,
     validate_markdown_links,

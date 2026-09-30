@@ -65,10 +65,6 @@ class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
         shutil.rmtree(self.repo / ".claude/skills")
         self.assert_error_containing("missing required skill mirror tree: .claude/skills")
 
-    def test_deleting_plugin_skills_tree_fails(self):
-        shutil.rmtree(self.repo / "plugin/skills")
-        self.assert_error_containing("missing required skill mirror tree: plugin/skills")
-
     def test_missing_mirror_tree_does_not_silently_skip_validation(self):
         # The old implementation returned early (zero errors) if any mirror
         # tree was absent, instead of failing — deleting a whole environment
@@ -92,14 +88,6 @@ class SkillSynchronizationTest(ValidatorMutationTestCase):
         )
         self.assert_error_containing("unexpected extra file")
 
-    def test_extra_obsolete_plugin_only_skill_fails(self):
-        extra = self.repo / "plugin/skills/obsolete-skill"
-        extra.mkdir()
-        (extra / "SKILL.md").write_text(
-            "---\nname: obsolete-skill\ndescription: stale\n---\n", encoding="utf-8"
-        )
-        self.assert_error_containing("unexpected extra file")
-
     def test_altered_mirrored_skill_content_fails(self):
         path = self.repo / ".claude/skills/code-review/SKILL.md"
         path.write_text(path.read_text(encoding="utf-8") + "\nmutated\n", encoding="utf-8")
@@ -114,15 +102,27 @@ class SkillSynchronizationTest(ValidatorMutationTestCase):
         self.assertEqual(sync_errors, [])
 
 
+class SingleClaudeTreeTest(ValidatorMutationTestCase):
+    def test_reintroducing_packaged_plugin_copy_fails(self):
+        shutil.copytree(self.repo / ".claude", self.repo / "plugin")
+        self.assert_error_containing("plugin/ must not exist")
+
+    def test_marketplace_pointing_away_from_claude_fails(self):
+        path = self.repo / ".claude-plugin/marketplace.json"
+        path.write_text(
+            path.read_text(encoding="utf-8").replace('"./.claude"', '"./plugin"'),
+            encoding="utf-8",
+        )
+        self.assert_error_containing("expected './.claude'")
+
+    def test_deleting_plugin_manifest_fails(self):
+        (self.repo / ".claude/.claude-plugin/plugin.json").unlink()
+        self.assert_error_containing("missing plugin manifest")
+
+
 class CommandCoverageTest(ValidatorMutationTestCase):
     def test_deleting_claude_implement_approved_plan_command_fails(self):
         (self.repo / ".claude/commands/implement-approved-plan.md").unlink()
-        self.assert_error_containing(
-            "missing required PDD command 'implement-approved-plan'"
-        )
-
-    def test_deleting_plugin_implement_approved_plan_command_fails(self):
-        (self.repo / "plugin/commands/implement-approved-plan.md").unlink()
         self.assert_error_containing(
             "missing required PDD command 'implement-approved-plan'"
         )
@@ -231,11 +231,11 @@ class CliEntryPointTest(ValidatorMutationTestCase):
         self.assertIn("Repository validation PASSED", result.stdout)
 
     def test_cli_fails_and_exits_nonzero_on_broken_repository(self):
-        shutil.rmtree(self.repo / "plugin/skills")
+        shutil.rmtree(self.repo / ".claude/skills")
         result = self._run_cli()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Repository validation FAILED", result.stdout)
-        self.assertIn("missing required skill mirror tree: plugin/skills", result.stdout)
+        self.assertIn("missing required skill mirror tree: .claude/skills", result.stdout)
 
 
 if __name__ == "__main__":
