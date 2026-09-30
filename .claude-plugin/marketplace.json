@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "production-engineering-standards",
-      "source": "./plugin",
+      "source": "./.claude",
       "description": "Production engineering standards: skills, agents, and commands for Java/Spring Boot, Python/FastAPI, distributed systems, API design, resilience, security, and Oracle-to-PostgreSQL modernization."
     }
   ]

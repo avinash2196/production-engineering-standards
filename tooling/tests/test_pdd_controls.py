@@ -373,10 +373,8 @@ class PddControlsTest(unittest.TestCase):
         runtime_files = [
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
-            "plugin/commands/create-plan.md",
             ".github/agents/planner.agent.md",
             ".claude/agents/planner.md",
-            "plugin/agents/planner.md",
             ".github/skills/prompt-driven-development/templates/Plan.md",
         ]
         for rel in runtime_files:
@@ -405,7 +403,7 @@ class PddControlsTest(unittest.TestCase):
 
     def test_pdd_skill_copies_are_synchronized(self):
         canonical_root = ROOT / ".github/skills"
-        mirror_roots = [ROOT / ".claude/skills", ROOT / "plugin/skills"]
+        mirror_roots = [ROOT / ".claude/skills"]
 
         for canonical_file in canonical_root.rglob("*"):
             if not canonical_file.is_file():
@@ -643,7 +641,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
-            "plugin/commands/create-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn(
@@ -691,7 +688,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
-            "plugin/commands/create-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("check the Plan against each Plan Content Rule", text)
@@ -701,14 +697,12 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
-            "plugin/commands/create-implementation-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("A CONTRACT milestone has no Implementation Plan", text)
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
-            "plugin/commands/create-api-contract.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("executes the CONTRACT milestone recorded in the approved", text)
@@ -746,7 +740,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
-            "plugin/commands/create-api-contract.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("Contract Completeness question", text)
@@ -759,10 +752,8 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
-            "plugin/commands/create-api-contract.md",
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
-            "plugin/commands/create-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("treat it as a revision, not a fresh draft", text, rel)
@@ -770,7 +761,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
-            "plugin/commands/create-api-contract.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("record each answered clarification in Decisions Resolved", text)
@@ -788,7 +778,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
-            "plugin/commands/create-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("not only the current state", text)
@@ -814,7 +803,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
-            "plugin/commands/create-implementation-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("Dependency and Version Selection", text)
@@ -832,7 +820,6 @@ class PddControlsTest(unittest.TestCase):
         for rel in [
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
-            "plugin/commands/create-implementation-plan.md",
         ]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("read every previously approved Implementation Plan", text)
@@ -849,7 +836,6 @@ class PddControlsTest(unittest.TestCase):
             for rel in [
                 f".github/prompts/{cmd}.prompt.md",
                 f".claude/commands/{cmd}.md",
-                f"plugin/commands/{cmd}.md",
             ]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("whether its trigger occurred and whether it was applied", text, rel)
@@ -880,10 +866,8 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/Implementation-Plan.md",
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
-            "plugin/commands/create-implementation-plan.md",
             ".github/agents/planner.agent.md",
             ".claude/agents/planner.md",
-            "plugin/agents/planner.md",
         ]
         for rel in files:
             text = (ROOT / rel).read_text(encoding="utf-8")
@@ -899,7 +883,6 @@ class PddControlsTest(unittest.TestCase):
             for rel in [
                 f".github/prompts/{cmd}.prompt.md",
                 f".claude/commands/{cmd}.md",
-                f"plugin/commands/{cmd}.md",
             ]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("Apply the code exactly as the approved Implementation Plan writes it", text, rel)
@@ -912,7 +895,7 @@ class PddControlsTest(unittest.TestCase):
         template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
         self.assertIn("A contingency may never remove, loosen, or weaken a test assertion", template)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
-            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("Never remove, loosen, or weaken a test assertion", text, rel)
 
@@ -920,14 +903,14 @@ class PddControlsTest(unittest.TestCase):
         skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("must not reuse a label already defined by an approved artifact it references", skill)
         for cmd in ["create-plan", "create-api-contract", "create-implementation-plan"]:
-            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("reuses a label already defined by an approved artifact", text, rel)
 
     def test_foundation_lists_binding_decisions(self):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("every choice that binds the RED milestones this FOUNDATION serves", skill)
-        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("binds the RED milestones it serves", text, rel)
 
@@ -946,11 +929,11 @@ class PddControlsTest(unittest.TestCase):
         template = (ROOT / ".github/skills/prompt-driven-development/templates/Implementation-Plan.md").read_text(encoding="utf-8")
         self.assertIn("The only status field in this artifact", template)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
-            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("confirm the Implementation Plan is approved", text, rel)
         for agent in ["test-engineer", "implementation-engineer", "refactoring-engineer"]:
-            for rel in [f".github/agents/{agent}.agent.md", f".claude/agents/{agent}.md", f"plugin/agents/{agent}.md"]:
+            for rel in [f".github/agents/{agent}.agent.md", f".claude/agents/{agent}.md"]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("confirm the Implementation Plan is approved", text, rel)
 
@@ -958,7 +941,7 @@ class PddControlsTest(unittest.TestCase):
         skill = (ROOT / ".github/skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("## Recording Resolved Decisions", skill)
         self.assertIn("never to conversation history", skill)
-        for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md", "plugin/commands/review-requirements.md"]:
+        for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("Resolved decisions to record", text, rel)
 
@@ -973,7 +956,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("never repository-wide reset, clean, or checkout operations", skill)
         self.assertIn("must come from actual inspection", skill)
         self.assertIn("must not silently depend on a shared resource", skill)
-        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("traces every dependency, plugin, and configuration setting", text, rel)
 
@@ -987,12 +970,12 @@ class PddControlsTest(unittest.TestCase):
     def test_final_review_is_written_to_an_artifact(self):
         skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("docs/.ai/<work-item>/Final-Review.md", skill)
-        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("docs/.ai/<work-item>/Final-Review.md", text, rel)
 
     def test_every_work_item_has_its_own_folder(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             skill = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("## Work-Item Folders", skill, tree)
             self.assertIn("named explicitly by the user", skill, tree)
@@ -1007,19 +990,19 @@ class PddControlsTest(unittest.TestCase):
             "implement-approved-plan",
             "refactor-code",
         ]:
-            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md"]:
                 text = (ROOT / rel).read_text(encoding="utf-8")
                 self.assertIn("If no work item is named, ask and stop.", text, rel)
 
     def test_no_repository_wide_fixed_artifact_paths(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             for path in (ROOT / tree).rglob("*.md"):
                 text = path.read_text(encoding="utf-8")
                 for fixed in ["docs/.ai/Plan.md", "docs/.ai/Final-Review.md", "docs/.ai/NNN_"]:
                     self.assertNotIn(fixed, text, str(path.relative_to(ROOT)))
 
     def test_operational_characteristics_are_asked_not_defaulted(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             skill = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("## Operational Characteristics", skill, tree)
             self.assertIn("deployment topology and consistency/concurrency guarantees", skill, tree)
@@ -1030,11 +1013,11 @@ class PddControlsTest(unittest.TestCase):
             "create-plan": "stop and route it back to requirements capture",
         }
         for op, phrase in expected.items():
-            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md", f"plugin/commands/{op}.md"]:
+            for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md"]:
                 self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
 
     def test_fallback_is_chosen_by_dependency_role(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             base = ROOT / tree / "skills/resilience-and-degradation"
             skill = (base / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn("Choose by the role the dependency plays", skill, tree)
@@ -1046,7 +1029,7 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("must run locally or in CI without it", ra, tree)
 
     def test_questions_grouped_and_product_requirements_kept_current(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("## Presenting Clarification Questions", ra, tree)
             self.assertIn("Blocking — must be answered before planning", ra, tree)
@@ -1058,7 +1041,7 @@ class PddControlsTest(unittest.TestCase):
     # --- Lessons from the reservation-events end-to-end trial.
 
     def test_implementation_plans_are_dry_run_before_review(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             skill = (ROOT / tree / "skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("## Planning-Time Dry Run", skill, tree)
             self.assertIn("disposable copy of the repository outside the working tree", skill, tree)
@@ -1067,7 +1050,7 @@ class PddControlsTest(unittest.TestCase):
                 ROOT / tree / "skills/prompt-driven-development/templates/Implementation-Plan.md"
             ).read_text(encoding="utf-8")
             self.assertIn("### Planning-Time Dry Run", template, tree)
-        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("report the dry-run result", text, rel)
 
@@ -1075,7 +1058,7 @@ class PddControlsTest(unittest.TestCase):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Causal claims", skill)
         self.assertIn("Label an explanation that has not been established that way as a hypothesis", skill)
-        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md", "plugin/commands/create-implementation-plan.md"]:
+        for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
             self.assertIn("Cite evidence for every causal claim", (ROOT / rel).read_text(encoding="utf-8"), rel)
 
     def test_negative_red_tests_must_not_pass_vacuously(self):
@@ -1083,7 +1066,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("passes vacuously while the behavior is absent", skill)
         testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("passes vacuously while the behavior under test is absent", testing)
-        for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md", "plugin/commands/generate-tests.md"]:
+        for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md"]:
             self.assertIn("passes vacuously in RED", (ROOT / rel).read_text(encoding="utf-8"), rel)
 
     def test_pre_existing_failures_are_decided_at_planning_not_rerun(self):
@@ -1094,11 +1077,11 @@ class PddControlsTest(unittest.TestCase):
         testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("fails intermittently on unchanged code is a finding", testing)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
-            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md", f"plugin/commands/{cmd}.md"]:
+            for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
                 self.assertIn("never rerun verification until it happens to pass", (ROOT / rel).read_text(encoding="utf-8"), rel)
 
     def test_final_review_has_template_origin_and_correction_rules(self):
-        for tree in [".github", ".claude", "plugin"]:
+        for tree in [".github", ".claude"]:
             template = (ROOT / tree / "skills/prompt-driven-development/templates/Final-Review.md").read_text(encoding="utf-8")
             for heading in [
                 "## Verdict",
@@ -1113,7 +1096,7 @@ class PddControlsTest(unittest.TestCase):
             pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
             self.assertIn("Use `templates/Final-Review.md` for the structure", pdd, tree)
             self.assertIn("do not edit the approved artifact", pdd, tree)
-        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md", "plugin/commands/review-code.md"]:
+        for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md"]:
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("templates/Final-Review.md", text, rel)
             self.assertIn("mark each finding as pre-existing or introduced", text, rel)
