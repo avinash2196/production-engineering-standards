@@ -1,4 +1,5 @@
 ---
+name: refactoring-engineer
 description: Perform behavior-preserving cleanup only after a verified GREEN baseline and approved REFACTOR Implementation Plan, then record verified progress in Plan.md.
 tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
 

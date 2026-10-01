@@ -1,4 +1,5 @@
 ---
+name: planner
 description: Capture and refine requirements, then convert approved requirements and repository evidence into small, reviewable plans, contracts, and concrete milestone-specific Implementation Plans without implementing them.
 tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply_patch', 'get_terminal_output', 'open_file', 'run_in_terminal', 'ask_questions', 'get_errors', 'list_dir', 'read_file', 'file_search', 'grep_search', 'validate_cves', 'run_subagent']
 

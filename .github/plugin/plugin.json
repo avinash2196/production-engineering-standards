@@ -1,10 +1,11 @@
 {
   "name": "production-engineering-standards",
   "description": "Production engineering standards and PDD workflow.",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": {
     "name": "Avinash Srivastava"
   },
   "agents": ".github/agents/",
-  "skills": ".github/skills/"
+  "skills": ".github/skills/",
+  "commands": ".github/prompts/"
 }
