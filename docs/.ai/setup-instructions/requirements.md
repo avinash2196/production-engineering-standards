@@ -34,6 +34,9 @@ and capabilities the application had since added.
   by the user's approval]
 - **SI-9** — If the template cannot be read, the command stops; it never writes the file from memory.
   [User-observed Copilot run: template path not found, command continued]
+- **SI-11** — The command opens the template by its exact path under the plugin root and verifies its
+  first line; it never locates it by searching file contents. [User-observed Copilot run on 0.9.1: a
+  content search for the file name opened the Claude template, which mentions the Copilot one]
 - **SI-10** — When the target file exists, the command lists every line not in the template with the
   reason it is dropped and where it belongs; it does not move that content. [Derived from SI-7 —
   confirmed by the user's approval]
