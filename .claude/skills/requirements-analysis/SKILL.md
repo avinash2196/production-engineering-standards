@@ -14,6 +14,15 @@ Classify information as:
 
 Do not promote framework defaults, industry conventions, repository conventions, or personal preference into requirements.
 
+## Requirements Capture
+
+When writing or updating a requirements artifact:
+
+- **Inspect before asserting or asking.** Read the repository before stating any fact about it (build commands, language or runtime versions, profiles, external services, test counts) and before asking a clarification question. Never ask what inspection can answer. Record a repository fact only when inspection established it, and say where.
+- **Preserve the user's meaning.** Record each user requirement with the same meaning — do not narrow, broaden, or reword it into a non-equivalent statement. When a paraphrase could change the meaning, quote the user's wording.
+- **Requirements only.** The artifact holds requirements, constraints, explicit exclusions, acceptance criteria, resolved decisions, and repository-confirmed facts. Unless the user explicitly requires them, it does not hold build or test commands, branch or worktree names, stack traces, evidence snapshots, rollback strategy, solution shape (such as "a single minimal change"), or next steps — those belong to the Plan, the Implementation Plan, or verification evidence.
+- **No recommended requirements.** Engineering recommendations from skills or checklists (observability, logging, flakiness handling, rollback, documentation, CI, compatibility) are not requirements. Include one only when the user stated it or repository evidence establishes it as a requirement.
+
 ## Material Clarification Gate
 
 A decision is material when it can change the correctness or approved scope of the current artifact or task, including:
@@ -57,6 +66,7 @@ When the requirements do not state them and neither the repository nor the produ
 
 Rules:
 
+- Record an answer only when the user gave it or repository evidence establishes it. Never answer a characteristic on the user's behalf, and never add characteristics beyond the list above.
 - Ask only what applies to this system, in one round together with any other clarification questions. For an enhancement, ask only about characteristics the work item could change or depends on.
 - Deployment topology and consistency/concurrency are material: while unanswered, they block planning.
 - For the others, "not required for this work item" is a valid answer. Record it as an explicit exclusion, never as a silent default.
