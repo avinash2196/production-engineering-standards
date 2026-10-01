@@ -47,7 +47,7 @@ docs/.ai/<work-item>/
 - Every PDD command operates on exactly one work item, named explicitly by the user. If no work item is named, or the named folder does not exist when the command needs an existing artifact, ask and stop — do not infer it from branch names, recent files, or other folders.
 - In this skill and in every agent and command, Requirements, `Plan.md`, the API/external contract, Implementation Plans, and `Final-Review.md` mean the files in the current work item's folder.
 - Implementation Plan numbering (`NNN`) is per work item and starts at `001`.
-- Another work item's artifacts never authorize work in the current one. Completed work items are history, not authority.
+- Another work item's artifacts never authorize work in the current one. Completed work items are history, not authority — and not templates: build each artifact from the templates in `templates/`, the user's input, and the current repository, not by copying another work item's structure, wording, or citations.
 - An optional product-level `docs/requirements.md` describes the product as a whole. PDD commands may read it as context but never edit it. The work item's `requirements.md` is authoritative for the work item and states which product-level behavior it changes; any other material conflict between the two stops the workflow for human review. Only the user updates `docs/requirements.md`; Final Review lists the product-level statements a work item has made out of date.
 
 ## Artifact Authority
