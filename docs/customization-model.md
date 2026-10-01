@@ -175,17 +175,13 @@ CLAUDE.md                          (Claude Code)
 .github/copilot-instructions.md    (Copilot)
 ```
 
-Generate it with `/setup-claude-instructions` or `/setup-copilot-instructions` (see [Getting Started](getting-started.md) §3).
+Generate it with `/setup-claude-instructions` or `/setup-copilot-instructions` (see [Getting Started](getting-started.md) §3). It holds the PDD process rules and pointers to where project facts live.
 
-That file should contain stable facts about the application itself, such as:
+Project facts are not restated in that file, because a second copy goes stale and competes with the approved artifacts:
 
-* runtime and framework versions;
-* module or architectural boundaries;
-* production database;
-* migration framework;
-* API compatibility expectations;
-* build and verification commands;
-* application-specific conventions.
+* runtime, framework, and dependency versions → the build file;
+* module boundaries, production database, migration framework, API compatibility, conventions → `docs/requirements.md` or the work item's requirements;
+* build and verification commands → the Plan and Implementation Plans.
 
 It should not copy the full standards repository into the application's persistent context.
 

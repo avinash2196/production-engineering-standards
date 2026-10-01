@@ -25,13 +25,18 @@ and capabilities the application had since added.
 
 ## Behavior of the commands
 
-- FIXED sections are copied verbatim from the template; only CUSTOMIZE values are project-specific.
-  [Repo: templates/application-*-instructions.md, generation comment]
-- CUSTOMIZE values are proposed from repository inspection, each with its source, and confirmed by the
-  user before the file is written. Conflicting evidence is asked, not chosen. [Derived from
-  `requirements-analysis` Clarification Gate]
-- When the target file exists, its project-specific values are proposed for carry-over; content that
-  contradicts a FIXED section is not carried over. [Derived from the drift described in Context]
+- **SI-7** — The instruction file holds process rules and pointers only. Project facts — stack,
+  versions, constraints, persistence, verification commands — are not written into it; they live in
+  requirements, the build file, the Plan, and Implementation Plans. [User, 2026-10-01; confirmed
+  "yes make the changes"]
+- **SI-8** — The command copies the template verbatim (only the title names the application) and asks
+  no questions, so it works for a new project before any code exists. [Derived from SI-7 — confirmed
+  by the user's approval]
+- **SI-9** — If the template cannot be read, the command stops; it never writes the file from memory.
+  [User-observed Copilot run: template path not found, command continued]
+- **SI-10** — When the target file exists, the command lists every line not in the template with the
+  reason it is dropped and where it belongs; it does not move that content. [Derived from SI-7 —
+  confirmed by the user's approval]
 - The command writes only its one target file. It is an instruction-file change, not a code change.
   [Repo: CLAUDE.md, No Code Change Without Approval — documentation-only exception]
 
@@ -48,8 +53,9 @@ Instruction text only; no running system. All six characteristics: not required 
 
 ## Acceptance Criteria
 
-- AC-1: Running the Claude command in an application with an outdated `CLAUDE.md` produces a file whose
-  FIXED sections match the template verbatim and whose CUSTOMIZE values were confirmed by the user.
+- AC-1: Running the Claude command in an application with an outdated `CLAUDE.md` asks no questions,
+  produces a file identical to the template apart from the title, and lists the dropped
+  project-specific lines.
 - AC-2: Same for the Copilot prompt and `.github/copilot-instructions.md`.
 - AC-3: `README.md` and `docs/getting-started.md` present the command as step 1.
 - AC-4: Validator and unittest suite pass.

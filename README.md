@@ -263,7 +263,7 @@ application-specific CI
 /setup-copilot-instructions   → .github/copilot-instructions.md  (Copilot)
 ```
 
-Each command fills the template's CUSTOMIZE values from repository inspection, asks you to confirm them, and copies every FIXED section verbatim. Run it again whenever the template changes; it carries over your project-specific values and restores any FIXED section an older file is missing. Both files carry the same workflow and the same no-code-change-without-approval rule. The templates are:
+The file is loaded into every session in the repository, so the PDD rules apply even to free-form requests. It holds process rules and pointers only — no stack, versions, constraints, or commands; those live in `docs/requirements.md`, the build file, the Plan, and Implementation Plans. The command asks no questions, works for new and existing projects, and when it replaces an older file it lists every project-specific line it dropped and where that belongs. Rerun it whenever the template changes. The templates are:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md  (→ .github/copilot-instructions.md)

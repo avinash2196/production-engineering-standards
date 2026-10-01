@@ -4,25 +4,17 @@ Use this as the starting content for the adopting application's `.github/copilot
 
 Generate or update the file with the `setup-copilot-instructions` prompt rather than copying it by hand; rerun the prompt when this template changes.
 
-<!-- Before finalizing this file for a specific project: do not remove, paraphrase, or weaken any section marked FIXED below — copy it verbatim. Only replace CUSTOMIZE placeholders with project-specific values. Every reference to the same artifact (e.g. Requirements, Plan, Contract) must use the same path consistently everywhere it appears in the generated file. -->
+<!-- Every section below is FIXED: copy it verbatim — do not remove, paraphrase, or weaken it. Only the title names the application. Project facts (stack, versions, constraints, commands) do not belong in this file; they live in requirements, the build file, the Plan, and Implementation Plans. -->
 
 ## Project Context
 
-Technology:
-
-<!-- CUSTOMIZE — project-specific value -->
-* <runtime/version>
-* <framework/version>
-* <build system>
-* <test framework>
-
-Application-specific constraints:
-
-<!-- CUSTOMIZE — project-specific value -->
-* <constraint>
-* <constraint>
-
 <!-- FIXED — preserve verbatim -->
+This file holds process rules only. Project facts live in their own sources; read them there and do not restate them here:
+
+* Product requirements, technology stack, and scope exclusions: `docs/requirements.md` (when present) and the work item's `requirements.md`.
+* Build, runtime, and dependency versions: the build file (for example `pom.xml`, `build.gradle`, or `pyproject.toml`).
+* Verification commands: the approved Plan and the milestone's Implementation Plan.
+
 Do not introduce excluded capabilities unless explicitly approved by requirements.
 
 <!-- FIXED — preserve verbatim -->
@@ -72,7 +64,7 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 
 ## Planning Artifacts
 
-<!-- CUSTOMIZE — project-specific value; use the same path everywhere this artifact is referenced in this file -->
+<!-- FIXED — preserve verbatim -->
 * Work items: each piece of work (new project or enhancement) has its own folder `docs/.ai/<work-item>/`; PDD commands take the work item as an argument
 * Requirements: `docs/.ai/<work-item>/requirements.md` (optional product-level `docs/requirements.md` is read-only context)
 * Plan: `docs/.ai/<work-item>/Plan.md`
@@ -110,13 +102,7 @@ Do not use an Open Questions section as a substitute for required clarification.
 
 ## Verification
 
-Run the project's approved verification commands:
-
-<!-- CUSTOMIZE — project-specific value -->
-```
-<verification command>
-<verification command>
-```
-
 <!-- FIXED — preserve verbatim -->
+Run the verification commands recorded in the approved Implementation Plan for the milestone.
+
 Do not claim verification succeeded unless the commands completed successfully.

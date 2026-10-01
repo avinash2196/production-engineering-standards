@@ -53,9 +53,9 @@ Before any PDD work item, generate the application's persistent PDD rules for th
 
 When the standards are installed as a Claude Code plugin, the command is `/production-engineering-standards:setup-claude-instructions`.
 
-The command inspects the repository for the template's CUSTOMIZE values (runtime and framework versions, build and test tooling, application-specific constraints, contract path, verification commands), shows each proposed value with its source, and asks you to confirm before writing. FIXED sections are copied verbatim. It writes only that one file.
+The file is loaded into every session in the repository, so the PDD rules — the workflow, no code change without approval, clarification before assumption — apply even when no PDD command is used. It holds process rules and pointers only. The command copies the template verbatim, asks no questions, and writes only that one file, so it works for a new project before any code exists.
 
-Rerun it whenever the template changes. On an existing file it carries over your project-specific values, restores FIXED sections an older file is missing, and reports what changed.
+Rerun it whenever the template changes. When it replaces an existing file, it lists every project-specific line it dropped and where that information belongs.
 
 The commands are built on these templates, which remain the reference:
 
@@ -85,14 +85,13 @@ CLAUDE.md
 
 (repo root). Both templates carry the same PDD workflow and the same no-code-change-without-approval rule — pick the one matching the tool the adopting project actually uses.
 
-The application-specific facts the command asks for — and the only content to add by hand — are:
+Project facts do not go into the instruction file. Record them where PDD reads them:
 
-- runtime and framework versions,
-- module or architectural boundaries,
-- database and migration approach,
-- API compatibility expectations,
-- build and verification commands,
-- application-specific conventions.
+- technology stack, database, API compatibility, scope exclusions, conventions → `docs/requirements.md` (product level) or the work item's `requirements.md`;
+- runtime, framework, and dependency versions → the build file;
+- build and verification commands → the Plan and each milestone's Implementation Plan.
+
+For a new project, these are captured in the first work item's requirements (for example `initial-build`) and established by its FOUNDATION milestone.
 
 Do not copy the full engineering standards library into the application.
 

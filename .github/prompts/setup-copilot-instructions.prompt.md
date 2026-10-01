@@ -1,20 +1,20 @@
 ---
-description: "Generate or update the application's .github/copilot-instructions.md from the PDD template. Run first when adopting these standards."
-argument-hint: "optional: application name and any values to use for CUSTOMIZE placeholders"
+description: "Generate or update the application's .github/copilot-instructions.md (PDD process rules) from the template. Run first when adopting these standards."
+argument-hint: "optional: application name"
 agent: "agent"
 tools:
   - read
   - search
   - edit
 ---
-Apply `prompt-driven-development` and `requirements-analysis`.
+Apply `prompt-driven-development`.
 
-Generate or update the adopting application's `.github/copilot-instructions.md` from the `prompt-driven-development` skill's `templates/application-copilot-instructions.md`. This is the first step when an application starts using these standards with Copilot, and the step to repeat when the template changes.
+Generate or update the adopting application's `.github/copilot-instructions.md` from the `prompt-driven-development` skill's `templates/application-copilot-instructions.md`. Run this first when an application — new or existing — starts using these standards with Copilot, and again whenever the template changes.
 
-This command changes one instruction file only. It creates no work item, requirements, Plan, test, or code, and does not edit `CLAUDE.md` or the product-level `docs/requirements.md`.
+The file holds process rules and pointers only. Project facts — technology stack, versions, constraints, verification commands — are not written into it; they live in requirements, the build file, the Plan, and Implementation Plans. This command asks no questions and changes only `.github/copilot-instructions.md`: no work item, requirements, Plan, test, or code, and not `CLAUDE.md` or `docs/requirements.md`.
 
-1. **Inspect the repository** for each CUSTOMIZE value in the template: runtime and version, framework and version, build system, test framework, application-specific constraints (for example scope exclusions stated in `docs/requirements.md`), the API/external contract path, and the verification commands. Note the file and line each value comes from. Where sources disagree (for example two different runtime versions), record the conflict instead of choosing.
-2. **If `.github/copilot-instructions.md` already exists**, read it. Propose its project-specific values for carry-over. Do not carry over anything that contradicts or weakens a FIXED section, and list FIXED sections it is missing or has paraphrased.
-3. **Ask the user** to confirm or supply every CUSTOMIZE value, showing the proposed value and its source, and to resolve every conflict. Propose a constraint only when the user or a repository document states it. Stop until answered.
-4. **Write `.github/copilot-instructions.md`** from the template: copy every FIXED section verbatim, fill each CUSTOMIZE placeholder with the confirmed value, keep the FIXED and CUSTOMIZE markers, title it `# <application name> — Copilot Instructions`, and replace the template's introductory paragraph with: `Generated from the production-engineering-standards template; regenerate with the setup command when the template changes.`
-5. **Report** each CUSTOMIZE value with its source, and — when the file existed — which FIXED sections were added or restored and which previous content was dropped and why.
+1. **Read the template** from the `prompt-driven-development` skill's `templates/` folder, next to its `SKILL.md`. If it cannot be read, stop and report the locations tried. Never write the file from memory or from another file.
+2. **Determine the application name** from the repository (build file project name, else the repository folder name) and note its source.
+3. **If `.github/copilot-instructions.md` already exists**, read it and list every line that is not in the template — for example stack, versions, constraints, persistence, commands, or older workflow text — with the reason it is dropped and where that information belongs instead (`docs/requirements.md`, the build file, or the Plan / Implementation Plan). Do not move it there; that is the user's decision.
+4. **Write `.github/copilot-instructions.md`**: the template verbatim, titled `# <application name> — Copilot Instructions`, with the template's introductory paragraphs replaced by `Generated from the production-engineering-standards template; regenerate with the setup command when the template changes.`
+5. **Report** the application name and its source, and — when the file existed — the dropped lines from step 3.
