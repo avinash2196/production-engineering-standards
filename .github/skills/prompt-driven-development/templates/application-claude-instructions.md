@@ -2,6 +2,8 @@
 
 Use this as the starting content for the adopting application's `CLAUDE.md` (repo root). It is the Claude Code equivalent of `application-copilot-instructions.md` — same rules, same PDD workflow, expressed for Claude Code instead of Copilot.
 
+Generate or update the file with the `setup-claude-instructions` command rather than copying it by hand; rerun the command when this template changes.
+
 <!-- Before finalizing this file for a specific project: do not remove, paraphrase, or weaken any section marked FIXED below — copy it verbatim. Only replace CUSTOMIZE placeholders with project-specific values. Every reference to the same artifact (e.g. Requirements, Plan, Contract) must use the same path consistently everywhere it appears in the generated file. -->
 
 ## Project Context
@@ -74,7 +76,7 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 * Work items: each piece of work (new project or enhancement) has its own folder `docs/.ai/<work-item>/`; PDD commands take the work item as an argument
 * Requirements: `docs/.ai/<work-item>/requirements.md` (optional product-level `docs/requirements.md` is read-only context)
 * Plan: `docs/.ai/<work-item>/Plan.md`
-* API / External Contract: `<path when applicable>`
+* API / External Contract: `docs/.ai/<work-item>/<contract file, e.g. API-Contract.md>` (when applicable)
 * Implementation Plans: `docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
 
 <!-- FIXED — preserve verbatim -->
@@ -108,7 +110,13 @@ Do not use an Open Questions section as a substitute for required clarification.
 
 ## Verification
 
-Run the project's approved verification commands.
+Run the project's approved verification commands:
+
+<!-- CUSTOMIZE — project-specific value -->
+```
+<verification command>
+<verification command>
+```
 
 <!-- FIXED — preserve verbatim -->
 Do not claim verification succeeded unless the commands completed successfully.

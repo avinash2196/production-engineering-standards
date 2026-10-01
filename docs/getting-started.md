@@ -29,7 +29,7 @@ into the adopting application's source control.
 The adopting application should own its own:
 
 ```text
-.github/copilot-instructions.md
+CLAUDE.md and/or .github/copilot-instructions.md    # generated in step 3
 docs/requirements.md                               # optional product-level requirements, read-only for PDD commands
 docs/.ai/<work-item>/requirements.md
 docs/.ai/<work-item>/Plan.md
@@ -42,9 +42,24 @@ Those files describe the current application and current work. Every piece of wo
 
 They do not belong in the standards repository.
 
-## 3. Start from the PDD Application Instruction Template
+## 3. Generate the Application Instruction File (first step)
 
-For Copilot, use:
+Before any PDD work item, generate the application's persistent PDD rules for the tool it uses, from inside the application repository:
+
+```text
+/setup-claude-instructions    → CLAUDE.md (repo root)              — Claude Code
+/setup-copilot-instructions   → .github/copilot-instructions.md    — Copilot
+```
+
+When the standards are installed as a Claude Code plugin, the command is `/production-engineering-standards:setup-claude-instructions`.
+
+The command inspects the repository for the template's CUSTOMIZE values (runtime and framework versions, build and test tooling, application-specific constraints, contract path, verification commands), shows each proposed value with its source, and asks you to confirm before writing. FIXED sections are copied verbatim. It writes only that one file.
+
+Rerun it whenever the template changes. On an existing file it carries over your project-specific values, restores FIXED sections an older file is missing, and reports what changed.
+
+The commands are built on these templates, which remain the reference:
+
+For Copilot:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md
@@ -70,7 +85,7 @@ CLAUDE.md
 
 (repo root). Both templates carry the same PDD workflow and the same no-code-change-without-approval rule — pick the one matching the tool the adopting project actually uses.
 
-Then add only application-specific facts such as:
+The application-specific facts the command asks for — and the only content to add by hand — are:
 
 - runtime and framework versions,
 - module or architectural boundaries,
@@ -115,9 +130,9 @@ Examples:
 
 ## 5. Start a New PDD Work Item
 
-For a new application or a change whose requirements are not yet captured:
+For a new application or a change whose requirements are not yet captured (after step 3):
 
-1. `/capture-requirements`
+1. `/capture-requirements <work-item>`
 2. resolve all material ambiguity
 3. human requirements review
 4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8) based on complexity, responsibility boundaries, risk, and independent verifiability; a small cohesive change may need only one, larger work several

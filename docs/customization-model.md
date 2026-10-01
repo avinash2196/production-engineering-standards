@@ -113,6 +113,8 @@ They are useful when a repeatable task should be easy to start deliberately.
 Examples:
 
 ```text
+/setup-claude-instructions
+/setup-copilot-instructions
 /create-plan
 /create-implementation-plan
 /generate-tests
@@ -169,8 +171,11 @@ The repository should avoid describing a rule as enforced unless an executable m
 An adopting application should own its own:
 
 ```text
-.github/copilot-instructions.md
+CLAUDE.md                          (Claude Code)
+.github/copilot-instructions.md    (Copilot)
 ```
+
+Generate it with `/setup-claude-instructions` or `/setup-copilot-instructions` (see [Getting Started](getting-started.md) §3).
 
 That file should contain stable facts about the application itself, such as:
 

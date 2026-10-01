@@ -256,14 +256,19 @@ build configuration
 application-specific CI
 ```
 
-Use whichever template matches the adopting application's tool:
+**First step:** generate the application's instruction file for the tool it uses, from inside the application repository:
+
+```text
+/setup-claude-instructions    → CLAUDE.md                        (Claude Code; /production-engineering-standards:setup-claude-instructions when installed as a plugin)
+/setup-copilot-instructions   → .github/copilot-instructions.md  (Copilot)
+```
+
+Each command fills the template's CUSTOMIZE values from repository inspection, asks you to confirm them, and copies every FIXED section verbatim. Run it again whenever the template changes; it carries over your project-specific values and restores any FIXED section an older file is missing. Both files carry the same workflow and the same no-code-change-without-approval rule. The templates are:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md  (→ .github/copilot-instructions.md)
 .github/skills/prompt-driven-development/templates/application-claude-instructions.md   (→ CLAUDE.md)
 ```
-
-as a starter for the adopting application's persistent PDD rules — both carry the same workflow and the same no-code-change-without-approval rule.
 
 The standards repository provides reusable:
 
