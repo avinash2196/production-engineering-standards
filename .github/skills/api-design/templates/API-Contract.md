@@ -87,5 +87,5 @@ Include only compatibility requirements that are explicitly approved or reposito
 
 ## Contract Review Status
 
-- Status: Draft
-- Human review required before implementation planning that depends on this contract.
+- Status: Awaiting human review
+- Human review required before implementation planning that depends on this contract. On approval the user replaces the status with `Approved by <name> on <date>`, and the CONTRACT milestone's row in `Plan.md` Execution Status is marked complete, pointing to this contract.

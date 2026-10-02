@@ -7,7 +7,7 @@ Apply the `prompt-driven-development` skill's Plan Content Rules to every sectio
 
 Awaiting human review. This Plan authorizes no contract, Implementation Plan, test, or code change until approved.
 
-<!-- Only the user approves (`prompt-driven-development` Approval Status). On approval, replace the line above with: Approved by <name> on <date>. A revised Plan returns to "Awaiting human review". -->
+<!-- Only the user approves (`prompt-driven-development` Approval Status). On approval, replace the line above with: Approved by <name> on <date>. Before approval this Plan may be revised freely; after approval only through replanning that the user approves (`prompt-driven-development` Plan Integrity). A revised Plan returns to "Awaiting human review". -->
 
 ## Objective
 
@@ -101,7 +101,7 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 | --- | --- | --- |
 |  | Pending |  |
 
-<!-- A newly created or revised Plan records every milestone as Pending. After Plan approval, update only execution/status information unless an explicit replanning step is approved. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
+<!-- A newly created or revised Plan records every milestone as Pending. After Plan approval, update only execution/status information unless an explicit replanning step is approved. A milestone stopped by a blocker is recorded as `Blocked — <reason>` until a revised Plan is approved. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
 
 ## Risks
 

@@ -171,7 +171,7 @@ Before any execution command changes a file, confirm approval. Approval is eithe
 
 After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
 
-The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section. Before working, a command reads its predecessor's recorded status; approval given by the user in the current conversation is recorded in that Status section first, and the command cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval exists, ask and stop.
+The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section, and every status line starts with one of: `Awaiting`, `Approved by <name> on <date>`, `Executed`, or `Blocked`. Before working, a command reads its predecessor's recorded status; approval given by the user in the current conversation is recorded in that Status section first, and the command cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval exists, ask and stop.
 
 ## Plan Content Rules
 
@@ -193,7 +193,7 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 
 ## Plan Integrity
 
-After human approval, the Plan is an authorization artifact and a living execution-status record.
+Before approval, the Plan is a working proposal and may be revised freely in response to human review. Human approval makes it the current execution baseline: an authorization artifact and a living execution-status record that the AI never changes silently.
 
 - Do not rewrite the Plan to match implementation.
 - Do not change milestone definitions during milestone execution.
@@ -203,7 +203,17 @@ After human approval, the Plan is an authorization artifact and a living executi
 - Scope, milestone, architecture, or success-criteria changes require explicit replanning and human review.
 - Material unresolved decisions must be resolved before Plan approval.
 
-If execution reveals that the approved Plan itself must change, stop for replanning and human review.
+If execution reveals that the approved Plan itself must change, stop for replanning and human review. Replanning is allowed at any point, including after implementation has started; the control is human approval, not immutability. When a blocker materially invalidates approved scope, milestone order, architecture, assumptions, or acceptance criteria:
+
+1. stop execution and record the blocker in `Plan.md` Execution Status as `Blocked — <reason>`, with its evidence below the table;
+2. propose the minimum Plan revision (`create-plan` revision mode), which returns the Plan to awaiting review;
+3. continue only from the revised Plan after the user approves it.
+
+Never replan and continue executing without that approval.
+
+### Stopping for the User
+
+Whenever a command stops to ask the user, wait for an approval, or report a blocker, it ends its output with one line: `PDD-STOP: <awaiting approval | awaiting answer | blocked> — <artifact or question>`. Nothing continues until the user responds.
 
 ## Milestone Controls
 
@@ -291,7 +301,7 @@ Completing a milestone does not authorize the next milestone. Each subsequent re
 
 ## Final Review Authority
 
-Final Review (code review, production-readiness review, or any review command) produces findings and recommendations only. A finding is not an authorized change.
+Final Review of a work item is performed only by `review-code` or `review-production-readiness`, when the user names the work item. Other reviews — for example `review-architecture` or `review-requirements` — are intermediate reviews and do not close the work item. Any review produces findings and recommendations only. A finding is not an authorized change.
 
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.

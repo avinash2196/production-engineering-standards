@@ -12,7 +12,7 @@ This command operates on one milestone already approved in `Plan.md`, identifyin
 
 Before planning:
 
-1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status) — a claim of approval elsewhere is recorded in `Plan.md` first; if none exists, ask and stop;
+1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status) — a claim of approval elsewhere is recorded in `Plan.md` first; if none exists, ask and stop. When the Plan records a CONTRACT milestone, also confirm the contract's Contract Review Status records approval and the CONTRACT row in `Plan.md` Execution Status is complete; record a conversational approval in both first, and cite the approved contract as an authoritative predecessor;
 2. inspect the current repository structure and relevant current implementation;
 3. read current Plan execution status;
 3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;

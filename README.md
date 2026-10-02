@@ -186,6 +186,13 @@ Do not silently reconcile material conflicts between approved artifacts.
 
 Stop and surface conflicts for human review.
 
+### Approval, replanning, and Final Review
+
+- **Approval is recorded in the artifact.** Requirements, Plan, contract, and each Implementation Plan carry a status line starting with `Awaiting`, `Approved by <name> on <date>`, `Executed`, or `Blocked`. Only the user approves; an approval given in conversation is written into the artifact before work continues.
+- **Plans can be replanned, with approval.** A Plan may be revised freely before approval. After approval it is the execution baseline and is never changed silently. A blocker that invalidates scope, order, architecture, assumptions, or acceptance criteria stops execution: the milestone is recorded as `Blocked — <reason>`, a minimum Plan revision is proposed, and work continues only after the user approves it.
+- **Final Review closes a work item.** Only `review-code` or `review-production-readiness`, run for a named work item, perform the Final Review and write `docs/.ai/<work-item>/Final-Review.md`. Other reviews, such as `review-architecture`, are intermediate.
+- **Every stop is explicit.** A command that waits for the user ends its output with `PDD-STOP: <awaiting approval | awaiting answer | blocked> — <detail>`, so a person or an automation loop can tell that work must not continue.
+
 ### Scope control
 
 Engineering standards are a review and design lens, not authorization to invent requirements or expand approved scope.
@@ -220,6 +227,7 @@ Examples include:
 - security
 - compliance engineering
 - production readiness
+- LLM engineering (model-backed behavior, RAG, agents and tools, AI gateways, LLM evaluation)
 - Java and Spring Boot
 - Python and FastAPI
 - Oracle to PostgreSQL modernization
