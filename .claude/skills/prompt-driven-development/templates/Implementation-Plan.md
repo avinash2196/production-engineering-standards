@@ -8,6 +8,10 @@ FOUNDATION | RED | GREEN | REFACTOR | OTHER
 
 For OTHER: record the baseline evidence before any change, and the existing tests that must keep passing.
 
+For RED whose evidence is an existing failing test: name the test, record its current failure, and list no files to change.
+
+For standalone REFACTOR: record the full verification suite passing on the unmodified repository as the GREEN baseline, and the existing tests that cover the code being restructured.
+
 ## Authoritative References
 
 ## Carried-Forward Decisions

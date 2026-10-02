@@ -238,7 +238,6 @@ Examples include:
 ```text
 getting-started.md
 customization-model.md
-migration-from-v1.md
 ```
 
 Docs should explain how to use the repository.

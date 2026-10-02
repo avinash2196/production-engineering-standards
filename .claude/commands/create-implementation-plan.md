@@ -2,7 +2,7 @@
 description: "Create one detailed human-reviewable Implementation Plan for one approved Plan milestone based on the current repository state."
 ---
 
-Act as an implementation planner and create exactly one detailed Implementation Plan.
+Act as an implementation planner.
 
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
@@ -19,7 +19,9 @@ Before planning:
 4. verify predecessor milestone evidence and actual completed progress;
 5. verify the milestone type being planned matches what `Plan.md` records for this milestone.
 
-Create exactly one: `docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
+Create exactly one:
+
+`docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
 
 The Implementation Plan must reflect the actual current repository state and include:
 
@@ -52,9 +54,9 @@ Also list, as explicit decisions for review with alternatives, every FOUNDATION 
 
 If the milestone approved for this Implementation Plan is a RED milestone with no preceding FOUNDATION milestone recorded in `Plan.md`, do not create a FOUNDATION Implementation Plan — including whenever the only reason under consideration is that the production class, service, repository, controller, method, or behavior under test does not yet exist; propose RED directly instead.
 
-For RED, propose test/check changes only.
+For RED, propose test/check changes only — or no file changes when `Plan.md` names an existing failing test as the RED evidence (`implementation-planning` RED).
 For GREEN, require valid RED evidence and propose the smallest production change required to satisfy it.
-For REFACTOR, require a verified GREEN baseline and propose behavior-preserving changes only.
+For REFACTOR, require a verified GREEN baseline and propose behavior-preserving changes only; for a standalone REFACTOR the baseline is the full verification suite passing on the unmodified repository, and the plan names the existing tests that protect the code being restructured.
 For OTHER, confirm `Plan.md` records that no owned requirement changes behavior, record the baseline evidence before any change, name the existing tests that must keep passing, and propose only the approved changes; if a production behavior change turns out to be needed, stop for replanning as RED and GREEN.
 
 Proposed code may be written inside the Implementation Plan for review.

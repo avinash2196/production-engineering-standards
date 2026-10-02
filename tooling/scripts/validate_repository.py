@@ -222,6 +222,118 @@ def validate_pdd_commands_across_environments(root: Path, errors: list[str]) -> 
 
 
 # ---------------------------------------------------------------------------
+# Agents and commands/prompts carry platform-specific frontmatter, but their
+# behavior must not drift between Copilot (.github, canonical) and Claude
+# Code (.claude). The only allowed body differences are listed here.
+# ---------------------------------------------------------------------------
+
+AGENT_ENVIRONMENTS = (".github/agents", ".claude/agents")
+COMMAND_PARITY_ENVIRONMENTS = (".github/prompts", ".claude/commands")
+
+# Claude commands may open with one role sentence, which Copilot expresses
+# through the prompt's `agent:` binding instead.
+CLAUDE_COMMAND_ROLE_LINE = re.compile(r"\AAct as [^\n]*\.\n\n")
+
+# Skill paths are relative to each plugin root, which differs per platform.
+COPILOT_TO_CLAUDE_PATH_PREFIXES = (("`.github/skills/", "`skills/"),)
+
+
+def _split_frontmatter(text: str) -> tuple[str, str] | None:
+    match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+    if not match:
+        return None
+    return match.group(1), text[match.end():].lstrip("\n")
+
+
+def _frontmatter_field(frontmatter: str, field: str) -> str | None:
+    match = re.search(rf"^{field}:\s*(.*)$", frontmatter, re.MULTILINE)
+    return match.group(1).strip() if match else None
+
+
+def _paired_files(
+    root: Path,
+    errors: list[str],
+    environments: tuple[str, str],
+    suffixes: tuple[str, str],
+    kind: str,
+) -> list[tuple[Path, Path]]:
+    canonical_env, mirror_env = environments
+    canonical_root, mirror_root = root / canonical_env, root / mirror_env
+    if not canonical_root.is_dir() or not mirror_root.is_dir():
+        # Missing trees are reported by the structure validators.
+        return []
+
+    canonical = {
+        p.name.removesuffix(suffixes[0]): p for p in canonical_root.glob(f"*{suffixes[0]}")
+    }
+    mirror = {
+        p.name.removesuffix(suffixes[1]): p for p in mirror_root.glob(f"*{suffixes[1]}")
+    }
+    for name in sorted(canonical.keys() - mirror.keys()):
+        errors.append(f"{mirror_env}: missing {kind} '{name}' present in {canonical_env}")
+    for name in sorted(mirror.keys() - canonical.keys()):
+        errors.append(f"{mirror_env}/{name}{suffixes[1]}: no counterpart {kind} in {canonical_env}")
+    return [(canonical[name], mirror[name]) for name in sorted(canonical.keys() & mirror.keys())]
+
+
+def _check_pair(
+    root: Path,
+    errors: list[str],
+    canonical: Path,
+    mirror: Path,
+    normalize_canonical,
+    normalize_mirror,
+) -> None:
+    canonical_parts = _split_frontmatter(canonical.read_text(encoding="utf-8"))
+    mirror_parts = _split_frontmatter(mirror.read_text(encoding="utf-8"))
+    for path, parts in ((canonical, canonical_parts), (mirror, mirror_parts)):
+        if parts is None:
+            errors.append(f"{path.relative_to(root).as_posix()}: missing YAML frontmatter")
+    if canonical_parts is None or mirror_parts is None:
+        return
+
+    if _frontmatter_field(canonical_parts[0], "description") != _frontmatter_field(
+        mirror_parts[0], "description"
+    ):
+        errors.append(
+            f"{mirror.relative_to(root).as_posix()}: description differs from "
+            f"{canonical.relative_to(root).as_posix()}"
+        )
+
+    if normalize_canonical(canonical_parts[1]) != normalize_mirror(mirror_parts[1]):
+        errors.append(
+            f"{mirror.relative_to(root).as_posix()} has diverged from "
+            f"{canonical.relative_to(root).as_posix()} — bodies must stay behaviorally "
+            "identical across .github and .claude"
+        )
+
+
+def validate_agent_body_sync(root: Path, errors: list[str]) -> None:
+    # Agent bodies are identical; only frontmatter (tools syntax) differs.
+    for canonical, mirror in _paired_files(
+        root, errors, AGENT_ENVIRONMENTS, (".agent.md", ".md"), "agent"
+    ):
+        _check_pair(root, errors, canonical, mirror, str.rstrip, str.rstrip)
+
+
+def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
+    # A Claude command is its Copilot prompt's body, optionally preceded by
+    # one role sentence, with skill paths rebased onto the Claude plugin root.
+    def normalize_copilot(body: str) -> str:
+        for copilot_prefix, claude_prefix in COPILOT_TO_CLAUDE_PATH_PREFIXES:
+            body = body.replace(copilot_prefix, claude_prefix)
+        return body.rstrip()
+
+    def normalize_claude(body: str) -> str:
+        return CLAUDE_COMMAND_ROLE_LINE.sub("", body, count=1).rstrip()
+
+    for canonical, mirror in _paired_files(
+        root, errors, COMMAND_PARITY_ENVIRONMENTS, (".prompt.md", ".md"), "command"
+    ):
+        _check_pair(root, errors, canonical, mirror, normalize_copilot, normalize_claude)
+
+
+# ---------------------------------------------------------------------------
 # .claude/ is both the drop-in project configuration and the installable
 # plugin. The marketplace must point at it, and no second packaged copy may
 # exist, so there is only one Claude Code tree to maintain.
@@ -478,6 +590,8 @@ VALIDATORS = [
     validate_skills,
     validate_skill_sync,
     validate_pdd_commands_across_environments,
+    validate_agent_body_sync,
+    validate_command_prompt_parity,
     validate_single_claude_tree,
     validate_agent_and_prompt_names,
     validate_prompt_agent_bindings,

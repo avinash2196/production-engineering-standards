@@ -27,24 +27,31 @@ Do not introduce excluded capabilities unless explicitly approved by requirement
 <!-- FIXED — preserve verbatim -->
 ## PDD Workflow
 
-For behavior-changing work:
+Each milestone's type follows the kind of change, as defined by the `prompt-driven-development` skill's Milestone Types:
 
 ```
 Requirements
 → Plan
 → Human Review
 → CONTRACT milestone when applicable: API / External Contract → Human Review
-→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
-    optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
-    RED milestone: Implementation Plan → Human Review → execution → Verification
-    → GREEN milestone: Implementation Plan → Human Review → execution → Verification
-    → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES, typed by the kind of change:
+    behavior change:
+        optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
+        RED milestone: Implementation Plan → Human Review → execution → Verification
+        → GREEN milestone: Implementation Plan → Human Review → execution → Verification
+        → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+    behavior-preserving restructuring of existing production code:
+        REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
+    no production behavior change (test-only, build, configuration, infrastructure):
+        OTHER milestone: Implementation Plan → Human Review → execution → Verification
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries.
+A failing test is not automatically RED: if the test itself is wrong and production behavior is correct, the work is OTHER; if a correct existing test exposes missing behavior, that test is the RED evidence and RED changes no file. When the requirements do not settle which side is wrong, ask and stop.
 
-When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan: the first milestone after Plan approval, before any FOUNDATION, RED, GREEN, or REFACTOR milestone. It changes no executable artifact and has no Implementation Plan; the contract artifact itself is the human-reviewed deliverable.
+Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries.
+
+When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan: the first milestone after Plan approval, before any FOUNDATION, RED, GREEN, REFACTOR, or OTHER milestone. It changes no executable artifact and has no Implementation Plan; the contract artifact itself is the human-reviewed deliverable. A changed contract starts from the verified current contract and defines only the approved changes.
 
 Completion of one milestone does not authorize the next.
 

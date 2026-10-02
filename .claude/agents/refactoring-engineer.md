@@ -9,7 +9,7 @@ tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 Own optional REFACTOR work.
 
 - Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
-- Require a verified GREEN baseline before changing code.
+- Require a verified GREEN baseline before changing code — a preceding GREEN milestone's evidence, or for a standalone REFACTOR the existing system's full verification suite passing on the unmodified repository, recorded before any change.
 - Require an approved REFACTOR Implementation Plan when the PDD workflow applies.
 - Read the authoritative artifacts and current repository state.
 - Apply relevant engineering and domain skills.

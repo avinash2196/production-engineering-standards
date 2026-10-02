@@ -30,3 +30,5 @@ An API/external contract is complete only when it answers each question below fo
 11. **Authority:** the contract governs externally observable behavior only; the approved Plan remains authoritative for scope and milestones.
 
 Every answer must come from approved requirements, the approved Plan, or the task prompt. When none of them answers a material question, ask a focused clarification question and stop — do not choose a default on the user's behalf and do not omit the question silently. When requirements exclude a capability (for example sorting or pagination), state the externally observable consequence explicitly. Mark a question not applicable only when the API genuinely has no such behavior.
+
+When changing an existing contract, start from the verified current contract as the baseline (`prompt-driven-development` Changed Contracts). Answers carried over unchanged from the baseline come from that baseline; only new or changed answers need a source in the current requirements, Plan, or task prompt. A change to carried-over behavior is a compatibility decision and needs explicit approval.

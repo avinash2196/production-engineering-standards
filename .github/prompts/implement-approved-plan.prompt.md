@@ -1,6 +1,6 @@
 ---
 description: "Execute an approved FOUNDATION, GREEN, or OTHER Implementation Plan, verify it, and record verified progress."
-argument-hint: "work item; approved FOUNDATION or GREEN Implementation Plan (GREEN also needs valid RED evidence)"
+argument-hint: "work item; approved FOUNDATION, GREEN, or OTHER Implementation Plan (GREEN also needs valid RED evidence)"
 agent: "implementation-engineer"
 tools:
   - read

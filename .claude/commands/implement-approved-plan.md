@@ -2,7 +2,7 @@
 description: "Execute an approved FOUNDATION, GREEN, or OTHER Implementation Plan, verify it, and record verified progress."
 ---
 
-Act as an implementation engineer and execute only the approved Implementation Plan (FOUNDATION, GREEN, or OTHER).
+Act as an implementation engineer.
 
 Apply `prompt-driven-development` and relevant stack/domain skills.
 

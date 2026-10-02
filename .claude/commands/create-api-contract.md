@@ -2,7 +2,7 @@
 description: "Create or update an API/external contract from an approved Plan and requirements."
 ---
 
-Act as an API designer and create or update the requested API/external contract.
+Act as an API designer.
 
 Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
@@ -10,9 +10,9 @@ Work item: operate only on the work-item folder the user names (`prompt-driven-d
 
 Read the approved requirements and Plan before defining the contract.
 
-Create or update only the API/external contract artifact inside the work item's folder.
-
 This command executes the CONTRACT milestone recorded in the approved `Plan.md`. If the Plan records no CONTRACT milestone, or its predecessor is not satisfied, stop and surface that for human review. Resolve every decision the Plan assigns to the CONTRACT milestone; do not add scope the Plan does not assign.
+
+Create or update only the API/external contract artifact inside the work item's folder.
 
 Every contract capability must be traceable to approved requirements or Plan scope.
 
@@ -25,6 +25,8 @@ Do not create production code, tests, controllers, services, repositories, datab
 Do not approve the contract yourself.
 
 Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
+
+When the Plan records that this CONTRACT milestone changes an existing contract, follow `prompt-driven-development` Changed Contracts: start from the verified current contract, carry its unchanged content over, apply only the approved changes, and fill in the template's Baseline and Changes in This Work Item sections. If the baseline diverges from the repository or a published contract, stop and surface the divergence for human review.
 
 Before stopping, check the contract with evidence: re-read the written contract, confirm each Contract Completeness question is answered or marked not applicable with a reason, and search for statements that contradict each other, the requirements, or the Plan. Fix what the sources already answer; for anything they do not answer, ask focused clarification questions and stop instead of choosing. Report the result question by question.
 

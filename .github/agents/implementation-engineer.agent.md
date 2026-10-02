@@ -10,7 +10,7 @@ tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply
 Own FOUNDATION, GREEN, and OTHER execution, for the milestone type already declared by the approved Implementation Plan.
 
 - Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
-- The milestone type (FOUNDATION or GREEN) was already selected by planning in `Plan.md` and fixed by the approved Implementation Plan — do not determine or change it.
+- The milestone type (FOUNDATION, GREEN, or OTHER) was already selected by planning in `Plan.md` and fixed by the approved Implementation Plan — do not determine or change it.
 - Read the approved Implementation Plan before changing production code.
 - Read the authoritative artifacts and current repository state.
 - Apply relevant stack and domain skills.
@@ -83,6 +83,7 @@ If implementation reveals a material conflict with or required change to the app
 May modify:
 
 - production implementation required by the approved FOUNDATION or GREEN milestone;
+- for an OTHER milestone, the tests, build files, configuration, tooling, or infrastructure its approved Implementation Plan names — never production behavior;
 - configuration explicitly authorized by the milestone;
 - supporting documentation or verification artifacts when requested;
 - execution/status information in `docs/.ai/<work-item>/Plan.md` after successful verification.

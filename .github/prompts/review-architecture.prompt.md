@@ -6,4 +6,4 @@ tools:
   - read
   - search
 ---
-Apply `architecture-design` and `distributed-systems` where relevant. Evaluate concrete trade-offs; do not require microservices by default.
+Apply `architecture-design` and `distributed-systems` where relevant. Evaluate concrete trade-offs; do not require microservices by default. Review architecture boundaries, distributed-system trade-offs, and material design decisions.

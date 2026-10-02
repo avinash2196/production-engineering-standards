@@ -91,7 +91,7 @@ Project facts do not go into the instruction file. Record them where PDD reads t
 - runtime, framework, and dependency versions → the build file;
 - build and verification commands → the Plan and each milestone's Implementation Plan.
 
-For a new project, these are captured in the first work item's requirements (for example `initial-build`) and established by its FOUNDATION milestone.
+For a new project, these are captured in the first work item's requirements (for example `initial-build`). When the executable prerequisites — build, dependencies, test infrastructure — are missing, its FOUNDATION milestone establishes them; a new repository that already has working build and test infrastructure needs no FOUNDATION.
 
 Do not copy the full engineering standards library into the application.
 
@@ -145,7 +145,21 @@ For an existing application with already-approved requirements, start from the e
 
 ## 6. Behavior-Changing Milestone Flow
 
-Choose each milestone's type by the kind of change, not by whether the project is new (`prompt-driven-development` Milestone Types): behavior changes are always RED then GREEN; a new or changed external contract is CONTRACT; a missing prerequisite for RED is FOUNDATION; cleanup after GREEN is REFACTOR; an approved change with no production behavior change — test-only fixes, or replacing infrastructure under unchanged behavior — is OTHER. A new project normally needs CONTRACT, FOUNDATION, RED, and GREEN; an enhancement uses what its requirements call for.
+Choose each milestone's type by the kind of change, not by whether the project is new (`prompt-driven-development` Milestone Types): behavior changes are always RED then GREEN; a new or changed external contract is CONTRACT; a missing prerequisite for RED is FOUNDATION; behavior-preserving cleanup of production code is REFACTOR — after GREEN, or standalone from the existing system's verified GREEN baseline; an approved change with no production behavior change — test-only fixes, characterization tests, or replacing infrastructure under unchanged behavior — is OTHER. A new project normally needs CONTRACT, FOUNDATION (only when its build or test infrastructure is missing), RED, and GREEN; an enhancement uses what its requirements call for.
+
+Common enhancement cases:
+
+| Work | Milestones |
+| --- | --- |
+| Existing API unchanged, new internal behavior | RED → GREEN; the Plan references the current contract |
+| Add or change an API operation | CONTRACT from the verified current contract plus the delta → RED → GREEN |
+| A test is wrong; production behavior is correct | OTHER |
+| A correct existing test fails because production is wrong | RED using that test as evidence (no file changes) → GREEN |
+| Production is wrong and no test exposes it | RED writes the test → GREEN |
+| Build, configuration, or infrastructure swap with unchanged behavior | OTHER |
+| Restructure existing production code without behavior change | REFACTOR from the existing system's verified GREEN baseline (an OTHER characterization-test milestone first if coverage is missing) |
+
+When the requirements do not settle whether a failing test or production is wrong, the planner asks and stops.
 
 For an OTHER milestone:
 
@@ -155,7 +169,7 @@ For an OTHER milestone:
 4. verify the completion evidence against the baseline and that the preserved tests pass
 
 
-Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
 
 For a FOUNDATION milestone (only when `Plan.md` records one as genuinely required):
 
@@ -242,7 +256,7 @@ This is a common layered decomposition, not a mandatory template. The real rule 
 - Most milestones need no setup at all — proceed straight to RED.
 - A missing production class, service, repository, controller, method, or interface is never, by itself, a reason for setup — that absence is the expected RED condition (a compilation failure caused by an intentionally absent approved production symbol is valid RED evidence), and creating the real thing is GREEN's job.
 - Setup exists only for genuine executable prerequisites that prevent RED from meaningfully running at all — e.g. required build/dependency setup, test framework/infrastructure that doesn't exist yet, required configuration, or a prerequisite contract established by an earlier architectural decision.
-- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, and REFACTOR — setup is never a way to change code without approval.
+- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, REFACTOR, and OTHER — setup is never a way to change code without approval.
 
 ## 8. Clarification Is a Blocking Gate
 

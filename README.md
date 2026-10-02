@@ -19,15 +19,20 @@ Requirements
 → Plan
 → Human Review
 → CONTRACT milestone when applicable: API / External Contract → Human Review
-→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
-    optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
-    RED milestone: Implementation Plan → Human Review → execution → Verification
-    → GREEN milestone: Implementation Plan → Human Review → execution → Verification
-    → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES, typed by the kind of change:
+    behavior change:
+        optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
+        RED milestone: Implementation Plan → Human Review → execution → Verification
+        → GREEN milestone: Implementation Plan → Human Review → execution → Verification
+        → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+    behavior-preserving restructuring of existing production code:
+        REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
+    no production behavior change (test-only, build, configuration, infrastructure):
+        OTHER milestone: Implementation Plan → Human Review → execution → Verification
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries. Completing one milestone does not automatically authorize the next.
+Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries. Completing one milestone does not automatically authorize the next.
 
 When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
@@ -70,7 +75,6 @@ tooling/
 docs/
   getting-started.md
   customization-model.md
-  migration-from-v1.md
 ```
 
 There are intentionally no top-level:

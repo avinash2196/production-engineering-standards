@@ -29,6 +29,8 @@ Do not approve the contract yourself.
 
 Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
 
+When the Plan records that this CONTRACT milestone changes an existing contract, follow `prompt-driven-development` Changed Contracts: start from the verified current contract, carry its unchanged content over, apply only the approved changes, and fill in the template's Baseline and Changes in This Work Item sections. If the baseline diverges from the repository or a published contract, stop and surface the divergence for human review.
+
 Before stopping, check the contract with evidence: re-read the written contract, confirm each Contract Completeness question is answered or marked not applicable with a reason, and search for statements that contradict each other, the requirements, or the Plan. Fix what the sources already answer; for anything they do not answer, ask focused clarification questions and stop instead of choosing. Report the result question by question.
 
 When revising an existing contract (for example to fold in clarification answers), treat it as a revision, not a fresh draft:
