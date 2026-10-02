@@ -113,6 +113,8 @@ They are useful when a repeatable task should be easy to start deliberately.
 Examples:
 
 ```text
+/setup-claude-instructions
+/setup-copilot-instructions
 /create-plan
 /create-implementation-plan
 /generate-tests
@@ -169,18 +171,17 @@ The repository should avoid describing a rule as enforced unless an executable m
 An adopting application should own its own:
 
 ```text
-.github/copilot-instructions.md
+CLAUDE.md                          (Claude Code)
+.github/copilot-instructions.md    (Copilot)
 ```
 
-That file should contain stable facts about the application itself, such as:
+Generate it with `/setup-claude-instructions` or `/setup-copilot-instructions` (see [Getting Started](getting-started.md) §3). It holds the PDD process rules and pointers to where project facts live.
 
-* runtime and framework versions;
-* module or architectural boundaries;
-* production database;
-* migration framework;
-* API compatibility expectations;
-* build and verification commands;
-* application-specific conventions.
+Project facts are not restated in that file, because a second copy goes stale and competes with the approved artifacts:
+
+* runtime, framework, and dependency versions → the build file;
+* module boundaries, production database, migration framework, API compatibility, conventions → `docs/requirements.md` or the work item's requirements;
+* build and verification commands → the Plan and Implementation Plans.
 
 It should not copy the full standards repository into the application's persistent context.
 
@@ -237,7 +238,6 @@ Examples include:
 ```text
 getting-started.md
 customization-model.md
-migration-from-v1.md
 ```
 
 Docs should explain how to use the repository.

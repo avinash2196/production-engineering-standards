@@ -19,15 +19,20 @@ Requirements
 → Plan
 → Human Review
 → CONTRACT milestone when applicable: API / External Contract → Human Review
-→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
-    optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
-    RED milestone: Implementation Plan → Human Review → execution → Verification
-    → GREEN milestone: Implementation Plan → Human Review → execution → Verification
-    → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES, typed by the kind of change:
+    behavior change:
+        optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
+        RED milestone: Implementation Plan → Human Review → execution → Verification
+        → GREEN milestone: Implementation Plan → Human Review → execution → Verification
+        → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+    behavior-preserving restructuring of existing production code:
+        REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
+    no production behavior change (test-only, build, configuration, infrastructure):
+        OTHER milestone: Implementation Plan → Human Review → execution → Verification
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries. Completing one milestone does not automatically authorize the next.
+Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries. Completing one milestone does not automatically authorize the next.
 
 When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
@@ -70,7 +75,6 @@ tooling/
 docs/
   getting-started.md
   customization-model.md
-  migration-from-v1.md
 ```
 
 There are intentionally no top-level:
@@ -256,14 +260,19 @@ build configuration
 application-specific CI
 ```
 
-Use whichever template matches the adopting application's tool:
+**First step:** generate the application's instruction file for the tool it uses, from inside the application repository:
+
+```text
+/setup-claude-instructions    → CLAUDE.md                        (Claude Code; /production-engineering-standards:setup-claude-instructions when installed as a plugin)
+/setup-copilot-instructions   → .github/copilot-instructions.md  (Copilot)
+```
+
+The file is loaded into every session in the repository, so the PDD rules apply even to free-form requests. It holds process rules and pointers only — no stack, versions, constraints, or commands; those live in `docs/requirements.md`, the build file, the Plan, and Implementation Plans. The command asks no questions, works for new and existing projects, and when it replaces an older file it lists every project-specific line it dropped and where that belongs. Rerun it whenever the template changes. The templates are:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md  (→ .github/copilot-instructions.md)
 .github/skills/prompt-driven-development/templates/application-claude-instructions.md   (→ CLAUDE.md)
 ```
-
-as a starter for the adopting application's persistent PDD rules — both carry the same workflow and the same no-code-change-without-approval rule.
 
 The standards repository provides reusable:
 

@@ -60,6 +60,55 @@ class HappyPathTest(ValidatorMutationTestCase):
         self.assertEqual(self.errors(), [])
 
 
+class AgentAndCommandParityTest(ValidatorMutationTestCase):
+    def _append(self, rel: str, text: str) -> None:
+        path = self.repo / rel
+        path.write_text(path.read_text(encoding="utf-8") + text, encoding="utf-8")
+
+    def test_altered_claude_agent_body_fails(self):
+        self._append(".claude/agents/test-engineer.md", "\n- mutated rule\n")
+        self.assert_error_containing(".claude/agents/test-engineer.md has diverged from")
+
+    def test_altered_copilot_agent_body_fails(self):
+        self._append(".github/agents/implementation-engineer.agent.md", "\n- mutated rule\n")
+        self.assert_error_containing(".claude/agents/implementation-engineer.md has diverged from")
+
+    def test_changed_agent_description_fails(self):
+        path = self.repo / ".claude/agents/planner.md"
+        text = path.read_text(encoding="utf-8")
+        path.write_text(re.sub(r"^description: .*$", "description: mutated", text, count=1, flags=re.MULTILINE), encoding="utf-8")
+        self.assert_error_containing(".claude/agents/planner.md: description differs")
+
+    def test_missing_claude_agent_fails(self):
+        (self.repo / ".claude/agents/code-reviewer.md").unlink()
+        self.assert_error_containing("missing agent 'code-reviewer'")
+
+    def test_altered_claude_command_body_fails(self):
+        self._append(".claude/commands/generate-tests.md", "\nmutated rule\n")
+        self.assert_error_containing(".claude/commands/generate-tests.md has diverged from")
+
+    def test_altered_copilot_prompt_body_fails(self):
+        self._append(".github/prompts/create-plan.prompt.md", "\nmutated rule\n")
+        self.assert_error_containing(".claude/commands/create-plan.md has diverged from")
+
+    def test_claude_command_without_copilot_prompt_fails(self):
+        (self.repo / ".claude/commands/extra-command.md").write_text(
+            '---\ndescription: "extra"\n---\n\nextra\n', encoding="utf-8"
+        )
+        self.assert_error_containing("extra-command.md: no counterpart command")
+
+    def test_second_role_paragraph_is_not_allowed(self):
+        # Only one leading role sentence is platform-specific; a second
+        # "Act as" paragraph is behavioral drift.
+        path = self.repo / ".claude/commands/refactor-code.md"
+        text = path.read_text(encoding="utf-8")
+        path.write_text(
+            text.replace("Act as a refactoring engineer.\n\n", "Act as a refactoring engineer.\n\nAct as a reviewer.\n\n", 1),
+            encoding="utf-8",
+        )
+        self.assert_error_containing(".claude/commands/refactor-code.md has diverged from")
+
+
 class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
     def test_deleting_claude_skills_tree_fails(self):
         shutil.rmtree(self.repo / ".claude/skills")

@@ -17,8 +17,10 @@ If a material unresolved decision exists, ask focused clarification questions an
 
 Inspect the repository before stating any repository fact or asking any question. Apply `requirements-analysis` Requirements Capture.
 
-Before finalizing, apply the `requirements-analysis` Operational Characteristics check: ask the user about each applicable characteristic that neither the user nor repository evidence has answered, and stop until answered. Record only answers given by the user or established by the repository, including explicit "not required" exclusions the user confirms. Never answer a characteristic yourself.
+Before finalizing, apply the `requirements-analysis` Operational Characteristics check: ask the user about each applicable characteristic that neither the user nor repository evidence has answered, and stop until answered. Record only answers given by the user or established by the repository, including explicit "not required" answers the user confirms. Never answer a characteristic yourself.
 
-Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, creating the work-item folder if it does not exist. Do not edit the product-level `docs/requirements.md`.
+Before finalizing, ask the user to confirm every derived consequence, then apply the `requirements-analysis` provenance check: every item names its source, every repository citation was verified against the current repository during this capture, and nothing is copied from another work item's artifacts.
+
+Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, creating the work-item folder if it does not exist, using the `prompt-driven-development` skill's `templates/requirements.md` structure — including its Relationship to Product-Level Requirements, Operational Characteristics, and Provenance Check sections. Do not edit the product-level `docs/requirements.md`.
 
 Do not create Plan.md, an API/external contract, an Implementation Plan, tests, or production code.

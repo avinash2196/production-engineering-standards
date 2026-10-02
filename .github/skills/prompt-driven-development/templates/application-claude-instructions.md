@@ -2,25 +2,19 @@
 
 Use this as the starting content for the adopting application's `CLAUDE.md` (repo root). It is the Claude Code equivalent of `application-copilot-instructions.md` — same rules, same PDD workflow, expressed for Claude Code instead of Copilot.
 
-<!-- Before finalizing this file for a specific project: do not remove, paraphrase, or weaken any section marked FIXED below — copy it verbatim. Only replace CUSTOMIZE placeholders with project-specific values. Every reference to the same artifact (e.g. Requirements, Plan, Contract) must use the same path consistently everywhere it appears in the generated file. -->
+Generate or update the file with the `setup-claude-instructions` command rather than copying it by hand; rerun the command when this template changes.
+
+<!-- Every section below is FIXED: copy it verbatim — do not remove, paraphrase, or weaken it. Only the title names the application. Project facts (stack, versions, constraints, commands) do not belong in this file; they live in requirements, the build file, the Plan, and Implementation Plans. -->
 
 ## Project Context
 
-Technology:
-
-<!-- CUSTOMIZE — project-specific value -->
-* <runtime/version>
-* <framework/version>
-* <build system>
-* <test framework>
-
-Application-specific constraints:
-
-<!-- CUSTOMIZE — project-specific value -->
-* <constraint>
-* <constraint>
-
 <!-- FIXED — preserve verbatim -->
+This file holds process rules only. Project facts live in their own sources; read them there and do not restate them here:
+
+* Product requirements, technology stack, and scope exclusions: `docs/requirements.md` (when present) and the work item's `requirements.md`.
+* Build, runtime, and dependency versions: the build file (for example `pom.xml`, `build.gradle`, or `pyproject.toml`).
+* Verification commands: the approved Plan and the milestone's Implementation Plan.
+
 Do not introduce excluded capabilities unless explicitly approved by requirements.
 
 <!-- FIXED — preserve verbatim -->
@@ -33,24 +27,31 @@ Do not introduce excluded capabilities unless explicitly approved by requirement
 <!-- FIXED — preserve verbatim -->
 ## PDD Workflow
 
-For behavior-changing work:
+Each milestone's type follows the kind of change, as defined by the `prompt-driven-development` skill's Milestone Types:
 
 ```
 Requirements
 → Plan
 → Human Review
 → CONTRACT milestone when applicable: API / External Contract → Human Review
-→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES:
-    optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
-    RED milestone: Implementation Plan → Human Review → execution → Verification
-    → GREEN milestone: Implementation Plan → Human Review → execution → Verification
-    → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+→ FOR EACH SEQUENCE OF IMPLEMENTATION MILESTONES, typed by the kind of change:
+    behavior change:
+        optional FOUNDATION milestone: Implementation Plan → Human Review → execution → Verification
+        RED milestone: Implementation Plan → Human Review → execution → Verification
+        → GREEN milestone: Implementation Plan → Human Review → execution → Verification
+        → optional REFACTOR milestone: Implementation Plan → Human Review → execution → Verification
+    behavior-preserving restructuring of existing production code:
+        REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
+    no production behavior change (test-only, build, configuration, infrastructure):
+        OTHER milestone: Implementation Plan → Human Review → execution → Verification
 → Final Review
 ```
 
-Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, and REFACTOR are each separate milestones and separate authorization boundaries.
+A failing test is not automatically RED: if the test itself is wrong and production behavior is correct, the work is OTHER; if a correct existing test exposes missing behavior, that test is the RED evidence and RED changes no file. When the requirements do not settle which side is wrong, ask and stop.
 
-When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan: the first milestone after Plan approval, before any FOUNDATION, RED, GREEN, or REFACTOR milestone. It changes no executable artifact and has no Implementation Plan; the contract artifact itself is the human-reviewed deliverable.
+Each Implementation Plan authorizes exactly one repository-changing milestone — never RED and GREEN together, and never more than one milestone. FOUNDATION when required, RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries.
+
+When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan: the first milestone after Plan approval, before any FOUNDATION, RED, GREEN, REFACTOR, or OTHER milestone. It changes no executable artifact and has no Implementation Plan; the contract artifact itself is the human-reviewed deliverable. A changed contract starts from the verified current contract and defines only the approved changes.
 
 Completion of one milestone does not authorize the next.
 
@@ -70,11 +71,11 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 
 ## Planning Artifacts
 
-<!-- CUSTOMIZE — project-specific value; use the same path everywhere this artifact is referenced in this file -->
+<!-- FIXED — preserve verbatim -->
 * Work items: each piece of work (new project or enhancement) has its own folder `docs/.ai/<work-item>/`; PDD commands take the work item as an argument
 * Requirements: `docs/.ai/<work-item>/requirements.md` (optional product-level `docs/requirements.md` is read-only context)
 * Plan: `docs/.ai/<work-item>/Plan.md`
-* API / External Contract: `<path when applicable>`
+* API / External Contract: `docs/.ai/<work-item>/<contract file, e.g. API-Contract.md>` (when applicable)
 * Implementation Plans: `docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
 
 <!-- FIXED — preserve verbatim -->
@@ -108,7 +109,7 @@ Do not use an Open Questions section as a substitute for required clarification.
 
 ## Verification
 
-Run the project's approved verification commands.
-
 <!-- FIXED — preserve verbatim -->
+Run the verification commands recorded in the approved Implementation Plan for the milestone.
+
 Do not claim verification succeeded unless the commands completed successfully.

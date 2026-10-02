@@ -10,9 +10,10 @@ Classify information as:
 1. explicit requirement,
 2. repository-confirmed fact,
 3. material unresolved decision,
-4. optional/non-blocking decision.
+4. optional/non-blocking decision,
+5. derived consequence — a statement inferred from user input, repository evidence, or another approved artifact rather than stated by the user or observed in the repository.
 
-Do not promote framework defaults, industry conventions, repository conventions, or personal preference into requirements.
+Do not promote framework defaults, industry conventions, repository conventions, or personal preference into requirements. Do not present a derived consequence as an explicit requirement or a repository-confirmed fact.
 
 ## Requirements Capture
 
@@ -22,6 +23,11 @@ When writing or updating a requirements artifact:
 - **Preserve the user's meaning.** Record each user requirement with the same meaning — do not narrow, broaden, or reword it into a non-equivalent statement. When a paraphrase could change the meaning, quote the user's wording.
 - **Requirements only.** The artifact holds requirements, constraints, explicit exclusions, acceptance criteria, resolved decisions, and repository-confirmed facts. Unless the user explicitly requires them, it does not hold build or test commands, branch or worktree names, stack traces, evidence snapshots, rollback strategy, solution shape (such as "a single minimal change"), or next steps — those belong to the Plan, the Implementation Plan, or verification evidence.
 - **No recommended requirements.** Engineering recommendations from skills or checklists (observability, logging, flakiness handling, rollback, documentation, CI, compatibility) are not requirements. Include one only when the user stated it or repository evidence establishes it as a requirement.
+- **Name every source.** Every requirement, constraint, exclusion, resolved decision, and repository fact names where it came from: the user (brief or numbered answer), repository inspection (path and line), an approved artifact of another work item this one explicitly depends on, or derivation. Use `prompt-driven-development` `templates/requirements.md` when the adopting project does not define a compatible requirements artifact.
+- **Confirm derived consequences.** Label a derived consequence with what it is derived from and ask the user to confirm it before finalizing. Record it only after confirmation; until then it is an unresolved decision.
+- **Options you wrote are not the user's words.** When the user picks a clarification option you wrote, record as the user's decision only what the user confirmed. Any further constraint implied by the option's wording is a derived consequence.
+- **Other work items are context, not templates.** Do not copy another work item's structure, wording, citations, or closing statements. Re-verify any fact taken from another work item against the current repository before recording it.
+- **Check provenance before finalizing.** Confirm that every item has a source, every derived consequence was confirmed, every repository citation was verified against the current repository during this capture, and that no statement about the artifact as a whole (for example "nothing was inferred") is made unless it was checked.
 
 ## Material Clarification Gate
 
@@ -51,6 +57,8 @@ When a material unresolved decision exists:
 
 A material unresolved decision must not be hidden in an Open Questions section while the workflow continues as if the artifact were complete.
 
+A qualitative term that decides testable behavior without a bound (for example "slow", "large", "soon", "high volume") is a material unresolved decision: bound it, or record it as explicitly deferred to a named later decision.
+
 ## Operational Characteristics
 
 Requirements often describe behavior but say nothing about how the system must run. Do not assume either extreme — neither a single-user, single-instance system nor scale, distribution, or observability nobody asked for. Ask once, before planning.
@@ -69,7 +77,7 @@ Rules:
 - Record an answer only when the user gave it or repository evidence establishes it. Never answer a characteristic on the user's behalf, and never add characteristics beyond the list above.
 - Ask only what applies to this system, in one round together with any other clarification questions. For an enhancement, ask only about characteristics the work item could change or depends on.
 - Deployment topology and consistency/concurrency are material: while unanswered, they block planning.
-- For the others, "not required for this work item" is a valid answer. Record it as an explicit exclusion, never as a silent default.
+- For the others, "not required for this work item" is a valid answer. Record it explicitly as not required, never as a silent default. "Not required" means no milestone must deliver it; it is not an exclusion. Record a capability as excluded — must not be introduced — only when the user or an approved artifact excludes it.
 - Record every answer in the work item's requirements (Recording Resolved Decisions). Operational requirements are then owned by milestones like any other requirement; `architecture-design`, `distributed-systems`, `observability`, and `resilience-and-degradation` apply when a recorded requirement calls for them.
 - Ask about needs, not solutions. Do not propose technologies, patterns, or infrastructure while asking.
 
@@ -78,7 +86,7 @@ Rules:
 Present questions in two groups so the user can see what actually blocks planning:
 
 1. **Blocking — must be answered before planning:** material unresolved decisions, including deployment topology and consistency/concurrency. Keep this group to the minimum the current work item needs.
-2. **Answer or mark not required:** applicable operational characteristics that are not blocking. For each, state that "not required for this work item" is a valid answer and will be recorded as an explicit exclusion.
+2. **Answer or mark not required:** applicable operational characteristics that are not blocking. For each, state that "not required for this work item" is a valid answer and will be recorded explicitly as not required.
 
 Number questions continuously across both groups so answers can reference them.
 

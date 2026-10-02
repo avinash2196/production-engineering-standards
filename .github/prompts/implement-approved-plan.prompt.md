@@ -1,6 +1,6 @@
 ---
-description: "Execute an approved FOUNDATION or GREEN Implementation Plan, verify it, and record verified progress."
-argument-hint: "work item; approved FOUNDATION or GREEN Implementation Plan (GREEN also needs valid RED evidence)"
+description: "Execute an approved FOUNDATION, GREEN, or OTHER Implementation Plan, verify it, and record verified progress."
+argument-hint: "work item; approved FOUNDATION, GREEN, or OTHER Implementation Plan (GREEN also needs valid RED evidence)"
 agent: "implementation-engineer"
 tools:
   - read
@@ -18,9 +18,9 @@ Read:
 
 - the authoritative requirements, Plan, and applicable API/external contract;
 - the current repository state;
-- the approved Implementation Plan (FOUNDATION or GREEN).
+- the approved Implementation Plan (FOUNDATION, GREEN, or OTHER).
 
-First read which milestone type the approved Implementation Plan declares (FOUNDATION or GREEN), and follow only that branch. Do not decide the milestone type yourself — it was already decided in `Plan.md` and fixed by the approved Implementation Plan. Do not treat a GREEN Implementation Plan as needing FOUNDATION first, and do not decide mid-execution that setup is needed; if that turns out to be true, stop (see below) rather than acting on it.
+First read which milestone type the approved Implementation Plan declares (FOUNDATION, GREEN, or OTHER), and follow only that branch. Do not decide the milestone type yourself — it was already decided in `Plan.md` and fixed by the approved Implementation Plan. Do not treat a GREEN Implementation Plan as needing FOUNDATION first, and do not decide mid-execution that setup is needed; if that turns out to be true, stop (see below) rather than acting on it.
 
 **If the approved Implementation Plan is FOUNDATION:**
 
@@ -40,7 +40,15 @@ First read which milestone type the approved Implementation Plan declares (FOUND
 - confirm that the previously valid RED behavior is now GREEN, that existing relevant tests remain GREEN, and that no unapproved changes were introduced;
 - after GREEN is actually verified, update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the GREEN milestone as completed with concise actual evidence.
 
-For either milestone type: if verification fails, do not mark that milestone complete.
+**If the approved Implementation Plan is OTHER:**
+
+- before changing anything, capture the baseline evidence the Implementation Plan names;
+- execute only the approved changes; make no production behavior change — if one turns out to be needed, stop for replanning as RED and GREEN;
+- do not weaken or remove a test assertion without the same-coverage replacement the Implementation Plan approves;
+- before marking OTHER complete, verify every approved Acceptance / Completion Criterion, show the completion evidence against the baseline, and confirm the named preserved tests pass;
+- update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the OTHER milestone as completed with concise actual evidence.
+
+For any milestone type: if verification fails, do not mark that milestone complete.
 
 If implementation requires changing approved scope or materially conflicts with an authoritative artifact, stop for replanning and human review. This includes: discovering during execution that an additional, unapproved prerequisite (dependency, configuration, or other change) is needed — do not add it automatically; stop and report it to planning. It also includes discovering that an approved Acceptance/Completion Criterion cannot be satisfied without work outside the approved Implementation Plan — do not change the criterion or broaden the implementation to cover it; stop and report the unmet criterion and the required unapproved work to planning.
 

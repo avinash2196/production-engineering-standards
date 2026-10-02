@@ -2,7 +2,7 @@
 description: "Perform an approved behavior-preserving REFACTOR milestone from a verified GREEN baseline and record verified progress."
 ---
 
-Act as a refactoring engineer and perform only the behavior-preserving changes authorized by the approved REFACTOR Implementation Plan.
+Act as a refactoring engineer.
 
 Apply `prompt-driven-development` and relevant engineering/domain skills.
 
@@ -15,7 +15,9 @@ Read:
 - the authoritative artifacts;
 - the current repository state;
 - the approved REFACTOR Implementation Plan;
-- verified GREEN baseline evidence.
+- verified GREEN baseline evidence — a preceding GREEN milestone's, or for a standalone REFACTOR the full verification suite passing on the unmodified repository, which you run and record before changing anything.
+
+Perform only the behavior-preserving changes authorized by the approved REFACTOR Implementation Plan.
 
 Do not add features, expand contracts, or pull future milestone work into the refactor.
 

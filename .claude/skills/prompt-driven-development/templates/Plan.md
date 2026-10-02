@@ -6,7 +6,7 @@ Apply the `prompt-driven-development` skill's Plan Content Rules to every sectio
 
 ## Current State
 
-Describe only what inspection of the repository shows. When this work item changes existing code, list the existing behavior it affects and the existing tests that cover that behavior. For a new project with no code yet, say so.
+Describe only what inspection of the repository shows. When this work item changes existing code, list the existing behavior it affects and the existing tests that cover that behavior, naming them. For a new project with no code yet, say so.
 
 ## In Scope
 
@@ -30,6 +30,10 @@ Identify whether an API or other external contract must be defined before implem
 
 If applicable, state the required contract artifact, the approved scope it must cover, and every decision it must resolve (including decisions the requirements defer to it). Do not resolve, narrow, or presume any of them here.
 
+If the work item leaves an existing contract unchanged, reference that contract here as a constraint and record no CONTRACT milestone.
+
+If the work item changes an existing contract, name the current contract the CONTRACT milestone starts from as its baseline (`prompt-driven-development` Changed Contracts) and list only the changes it must define.
+
 ## Milestones
 
 Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide how many milestones this work needs, and record the reason for the chosen decomposition.
@@ -49,9 +53,25 @@ For each milestone record:
 - explicit exclusions
 - success criteria: what successful completion of this milestone means
 
+For an OTHER milestone also record:
+
+- no-behavior-change statement: why none of its owned requirements adds or changes production behavior
+- baseline evidence: what shows the problem or starting state before the change
+- preserved tests: the existing tests that prove behavior is preserved and must pass afterwards
+- completion evidence: what shows the change is done
+
+For a RED milestone whose evidence is an existing failing test also record:
+
+- existing failing test: the test, its current failure, and the requirement it expresses (`prompt-driven-development` Failing Tests: RED or OTHER)
+
+For a standalone REFACTOR milestone (no preceding GREEN in this work item) also record:
+
+- GREEN baseline: the existing system's verification suite passing on the unmodified repository
+- preserved tests: the existing tests that cover the code being restructured
+
 A milestone must not authorize work from a later milestone. Recording a milestone here does not itself authorize it — each repository-changing milestone still requires its own Implementation Plan, Human Review, and execution, in that order. A CONTRACT milestone changes no executable artifact and has no Implementation Plan; its human-reviewed deliverable is the contract artifact itself.
 
-A FOUNDATION milestone requires its own approved Implementation Plan and Human Review before any repository change, exactly like a RED, GREEN, or REFACTOR milestone. It is conditional — include one only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup) that the RED milestones it serves need (record which ones), never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR sequence or without approval.
+A FOUNDATION milestone requires its own approved Implementation Plan and Human Review before any repository change, exactly like a RED, GREEN, REFACTOR, or OTHER milestone. It is conditional — include one only for a genuine executable prerequisite (e.g. initial project scaffolding, required build/dependency/test-infrastructure setup) that the RED milestones it serves need (record which ones), never merely because a production type or behavior that RED is meant to drive does not yet exist. FOUNDATION is not a way to change code outside the RED/GREEN/REFACTOR sequence or without approval.
 
 ## Requirement Traceability
 
@@ -60,6 +80,10 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 |  |  |  |
 
 Every approved requirement and cross-cutting concern appears exactly once with one owning milestone.
+
+## Verification Commands
+
+List the commands that verify milestones, each with its source (requirements, or repository evidence such as the build file). Do not take them from the application instruction file. For a project with no build yet, state that the FOUNDATION milestone establishes them.
 
 ## Execution Status
 

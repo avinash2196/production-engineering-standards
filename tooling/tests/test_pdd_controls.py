@@ -119,7 +119,7 @@ class PddControlsTest(unittest.TestCase):
             ROOT / ".github/skills/prompt-driven-development/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            "FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone",
+            "FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone",
             skill_text,
         )
         self.assertIn(
@@ -131,6 +131,7 @@ class PddControlsTest(unittest.TestCase):
             ROOT / ".github/skills/implementation-planning/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn("### FOUNDATION (conditional)", planning_text)
+        self.assertIn("### OTHER", planning_text)
 
     def test_red_green_refactor_semantics_unchanged(self):
         # Conflict 1 must add FOUNDATION without weakening the existing
@@ -1100,6 +1101,91 @@ class PddControlsTest(unittest.TestCase):
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("templates/Final-Review.md", text, rel)
             self.assertIn("mark each finding as pre-existing or introduced", text, rel)
+
+
+class MilestoneSemanticsTest(unittest.TestCase):
+    """Milestone types are chosen by the kind of change; these guard the
+    0.11.0 fixes: OTHER everywhere types are enumerated, changed-contract
+    baselines, existing failing tests as RED evidence, standalone REFACTOR,
+    and no forced RED/GREEN in domain commands."""
+
+    def _read(self, rel: str) -> str:
+        return (ROOT / rel).read_text(encoding="utf-8")
+
+    def test_no_milestone_enumeration_omits_other(self):
+        # Every list of executable milestone types must include OTHER.
+        stale = re.compile(
+            r"FOUNDATION,? (?:\(when required\),? )?RED, GREEN,? (?:and|or) REFACTOR"
+            r"|milestone type \(FOUNDATION or GREEN\)"
+            r"|approved FOUNDATION or GREEN Implementation Plan"
+        )
+        roots = [".github", ".claude", "docs", "README.md"]
+        offenders = []
+        for root in roots:
+            base = ROOT / root
+            paths = [base] if base.is_file() else base.rglob("*.md")
+            for path in paths:
+                for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                    if stale.search(line) and "OTHER" not in line:
+                        offenders.append(f"{path.relative_to(ROOT).as_posix()}:{i}")
+        self.assertEqual(offenders, [])
+
+    def test_lifecycle_diagrams_show_other_and_standalone_refactor(self):
+        for rel in [
+            ".github/skills/prompt-driven-development/SKILL.md",
+            ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+            "README.md",
+        ]:
+            text = self._read(rel)
+            self.assertIn("OTHER milestone: Implementation Plan → Human Review → execution → Verification", text, rel)
+            self.assertIn("REFACTOR milestone from a verified GREEN baseline", text, rel)
+
+    def test_changed_contract_starts_from_verified_baseline(self):
+        skill = self._read(".github/skills/prompt-driven-development/SKILL.md")
+        self.assertIn("### Changed Contracts", skill)
+        self.assertIn("If they diverge, stop and surface the divergence for human review", skill)
+        self.assertIn("only the changes are CONTRACT decisions under review", skill)
+        template = self._read(".github/skills/api-design/templates/API-Contract.md")
+        self.assertIn("## Baseline", template)
+        self.assertIn("## Changes in This Work Item", template)
+        for rel in [".github/prompts/create-api-contract.prompt.md", ".claude/commands/create-api-contract.md"]:
+            self.assertIn("Changed Contracts", self._read(rel), rel)
+
+    def test_existing_failing_test_can_be_red_evidence(self):
+        skill = self._read(".github/skills/prompt-driven-development/SKILL.md")
+        self.assertIn("### Failing Tests: RED or OTHER", skill)
+        self.assertIn("**Existing failing tests as RED evidence.**", skill)
+        self.assertIn("If the requirements and repository evidence do not establish which side is wrong, ask the user and stop", skill)
+        planning = self._read(".github/skills/implementation-planning/SKILL.md")
+        self.assertIn("names an existing failing test as this milestone's RED evidence", planning)
+        self.assertIn("is in scope, not a pre-existing failure", planning)
+        for rel in [".github/agents/test-engineer.agent.md", ".github/prompts/generate-tests.prompt.md"]:
+            self.assertIn("existing failing test", self._read(rel), rel)
+
+    def test_standalone_refactor_uses_existing_green_baseline(self):
+        skill = self._read(".github/skills/prompt-driven-development/SKILL.md")
+        self.assertIn("### Standalone REFACTOR", skill)
+        self.assertIn("never restructure code its tests do not protect", skill)
+        for rel in [
+            ".github/skills/implementation-planning/SKILL.md",
+            ".github/agents/refactoring-engineer.agent.md",
+            ".github/prompts/refactor-code.prompt.md",
+        ]:
+            self.assertIn("standalone REFACTOR", self._read(rel), rel)
+
+    def test_other_execution_may_change_tests_and_configuration(self):
+        text = self._read(".github/agents/implementation-engineer.agent.md")
+        self.assertIn("for an OTHER milestone, the tests, build files, configuration, tooling, or infrastructure", text)
+
+    def test_oracle_migration_does_not_force_red_green(self):
+        for rel in [
+            ".github/prompts/migrate-oracle-to-postgres.prompt.md",
+            ".claude/commands/migrate-oracle-to-postgres.md",
+        ]:
+            text = self._read(rel)
+            self.assertNotIn("RED migration/application tests", text, rel)
+            self.assertIn("Type each milestone by the kind of change", text, rel)
 
 if __name__ == "__main__":
     unittest.main()

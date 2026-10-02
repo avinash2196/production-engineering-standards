@@ -6,6 +6,23 @@ Describe only externally visible behavior authorized by approved requirements an
 
 This contract governs externally observable behavior only. The approved Plan remains the single source of truth for scope, milestones, and requirement ownership.
 
+## Baseline
+
+For a new contract, state "None — new contract."
+
+For a changed contract (`prompt-driven-development` Changed Contracts), identify the verified current contract this one starts from, and how it was verified against the repository and any published contract. Content carried over from the baseline is existing behavior, not a new decision.
+
+- Baseline source:
+- Verified against:
+
+## Changes in This Work Item
+
+For a changed contract, list every operation, field, status code, or rule this work item adds, changes, or removes, each with the requirement or Plan item that authorizes it. Only these changes are under review. For a new contract, state "Not applicable — new contract."
+
+| Change | Added / Changed / Removed | Requirement / Plan Reference |
+| --- | --- | --- |
+|  |  |  |
+
 ## Out of Scope
 
 List behaviors, endpoints, validations, integrations, or implementation details that are explicitly excluded.

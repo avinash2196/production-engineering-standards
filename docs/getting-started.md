@@ -29,7 +29,7 @@ into the adopting application's source control.
 The adopting application should own its own:
 
 ```text
-.github/copilot-instructions.md
+CLAUDE.md and/or .github/copilot-instructions.md    # generated in step 3
 docs/requirements.md                               # optional product-level requirements, read-only for PDD commands
 docs/.ai/<work-item>/requirements.md
 docs/.ai/<work-item>/Plan.md
@@ -42,9 +42,24 @@ Those files describe the current application and current work. Every piece of wo
 
 They do not belong in the standards repository.
 
-## 3. Start from the PDD Application Instruction Template
+## 3. Generate the Application Instruction File (first step)
 
-For Copilot, use:
+Before any PDD work item, generate the application's persistent PDD rules for the tool it uses, from inside the application repository:
+
+```text
+/setup-claude-instructions    → CLAUDE.md (repo root)              — Claude Code
+/setup-copilot-instructions   → .github/copilot-instructions.md    — Copilot
+```
+
+When the standards are installed as a Claude Code plugin, the command is `/production-engineering-standards:setup-claude-instructions`.
+
+The file is loaded into every session in the repository, so the PDD rules — the workflow, no code change without approval, clarification before assumption — apply even when no PDD command is used. It holds process rules and pointers only. The command copies the template verbatim, asks no questions, and writes only that one file, so it works for a new project before any code exists.
+
+Rerun it whenever the template changes. When it replaces an existing file, it lists every project-specific line it dropped and where that information belongs.
+
+The commands are built on these templates, which remain the reference:
+
+For Copilot:
 
 ```text
 .github/skills/prompt-driven-development/templates/application-copilot-instructions.md
@@ -70,14 +85,13 @@ CLAUDE.md
 
 (repo root). Both templates carry the same PDD workflow and the same no-code-change-without-approval rule — pick the one matching the tool the adopting project actually uses.
 
-Then add only application-specific facts such as:
+Project facts do not go into the instruction file. Record them where PDD reads them:
 
-- runtime and framework versions,
-- module or architectural boundaries,
-- database and migration approach,
-- API compatibility expectations,
-- build and verification commands,
-- application-specific conventions.
+- technology stack, database, API compatibility, scope exclusions, conventions → `docs/requirements.md` (product level) or the work item's `requirements.md`;
+- runtime, framework, and dependency versions → the build file;
+- build and verification commands → the Plan and each milestone's Implementation Plan.
+
+For a new project, these are captured in the first work item's requirements (for example `initial-build`). When the executable prerequisites — build, dependencies, test infrastructure — are missing, its FOUNDATION milestone establishes them; a new repository that already has working build and test infrastructure needs no FOUNDATION.
 
 Do not copy the full engineering standards library into the application.
 
@@ -115,9 +129,9 @@ Examples:
 
 ## 5. Start a New PDD Work Item
 
-For a new application or a change whose requirements are not yet captured:
+For a new application or a change whose requirements are not yet captured (after step 3):
 
-1. `/capture-requirements`
+1. `/capture-requirements <work-item>`
 2. resolve all material ambiguity
 3. human requirements review
 4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8) based on complexity, responsibility boundaries, risk, and independent verifiability; a small cohesive change may need only one, larger work several
@@ -131,7 +145,31 @@ For an existing application with already-approved requirements, start from the e
 
 ## 6. Behavior-Changing Milestone Flow
 
-Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
+Choose each milestone's type by the kind of change, not by whether the project is new (`prompt-driven-development` Milestone Types): behavior changes are always RED then GREEN; a new or changed external contract is CONTRACT; a missing prerequisite for RED is FOUNDATION; behavior-preserving cleanup of production code is REFACTOR — after GREEN, or standalone from the existing system's verified GREEN baseline; an approved change with no production behavior change — test-only fixes, characterization tests, or replacing infrastructure under unchanged behavior — is OTHER. A new project normally needs CONTRACT, FOUNDATION (only when its build or test infrastructure is missing), RED, and GREEN; an enhancement uses what its requirements call for.
+
+Common enhancement cases:
+
+| Work | Milestones |
+| --- | --- |
+| Existing API unchanged, new internal behavior | RED → GREEN; the Plan references the current contract |
+| Add or change an API operation | CONTRACT from the verified current contract plus the delta → RED → GREEN |
+| A test is wrong; production behavior is correct | OTHER |
+| A correct existing test fails because production is wrong | RED using that test as evidence (no file changes) → GREEN |
+| Production is wrong and no test exposes it | RED writes the test → GREEN |
+| Build, configuration, or infrastructure swap with unchanged behavior | OTHER |
+| Restructure existing production code without behavior change | REFACTOR from the existing system's verified GREEN baseline (an OTHER characterization-test milestone first if coverage is missing) |
+
+When the requirements do not settle whether a failing test or production is wrong, the planner asks and stops.
+
+For an OTHER milestone:
+
+1. `/create-implementation-plan` for the OTHER milestone (it records the baseline evidence and the existing tests that must keep passing).
+2. human review
+3. `/implement-approved-plan`
+4. verify the completion evidence against the baseline and that the preserved tests pass
+
+
+Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
 
 For a FOUNDATION milestone (only when `Plan.md` records one as genuinely required):
 
@@ -218,7 +256,7 @@ This is a common layered decomposition, not a mandatory template. The real rule 
 - Most milestones need no setup at all — proceed straight to RED.
 - A missing production class, service, repository, controller, method, or interface is never, by itself, a reason for setup — that absence is the expected RED condition (a compilation failure caused by an intentionally absent approved production symbol is valid RED evidence), and creating the real thing is GREEN's job.
 - Setup exists only for genuine executable prerequisites that prevent RED from meaningfully running at all — e.g. required build/dependency setup, test framework/infrastructure that doesn't exist yet, required configuration, or a prerequisite contract established by an earlier architectural decision.
-- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, and REFACTOR — setup is never a way to change code without approval.
+- Every setup code change still requires its own approved Implementation Plan and human review, exactly like RED, GREEN, REFACTOR, and OTHER — setup is never a way to change code without approval.
 
 ## 8. Clarification Is a Blocking Gate
 

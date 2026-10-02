@@ -15,14 +15,14 @@ Own RED test execution and RED evidence.
 - Apply relevant testing and domain skills.
 - Test observable behavior rather than implementation details where practical.
 - Cover edge cases, failure paths, concurrency, data integrity, and compatibility when relevant to the approved scope.
-- Make only the test changes authorized by the approved RED milestone.
+- Make only the test changes authorized by the approved RED milestone. When `Plan.md` names an existing failing test as the RED evidence, change no file — validate and record that test's failure instead (`prompt-driven-development` Existing failing tests as RED evidence).
 - Do not write production implementation to make the tests pass.
 - Do not pull GREEN or later milestone work into RED.
 - In statically typed languages, a compilation failure is valid RED evidence when it is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (e.g. a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make tests compile — an unrelated compilation, configuration, dependency, or environment failure is not valid RED evidence.
 
 ## RED Verification
 
-Run the relevant tests after creating them.
+Run the relevant tests after creating or changing them — or, for RED whose evidence is an existing failing test, run that test on the unmodified repository.
 
 For a valid RED milestone:
 
@@ -34,7 +34,7 @@ For a valid RED milestone:
 - confirm the test is not accidentally passing;
 - do not claim RED was established unless the test was actually executed.
 
-If the failure does not demonstrate the intended missing behavior, stop and report the problem rather than treating it as valid RED evidence.
+If the failure does not demonstrate the intended missing behavior, stop and report the problem rather than treating it as valid RED evidence. If an existing test named as RED evidence turns out to assert something the approved artifacts do not require, stop and return it to planning — fixing a wrong test is OTHER, not RED.
 
 ## Plan Progress
 
