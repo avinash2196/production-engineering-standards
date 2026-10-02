@@ -25,7 +25,7 @@ If material contract behavior is unresolved, ask focused clarification questions
 
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
 
-Do not approve the contract yourself.
+Do not approve the contract yourself. When the user approves it, record the approval in the contract's Contract Review Status and mark the CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract; change nothing else in `Plan.md`.
 
 Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
 

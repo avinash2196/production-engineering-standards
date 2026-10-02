@@ -167,7 +167,7 @@ The planner may write proposed code in the Implementation Plan, but must not app
 
 Only the user approves an Implementation Plan; the AI never approves its own artifact. An Implementation Plan records its status in exactly one place — its Human Review section — and does not repeat it elsewhere in the artifact.
 
-Before any execution command changes a file, confirm approval. Approval is either already recorded in the plan's Human Review status, or given by the user in the current conversation in response to a request to approve that specific plan — no particular phrase is required ("go ahead" or "proceed" in that context is approval). Record the approval in the Human Review status before changing any file. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval exists, ask and stop.
+Before any execution command changes a file, confirm approval. Approval is either already recorded in the plan's Human Review status, or given by the user in the current conversation in response to a request to approve that specific plan — no particular phrase is required ("go ahead" or "proceed" in that context is approval). Record the approval in the Human Review status before changing any file. An Implementation Plan whose execution stopped at a blocker is not approved until the user re-approves it. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval exists, ask and stop.
 
 After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
 
@@ -186,14 +186,14 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
 8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites, REFACTOR for a standalone restructuring requirement, OTHER for an approved change with no behavior change); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision, or the OTHER or standalone REFACTOR milestone itself through its baseline evidence and preserved tests). No requirement has two owners. Three kinds of row have no owning milestone, and each uses its own form. A requirement that states an absence (for example "no X is required") is an exclusion — must not be introduced — verified at Final Review; a characteristic recorded as not required for this work item has nothing to verify and is never called an exclusion; preserved existing behavior is verified by the milestone whose preserved tests cover it. Never assign one of these to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
 9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. When the work item changes existing code, Current State lists the existing behavior the work item affects and the existing tests that cover it; for a new project with no code yet, it says so. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone. A mitigation may reference only in-scope work; one that needs new scope is a clarification question, not a plan item. Risks cite repository evidence. The Plan does not prescribe commits, branches, pull requests, owners, or other delivery process unless the requirements state it.
-10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
+10. **Honest status.** A newly created Plan records every milestone as Pending and marks nothing approved, verified, or complete. A revision keeps every executed milestone, its status, and its evidence unchanged; only changed or new milestones are Pending.
 11. **Prerequisite coverage for every RED milestone.** RED milestones cannot add dependencies, build configuration, or test infrastructure, and GREEN comes after RED, so every prerequisite a RED milestone needs must already exist when it starts. Walk the whole sequence: for each RED milestone, determine what its tests need to compile and run (dependencies, test infrastructure, configuration) given the repository state projected after all of its predecessor milestones complete — not only the current state. If any prerequisite is not provided by a predecessor, either widen an earlier FOUNDATION milestone to provide it or insert a FOUNDATION milestone immediately before that RED milestone. Record which RED milestones each FOUNDATION milestone serves.
 12. **Criteria coverage.** Every acceptance criterion in the requirements and every Plan-level success criterion appears in Final Acceptance Criteria with the milestone whose completion evidence demonstrates it, or Final Review inspection. That milestone must be able to produce the evidence — for example, a RED milestone cannot demonstrate that the application runs. Every artifact a verification step uses is in some milestone's scope.
 13. **Verification commands.** Record the commands that verify milestones in the Plan's Verification Commands section, each with its source (requirements, or repository evidence such as the build file or project documentation). Do not take them from the application instruction file, which holds no project facts. For a project with no build yet, state that the FOUNDATION milestone establishes them; its Implementation Plan records the exact commands.
 
 ## Plan Integrity
 
-After human approval, the Plan is an authorization artifact and a living execution-status record.
+Before approval, the Plan is a working proposal and may be revised freely in response to human review. Human approval makes it the current execution baseline: an authorization artifact and a living execution-status record that the AI never changes silently.
 
 - Do not rewrite the Plan to match implementation.
 - Do not change milestone definitions during milestone execution.
@@ -203,7 +203,14 @@ After human approval, the Plan is an authorization artifact and a living executi
 - Scope, milestone, architecture, or success-criteria changes require explicit replanning and human review.
 - Material unresolved decisions must be resolved before Plan approval.
 
-If execution reveals that the approved Plan itself must change, stop for replanning and human review.
+If execution reveals that the approved Plan itself must change, stop for replanning and human review. Replanning is allowed at any point, including after implementation has started; the control is human approval, not immutability. When a blocker materially invalidates approved scope, milestone order, architecture, assumptions, or acceptance criteria:
+
+1. The execution command stops. It records the milestone in `Plan.md` Execution Status as `Blocked — <reason>`, with its evidence below the table, and records in the Implementation Plan's Human Review status: `Execution stopped at a blocker — see Plan.md. Re-approval required before execution.` It describes the minimum Plan revision in its report and changes nothing else in `Plan.md`.
+2. Any change to scope, milestones, architecture, or acceptance criteria is made only through `create-plan` revision mode, which addresses every `Blocked` row, replaces it with the revised milestone's Pending row, and keeps executed milestones and their evidence unchanged.
+3. The revised Plan returns to awaiting human review.
+4. Execution resumes only after the user approves the revised Plan, and the affected milestone runs only from a new Implementation Plan or the user's recorded re-approval of the existing one.
+
+Never replan and continue executing without that approval.
 
 ## Milestone Controls
 
@@ -291,7 +298,7 @@ Completing a milestone does not authorize the next milestone. Each subsequent re
 
 ## Final Review Authority
 
-Final Review (code review, production-readiness review, or any review command) produces findings and recommendations only. A finding is not an authorized change.
+Final Review of a work item is performed only by `review-code` or `review-production-readiness`, when the user names the work item. Other reviews — for example `review-architecture` or `review-requirements` — are intermediate reviews and do not close the work item. Any review produces findings and recommendations only. A finding is not an authorized change.
 
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.

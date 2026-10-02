@@ -19,7 +19,10 @@ Before planning:
 - read current Plan execution status;
 - read every previously approved Implementation Plan and carry its decisions (versions, mechanisms, conventions, configuration and test-infrastructure choices) forward as approved inputs;
 - verify predecessor milestone evidence and actual repository progress;
-- verify that the milestone type being planned matches what `Plan.md` records for this milestone.
+- verify that the milestone type being planned matches what `Plan.md` records for this milestone;
+- confirm the milestone is Pending with no approved, unexecuted Implementation Plan; when an earlier one stopped at a blocker, read it and the blocker evidence and plan from the revised, approved Plan;
+- read the product-level `docs/requirements.md` when it exists, as read-only context;
+- list every document read, with its approval status, under Authoritative References.
 
 Prefer repository evidence over assumed structure or previously proposed implementation. Repository-state claims such as "clean working tree" must come from actual inspection, not assumption.
 

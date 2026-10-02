@@ -32,7 +32,7 @@ In statically typed languages, a compilation failure is valid RED evidence when 
 
 Run the verification commands required by the approved Implementation Plan and establish valid RED evidence.
 
-Before marking RED complete, verify every approved RED Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution. If an approved criterion cannot be satisfied without work outside the approved Implementation Plan, stop and report it to planning rather than changing the criterion.
+Before marking RED complete, verify every approved RED Acceptance / Completion Criterion using the approved verification commands and evidence — do not invent, weaken, reinterpret, or modify the criteria during execution. If an approved criterion cannot be satisfied without work outside the approved Implementation Plan, stop and report it to planning rather than changing the criterion; when the approved Plan itself must change, stop for replanning (`prompt-driven-development` Plan Integrity: record the blocker in `Plan.md` and the stopped execution in the Implementation Plan's Human Review status, describe the minimum Plan revision, and wait — the Plan itself is revised only through `create-plan`).
 
 Confirm that the observed failure demonstrates the intended missing approved behavior rather than an unrelated compilation, configuration, or environment problem.
 
