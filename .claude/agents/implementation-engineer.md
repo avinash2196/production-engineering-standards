@@ -64,6 +64,8 @@ For GREEN, also confirm:
 
 Do not claim FOUNDATION, GREEN, or OTHER is complete unless the relevant verification was actually executed.
 
+Apply each planned create, modify, and delete literally. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output in `Plan.md`, every planned-versus-executed difference listed with its reason, and every process you started stopped before reporting.
+
 ## Plan Progress
 
 After the approved FOUNDATION, GREEN, or OTHER milestone is implemented and successfully verified:

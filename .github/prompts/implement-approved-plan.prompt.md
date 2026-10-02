@@ -56,7 +56,7 @@ Do not decide whether FOUNDATION is required, add prerequisites on your own judg
 
 Before reporting completion, diff the actual repository changes against the approved Implementation Plan. Every production-code, test, configuration, dependency, schema, migration, or runtime change must map to an explicitly authorized change in the Implementation Plan — do not silently include additional validation, fields, checks, or behavior noticed while implementing, even if it looks like an obvious related fix; surface it as a finding for a separate Implementation Plan instead. Workflow bookkeeping explicitly authorized by the PDD process, such as updating `docs/.ai/<work-item>/Plan.md`'s execution status/evidence after successful verification, is exempt from this comparison.
 
-Report the commands actually executed and the observed evidence.
+Report the commands actually executed and the observed evidence. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output, every planned-versus-executed difference with its reason, and every process you started stopped before reporting.
 
 Do not begin the next milestone.
 

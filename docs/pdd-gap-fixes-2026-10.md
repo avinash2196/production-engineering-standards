@@ -1,6 +1,6 @@
 # PDD Gap Fixes — October 2026
 
-Status: proposed, not applied. One batch, one plugin release.
+Status: applied on branch `fix/pdd-gap-fixes-2026-10` (F1–F15), awaiting review and version bump. One batch, one plugin release.
 
 Supersedes `docs/pdd-gap-fixes-2026-10-requirements-template.md` (this repo) and the
 order-management gap log (`docs/pdd-gap-fixes-2026-10-requirements-template.md` in the

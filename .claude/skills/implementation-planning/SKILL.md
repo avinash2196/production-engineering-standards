@@ -135,11 +135,16 @@ When an Implementation Plan introduces or changes a dependency, framework, plugi
 - choose a release that is currently supported by its maintainers and compatible with the approved technology stack;
 - cite the source used to confirm support and compatibility;
 - never choose a version because it is already in a local cache, offline, or otherwise convenient in the current environment — environment availability is an execution concern, not a selection criterion;
-- if current support cannot be verified, ask a focused clarification question and stop instead of choosing.
+- if current support cannot be verified, ask a focused clarification question and stop instead of choosing;
+- when the build's own dependency management (a parent, BOM, platform, or constraints file) already manages the dependency, that is the cited source: use the managed version, cite where it is managed, and do not pin a version over it.
 
 ## Carried-Forward Decisions
 
 Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. List the ones this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
+
+## No Added Scope or Process
+
+Risks, mitigations, contingencies, and execution steps reference only the milestone's approved scope; a mitigation that needs new scope is a clarification question, not a plan item. Do not re-introduce scope removed from the approved Plan. The Implementation Plan does not prescribe commits, branches, pull requests, owners, or other delivery process unless the requirements state it.
 
 ## Pre-authorized Contingencies
 
@@ -160,9 +165,10 @@ Verification must not silently depend on a shared resource being available. Pref
 Before presenting an Implementation Plan for review, apply its exact code in a disposable copy of the repository outside the working tree and run the plan's verification commands there. Correct the plan from what the dry run shows — for example diff hunks that do not apply, verification commands the build cannot run, or claims about library or framework behavior that the output contradicts.
 
 - For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. For RED whose evidence is an existing failing test, apply the probe and confirm that test passes with it. The stub or probe never enters the repository.
-- Record the result in the plan, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
-- Never modify the repository during a dry run, and delete the disposable copy afterward.
-- If a dry run cannot be performed, state why in the plan.
+- Cover every artifact type the milestone introduces or changes — build files, configuration, runtime or infrastructure definitions — not only dependencies; use each tool's own validation (for example resolving dependencies, or a configuration file's validate or dry-run mode).
+- Record each command verbatim with its trimmed real output, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
+- Never modify the repository during a dry run, create nothing outside a temporary location, list anything created, and delete the disposable copy afterward.
+- If a dry run cannot be performed, state why in the plan. "The repository must not be modified" is not a reason — the dry run runs outside it.
 
 ## Pre-existing Failures
 
@@ -179,6 +185,8 @@ An Implementation Plan is reviewed as the exact code that will be written. For e
 Path patterns — ignore rules, globs, and configured file or directory paths — must match only what they are intended to match; anchor a pattern to the repository root when it is meant for a root-level path.
 
 Every dependency, plugin, and configuration setting the exact code introduces must trace to an approved artifact or to an explicit decision listed in the Implementation Plan for review. A setting that appears only in the code is a defect.
+
+Notes may explain the exact code but never correct or override it; an error found in the code is fixed in the code before the plan is presented. A planned deletion is listed under Files to Delete and removes the file — never a replacement with placeholder content.
 
 The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
 

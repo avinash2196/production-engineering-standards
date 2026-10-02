@@ -72,6 +72,10 @@ OTHER keeps every PDD gate — its own Implementation Plan, human review, verifi
 - **Existing tests are the safety net.** The Plan names the existing tests that prove behavior is preserved; they must pass after the milestone. Test changes in an OTHER milestone must not weaken or remove an assertion without a same-coverage replacement.
 - **Stop on a behavior change.** If an OTHER milestone turns out to need a production behavior change, stop and replan it as RED and GREEN.
 
+### Only RED Ends Failing
+
+Only a RED milestone may end with a failing check, and only with valid RED evidence. FOUNDATION, GREEN, REFACTOR, and OTHER milestones end with every verification command passing; success criteria that let them end failing ("fail", "may fail") are an error. If a milestone cannot pass on its own, the decomposition is wrong — re-split it, or ask and stop.
+
 ## Work-Item Folders
 
 Every piece of work — the initial build of a new project and every later enhancement or fix — is a work item with its own folder, so new and existing projects use the same structure:
@@ -112,6 +116,8 @@ Each artifact has a distinct responsibility:
 - Tests/checks provide executable evidence of expected behavior.
 - Production code implements the approved behavior.
 - Final Review evaluates completed work against approved artifacts and produces findings and recommendations, not authorized changes.
+
+Self-checks show their evidence. A self-check that an artifact-creating command reports (provenance, traceability, rule compliance, exact code) passes only by naming what it checked — each derived item with the question that confirmed it, each requirement with the scope bullet that delivers it, each prohibited item searched for. A summary, a count, or a check restated from an earlier pass is not a pass. After any edit, re-derive the check.
 
 Labels and identifiers an artifact introduces (requirement, constraint, decision, clarification, criterion, or contingency IDs) must not reuse a label already defined by an approved artifact it references; use a distinct prefix so every reference is unambiguous.
 
@@ -165,6 +171,8 @@ Before any execution command changes a file, confirm approval. Approval is eithe
 
 After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
 
+The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section. Before working, a command reads its predecessor's recorded status; approval given by the user in the current conversation is recorded in that Status section first, and the command cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval exists, ask and stop.
+
 ## Plan Content Rules
 
 The Plan defines WHAT is delivered and in which milestone order. It does not define HOW (Implementation Plans) or externally observable behavior (the API/external contract). When creating or revising a Plan:
@@ -176,11 +184,12 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 5. **GREEN milestones deliver behavior.** State the behavior that makes the predecessor RED evidence pass. Do not list production classes or components.
 6. **FOUNDATION is prerequisite-only.** Limit it to the build, dependency, bootstrap, configuration, or test-infrastructure prerequisites that the RED milestones it serves need to execute — which may be more than the immediately following RED milestone (see rule 11) — consistent with approved requirements (never an alternative the requirements exclude). The domain model, schema derived from it, and target behavior belong to GREEN.
 7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
-8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites, REFACTOR for a standalone restructuring requirement, OTHER for an approved change with no behavior change); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision, or the OTHER or standalone REFACTOR milestone itself through its baseline evidence and preserved tests). No requirement has two owners. A requirement that states an absence (for example "no X is required") is an exclusion: record it as traceable with no owning milestone, verified at Final Review — never assign it to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
-9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. When the work item changes existing code, Current State lists the existing behavior the work item affects and the existing tests that cover it; for a new project with no code yet, it says so. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone.
+8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites, REFACTOR for a standalone restructuring requirement, OTHER for an approved change with no behavior change); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision, or the OTHER or standalone REFACTOR milestone itself through its baseline evidence and preserved tests). No requirement has two owners. Three kinds of row have no owning milestone, and each uses its own form. A requirement that states an absence (for example "no X is required") is an exclusion — must not be introduced — verified at Final Review; a characteristic recorded as not required for this work item has nothing to verify and is never called an exclusion; preserved existing behavior is verified by the milestone whose preserved tests cover it. Never assign one of these to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
+9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. When the work item changes existing code, Current State lists the existing behavior the work item affects and the existing tests that cover it; for a new project with no code yet, it says so. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone. A mitigation may reference only in-scope work; one that needs new scope is a clarification question, not a plan item. Risks cite repository evidence. The Plan does not prescribe commits, branches, pull requests, owners, or other delivery process unless the requirements state it.
 10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
 11. **Prerequisite coverage for every RED milestone.** RED milestones cannot add dependencies, build configuration, or test infrastructure, and GREEN comes after RED, so every prerequisite a RED milestone needs must already exist when it starts. Walk the whole sequence: for each RED milestone, determine what its tests need to compile and run (dependencies, test infrastructure, configuration) given the repository state projected after all of its predecessor milestones complete — not only the current state. If any prerequisite is not provided by a predecessor, either widen an earlier FOUNDATION milestone to provide it or insert a FOUNDATION milestone immediately before that RED milestone. Record which RED milestones each FOUNDATION milestone serves.
-12. **Verification commands.** Record the commands that verify milestones in the Plan's Verification Commands section, each with its source (requirements, or repository evidence such as the build file or project documentation). Do not take them from the application instruction file, which holds no project facts. For a project with no build yet, state that the FOUNDATION milestone establishes them; its Implementation Plan records the exact commands.
+12. **Criteria coverage.** Every acceptance criterion in the requirements and every Plan-level success criterion appears in Final Acceptance Criteria with the milestone whose completion evidence demonstrates it, or Final Review inspection. That milestone must be able to produce the evidence — for example, a RED milestone cannot demonstrate that the application runs. Every artifact a verification step uses is in some milestone's scope.
+13. **Verification commands.** Record the commands that verify milestones in the Plan's Verification Commands section, each with its source (requirements, or repository evidence such as the build file or project documentation). Do not take them from the application instruction file, which holds no project facts. For a project with no build yet, state that the FOUNDATION milestone establishes them; its Implementation Plan records the exact commands.
 
 ## Plan Integrity
 
@@ -276,6 +285,8 @@ After an approved milestone is successfully executed and verified:
 
 If verification fails or does not demonstrate the intended milestone evidence, do not mark the milestone complete.
 
+Evidence is each command as actually run with its trimmed real output, stored in `Plan.md` below the Execution Status table (or in a file it links) — never a statement that output was recorded elsewhere. Each Execution Status row stays on one line and points to its evidence. Any difference between a planned and an executed command (arguments, port, profile, order) is listed as a deviation with its reason. Every process the executor started (servers, containers, background jobs) is stopped before reporting, and the report says so.
+
 Completing a milestone does not authorize the next milestone. Each subsequent repository-changing milestone requires its own approved Implementation Plan and Human Review.
 
 ## Final Review Authority
@@ -285,7 +296,11 @@ Final Review (code review, production-readiness review, or any review command) p
 - Do not apply a Final Review finding directly to production code, tests, or configuration.
 - A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
 
-When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it. Change no other file. Accepting the findings is the user's decision, recorded by the user in that file. When the work item changed behavior that the product-level `docs/requirements.md` describes, Final-Review.md also lists each product-level statement now out of date, for the user to update; the review does not edit that file.
+When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it, with the status "Written — awaiting user decision" (never "Completed"). Change no other file. Accepting the findings is the user's decision, recorded by the user in that file. Final-Review.md also lists each product-level statement now out of date in `docs/requirements.md`, and each statement in user-facing documentation such as README files that the work item made false, for the user to update; the review does not edit them.
+
+- Before raising a finding, read `Plan.md` Execution Status evidence and the approved Implementation Plans; drop any finding that recorded evidence or an approved decision contradicts.
+- Never recommend reverting an approved decision as a fix; raise it as a question for the user.
+- Give a severity only with a concrete failure scenario, and cite the correct path.
 
 - Use `templates/Final-Review.md` for the structure.
 - Mark each finding as pre-existing or introduced by the work item.
@@ -318,4 +333,4 @@ Do not:
 
 When a material unresolved decision blocks the current artifact or change, apply the requirements-analysis clarification gate: ask, stop, and wait.
 
-Use the templates in `templates/` when the adopting project does not already define compatible artifacts.
+Use the templates in `templates/` when the adopting project does not already define compatible artifacts. Template guidance is written in HTML comments (`<!-- … -->`); remove every template comment from the finished artifact. This does not apply to the application instruction templates (`application-claude-instructions.md`, `application-copilot-instructions.md`), whose setup commands copy them byte for byte, comments included.

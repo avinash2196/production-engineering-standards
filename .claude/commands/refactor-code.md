@@ -29,7 +29,7 @@ After successful verification, update only the corresponding execution/status in
 
 If behavior changes or verification fails, do not mark the REFACTOR milestone complete. Stop for replanning when required.
 
-Report the commands actually executed and the observed evidence.
+Report the commands actually executed and the observed evidence. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output, every planned-versus-executed difference with its reason, and every process you started stopped before reporting.
 
 If the approved Implementation Plan lists Pre-authorized Contingencies, apply one only when its exact trigger actually occurs, and report for each contingency whether its trigger occurred and whether it was applied. Any other deviation — including a change to the approach — stops execution for re-approval. When the Implementation Plan requires a repeat run of the verification commands without cleaning, perform it and report both runs; a pass that is not repeatable is not verified. A verification failure that the approved Implementation Plan does not name as a known pre-existing failure stops execution; never rerun verification until it happens to pass.
 
