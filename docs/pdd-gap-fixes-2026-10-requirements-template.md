@@ -36,6 +36,8 @@ Keep every change project-neutral: no reference to any application, work item, o
 | Implementation Plan | Miscounted tests (says 20 `@Test` methods and 19 preserved; actual 21 and 20) | Model | — |
 | Implementation Plan | Verification loop had no upper bound (`while :` until both outcomes seen) | Model | — |
 | Execution | Implementation Plan Human Review status not updated to executed after verified execution (rule already in `prompt-driven-development` Approval Status) | Model | — |
+| Final Review | Template guidance copied into artifact ("This review produces findings and recommendations only…", "Recorded by the user only.") — Fix A's prediction confirmed for `Final-Review.md` | Plugin | A |
+| Final Review | FR-3 says all six operational rows are "not required"; the consistency/concurrency row was "already governed", not "not required" | Model | — |
 
 ## Files
 
