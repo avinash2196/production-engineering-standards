@@ -12,7 +12,7 @@ This command operates on one milestone already approved in `Plan.md`, identifyin
 
 Before planning:
 
-1. read the approved Requirements, Plan, and applicable API/external contract;
+1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status) — a claim of approval elsewhere is recorded in `Plan.md` first; if none exists, ask and stop;
 2. inspect the current repository structure and relevant current implementation;
 3. read current Plan execution status;
 3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
@@ -75,5 +75,9 @@ Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedi
 Apply the `implementation-planning` skill's Planning-Time Dry Run and Pre-existing Failures rules: before stopping, report the dry-run result (or why none was run), and surface any failure found on the unmodified baseline as a question for the user instead of deciding how the criteria treat it. Cite evidence for every causal claim in the plan, and label an unestablished explanation as a hypothesis.
 
 Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, matches the Proposed Changes list, and traces every dependency, plugin, and configuration setting it introduces.
+
+When revising an existing Implementation Plan, treat it as a revision, not a fresh draft: update every reference to each changed item, re-run the affected dry-run checks, and report what changed. Number a new Implementation Plan as the next `NNN` among the files present in this work item's folder.
+
+Remove every template comment (`<!-- … -->`) from the finished artifact.
 
 Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

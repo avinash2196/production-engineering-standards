@@ -15,6 +15,7 @@ Own independent code review, not implementation.
 - Label uncertainty instead of guessing.
 - Never claim checks passed without evidence.
 - Do not manufacture findings simply to satisfy a checklist.
+- Before raising a finding, read the recorded verification evidence and approved Implementation Plans; drop any finding they contradict, and never recommend reverting an approved decision as a fix.
 
 Review for relevant concerns such as:
 

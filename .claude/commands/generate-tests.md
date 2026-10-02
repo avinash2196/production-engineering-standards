@@ -40,7 +40,7 @@ Completing the RED milestone does not complete or authorize GREEN. GREEN is a se
 
 Before reporting completion, re-read every test/check assertion you wrote or changed (or the existing test named as RED evidence) and confirm each one still asserts the actual approved behavior (not the current unimplemented state) — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting the required exception/value, is not valid RED evidence even if it fails for an unrelated reason. Also confirm that no test asserting only that something does not happen passes vacuously in RED — each such test must first exercise the positive case in the same test.
 
-Report the commands actually executed and the observed evidence.
+Report the commands actually executed and the observed evidence. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output, every planned-versus-executed difference with its reason, and every process you started stopped before reporting.
 
 Do not begin GREEN.
 

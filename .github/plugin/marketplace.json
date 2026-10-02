@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Production Engineering Standards and Prompt-Driven Development plugins",
-    "version": "0.11.0"
+    "version": "0.12.0"
   },
   "plugins": [
     {
       "name": "production-engineering-standards",
       "description": "Production engineering standards, agents, skills, and Prompt-Driven Development workflow.",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "source": "."
     }
   ]

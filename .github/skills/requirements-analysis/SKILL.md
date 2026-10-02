@@ -26,6 +26,10 @@ When writing or updating a requirements artifact:
 - **Name every source.** Every requirement, constraint, exclusion, resolved decision, and repository fact names where it came from: the user (brief or numbered answer), repository inspection (path and line), an approved artifact of another work item this one explicitly depends on, or derivation. Use `prompt-driven-development` `templates/requirements.md` when the adopting project does not define a compatible requirements artifact.
 - **Confirm derived consequences.** Label a derived consequence with what it is derived from and ask the user to confirm it before finalizing. Record it only after confirmation; until then it is an unresolved decision.
 - **Options you wrote are not the user's words.** When the user picks a clarification option you wrote, record as the user's decision only what the user confirmed. Any further constraint implied by the option's wording is a derived consequence.
+- **Existing behavior is a fact, not a requirement.** Existing tests and current behavior are repository-confirmed facts. When the work item affects behavior that existing tests assert, ask whether each affected behavior is kept, changed, or removed, and record a requirement only from the answer.
+- **Confirm product-level supersession.** When the work item contradicts or replaces a statement in the product-level `docs/requirements.md`, that change is a derived consequence: ask the user to confirm it before recording the statement as changed, and never record a contradicted statement as still in force.
+- **Every requirement has a criterion.** Every in-scope requirement maps to at least one acceptance criterion, and every criterion traces to a requirement. Report any unmapped item; add a criterion only from user-stated intent, otherwise ask.
+- **Revise the whole artifact.** When updating an existing artifact, apply the requested changes, then re-read every section and table and resolve each statement the change contradicts. Moving an item means removing it from its old section. Re-derive the Provenance Check; never restate the previous one.
 - **Other work items are context, not templates.** Do not copy another work item's structure, wording, citations, or closing statements. Re-verify any fact taken from another work item against the current repository before recording it.
 - **Check provenance before finalizing.** Confirm that every item has a source, every derived consequence was confirmed, every repository citation was verified against the current repository during this capture, and that no statement about the artifact as a whole (for example "nothing was inferred") is made unless it was checked.
 
@@ -88,7 +92,7 @@ Present questions in two groups so the user can see what actually blocks plannin
 1. **Blocking — must be answered before planning:** material unresolved decisions, including deployment topology and consistency/concurrency. Keep this group to the minimum the current work item needs.
 2. **Answer or mark not required:** applicable operational characteristics that are not blocking. For each, state that "not required for this work item" is a valid answer and will be recorded explicitly as not required.
 
-Number questions continuously across both groups so answers can reference them.
+Number questions continuously across both groups so answers can reference them. Numbering continues across every clarification round and every review of the same work item — never restart at 1 — and each question is recorded with its answer in the requirements artifact's Clarification Log, so every `[User: Qn]` label is traceable.
 
 ## Recording Resolved Decisions
 
@@ -101,4 +105,18 @@ If a decision does not affect correctness or approved scope of the current task:
 - record the boundary explicitly when useful;
 - prefer the smallest conservative interpretation — except operational characteristics, which are asked (Operational Characteristics), never defaulted;
 - do not allow the choice to expand the milestone;
-- leave it for a later phase when appropriate.
+- leave it for a later phase when appropriate, labeled `[Left to <phase> — non-blocking]`, never `Derived`.
+
+## Items No Milestone Delivers Now
+
+Keep these kinds distinct; each has its own section or answer and is never relabeled as another:
+
+| Kind | Meaning |
+| --- | --- |
+| Deferred | In scope for this work item; decided by a named later milestone |
+| Non-blocking | Left to a later phase; does not change correctness or scope |
+| Exclusion | Must not be introduced; stated by the user or an approved artifact |
+| Not required | An operational characteristic the user marked not required; nothing to deliver; not an exclusion |
+| Preserved behavior | Existing behavior the work item must leave unchanged |
+
+Something outside the work item altogether is an exclusion only when the user or an approved artifact excludes it; otherwise it is simply not recorded.
