@@ -30,6 +30,10 @@ Keep every change project-neutral: no reference to any application, work item, o
 | Plan | "Not required" operational characteristics traced as "exclusion, verified at Final Review"; preserved behavior also traced as an exclusion | Plugin | E |
 | Plan | A Final Acceptance Criterion ("passes under both valid race outcomes") had no planned evidence; OTHER completion evidence covered only the stability bar | Plugin (weak) | F |
 | Plan | Wrong line citation (`<packaging>` cited at the `<build>` range) | Model | — |
+| Implementation Plan | Template guidance paraphrased into artifact ("This Implementation Plan records the baseline evidence before any change, and the existing tests that must keep passing…") | Plugin | A |
+| Plan → Implementation Plan | Plan approval recorded nowhere in `Plan.md`; `create-implementation-plan` accepted a conversational "Plan.md is approved" and cited the conversation as the approval source, leaving `Plan.md` with no approval trace and its pending review fixes unapplied | Plugin | G |
+| Implementation Plan | Downgraded a Plan Final Acceptance Criterion ("passes under both valid race outcomes") to "not required to occur"; 30-run loop counts pass/fail only, no outcome tally | Model (Fix F would make the gap visible) | — |
+| Implementation Plan | Miscounted tests (says 20 `@Test` methods and 19 preserved; actual 21 and 20) | Model | — |
 
 ## Files
 
@@ -54,7 +58,9 @@ skill's Plan Content Rules to every section below…" — both copied verbatim, 
 template puts writer guidance in the document body with no marker distinguishing it from
 content. `Implementation-Plan.md` and `Final-Review.md` follow the same pattern (per-section
 prose such as "Describe the relevant current implementation…", "List every Plan-level
-success criterion…"), so they will leak the same way.
+success criterion…"), so they will leak the same way — and the Implementation Plan
+already did: its Milestone Type section paraphrased the template's "For OTHER: record the
+baseline evidence…" guidance as artifact text.
 
 **Change:** in every template under `templates/`, wrap each writer-only instruction (title
 paragraph and per-section guidance) in HTML comments `<!-- … -->`, and add one line to each
@@ -127,6 +133,24 @@ Final Acceptance Criterion must be covered by some milestone's completion eviden
 Final Review inspection, and the Plan names which. This may already be implied by the
 Final-Review template ("A criterion without evidence is not met"); if the maintainer judges
 the existing Final Review check sufficient, drop Fix F.
+
+## Fix G — Plan approval has no recorded place
+
+**Evidence:** the requirements template has a Status section where the user records approval,
+and Implementation Plans record approval in Human Review — but `templates/Plan.md` has no
+approval field (Execution Status lists milestones only). `create-implementation-plan` then
+accepted "Plan.md is approved" in the conversation, cited the conversation as the approval
+source in the Implementation Plan, and left `Plan.md` unchanged. Result: `Plan.md` carries no
+approval trace, and review corrections requested for the Plan were silently bypassed. This
+also conflicts with "Downstream artifacts trace to the requirements artifact, never to
+conversation history" in spirit.
+
+**Change:** add a `## Status` (or `## Human Review`) section to `templates/Plan.md` mirroring
+the requirements template ("Awaiting human review…" → user records approval with name and
+date). In `create-implementation-plan` (and every command that needs an approved Plan):
+require approval to be recorded in `Plan.md`; if it is only given in conversation, record it
+there first (the same rule Approval Status already applies to Implementation Plans), and if
+none exists, ask and stop.
 
 ## Verification and release
 
