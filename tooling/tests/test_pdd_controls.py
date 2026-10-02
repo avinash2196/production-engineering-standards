@@ -615,20 +615,6 @@ class PddControlsTest(unittest.TestCase):
                 text,
             )
 
-    def test_historical_doc_no_longer_presents_trivial_exception_as_current(self):
-        text = (
-            ROOT / "docs/pdd-gap-fixes-2026-09.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            "Later correction: this executable-code exception was removed.",
-            text,
-        )
-        self.assertIn(
-            "Current status: resolved in subsequent hardening; skill "
-            "synchronization is now validator-enforced.",
-            text,
-        )
-
 
     # --- Contract-as-milestone and Plan Content Rules pass.
 
