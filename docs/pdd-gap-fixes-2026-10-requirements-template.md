@@ -1,46 +1,68 @@
-# PDD Gap Fixes — October 2026: Requirements Template
+# PDD Gap Fixes — October 2026: Artifact Templates
 
-Status: proposed, not applied. Task brief for a separate session.
+Status: proposed, not applied. Task brief for a separate session. This brief is updated
+as each phase of the evidence work item is reviewed; check the Findings Log before applying.
 
 ## Context
 
-Found while capturing requirements for the `test-case-stabilization` work item in
+Found while running the `test-case-stabilization` work item in
 `workspace-reservation-service` (worktree
 `C:\Users\avina\Downloads\avinash-repo\v11\workspace-reservation-service\worktrees\test-case-stablization`,
-artifact `docs/.ai/test-case-stabilization/requirements.md`), using plugin 0.11.0
-`capture-requirements` in Claude Code.
+artifacts under `docs/.ai/test-case-stabilization/`), using plugin 0.11.0 in Claude Code.
 
-Human review of that artifact found six defects. Three trace to the requirements template
-and its label set (fixed below). The other three were the model breaking rules the plugin
-already states (reopening a user-chosen option, miscounting Derived items in the Provenance
-Check, untestable wording like "ever"/"isolated"). **Do not add more rules for those** —
-human review is the control.
+Only findings that trace to a plugin gap are recorded here. Findings where the model broke
+a rule the plugin already states clearly are listed in the Findings Log as "model" and need
+**no plugin change** — human review is the control for those.
 
 Keep every change project-neutral: no reference to any application, work item, or test.
 
+## Findings Log
+
+| Phase | Finding | Cause | Fix |
+| --- | --- | --- | --- |
+| Requirements | Template writer instruction copied into artifact | Plugin | A |
+| Requirements | Non-blocking decisions labeled `Derived` without confirmation | Plugin | B |
+| Requirements | Confirmed derived consequence filed under Repository-Confirmed Facts | Plugin | C |
+| Requirements | Provenance Check miscounted Derived items | Plugin (check is a count) + model | D |
+| Requirements | Reopened a user-chosen clarification option | Model | — |
+| Requirements | Untestable wording ("ever", "isolated runs") | Model (partly the user prompt) | — |
+| Plan | Template writer instruction copied into artifact (Plan template line 3) | Plugin | A |
+| Plan | "Not required" operational characteristics traced as "exclusion, verified at Final Review"; preserved behavior also traced as an exclusion | Plugin | E |
+| Plan | A Final Acceptance Criterion ("passes under both valid race outcomes") had no planned evidence; OTHER completion evidence covered only the stability bar | Plugin (weak) | F |
+| Plan | Wrong line citation (`<packaging>` cited at the `<build>` range) | Model | — |
+
 ## Files
 
-Edit the canonical file, then mirror byte-identically:
+Edit the canonical files, then mirror byte-identically to `.claude/`:
 
-- `.github/skills/prompt-driven-development/templates/requirements.md` (canonical)
-- `.claude/skills/prompt-driven-development/templates/requirements.md` (mirror)
+- `.github/skills/prompt-driven-development/templates/requirements.md`
+- `.github/skills/prompt-driven-development/templates/Plan.md`
+- `.github/skills/prompt-driven-development/templates/Implementation-Plan.md` (Fix A only)
+- `.github/skills/prompt-driven-development/templates/Final-Review.md` (Fix A only)
+- `.github/skills/prompt-driven-development/SKILL.md` (Fixes E, F)
 
-Also check `.github/skills/requirements-analysis/SKILL.md` (+ `.claude/` mirror) and the
-`capture-requirements` command/prompt files for any wording that must match the new labels
-or sections.
+Also check `.github/skills/requirements-analysis/SKILL.md` and the `capture-requirements`,
+`create-plan`, `create-implementation-plan`, and review command/prompt files (+ `.claude/`
+mirrors) for wording that must match the new labels, sections, or rules.
 
-## Fix A — Template guidance leaks into the artifact
+## Fix A — Template guidance leaks into the artifact (all templates)
 
-**Evidence:** the generated artifact began with the template's writer instruction
-"Apply the `requirements-analysis` skill's Requirements Capture rules to every section
-below. Build this artifact from this template…" — copied verbatim, because the template
-puts writer guidance in the document body with no marker distinguishing it from content.
+**Evidence:** the generated requirements artifact began with the template's writer
+instruction "Apply the `requirements-analysis` skill's Requirements Capture rules to every
+section below…", and the generated Plan began with "Apply the `prompt-driven-development`
+skill's Plan Content Rules to every section below…" — both copied verbatim, because every
+template puts writer guidance in the document body with no marker distinguishing it from
+content. `Implementation-Plan.md` and `Final-Review.md` follow the same pattern (per-section
+prose such as "Describe the relevant current implementation…", "List every Plan-level
+success criterion…"), so they will leak the same way.
 
-**Change:** wrap every writer-only instruction in the template (title paragraph, per-section
-guidance such as "Only facts established by inspection…", "Record 'not required'…") in
-HTML comments `<!-- … -->`, and add one line in the capture instructions: remove all
-template comments from the finished artifact. Keep the source-label legend as real content
-only if it is meant to appear in the artifact; otherwise comment it too.
+**Change:** in every template under `templates/`, wrap each writer-only instruction (title
+paragraph and per-section guidance) in HTML comments `<!-- … -->`, and add one line to each
+artifact-creating command/prompt: remove all template comments from the finished artifact.
+Keep as real content only text meant to appear in the artifact (for example the
+requirements source-label legend, if intended). Consider a validator check that a template's
+known guidance sentences do not appear in generated artifacts — only if the validator already
+inspects generated artifacts; otherwise skip.
 
 ## Fix B — No label for an AI-left non-blocking decision
 
@@ -72,6 +94,39 @@ three `Derived` labels.
 **Change:** change the Provenance Check bullets to require *listing* every `Derived` item by
 ID or short name together with the question that confirmed it (and every `Left to …` item),
 instead of a summary statement or count.
+
+## Fix E — Plan traceability has no row type for "not required" or preserved behavior
+
+**Evidence:** the generated Plan traced each "not required for this work item" operational
+characteristic as "exclusion, verified at Final Review", and traced an unchanged, already-
+governed behavior (consistency/concurrency, protected by the OTHER milestone's preserved
+tests) the same way. This contradicts `requirements-analysis` Operational Characteristics
+("'Not required' means no milestone must deliver it; it is not an exclusion"). The cause is
+in the plugin: `templates/Plan.md` Requirement Traceability says "Every approved requirement
+and cross-cutting concern appears exactly once with one owning milestone", and
+`prompt-driven-development` Plan Content Rule 8 defines only owned requirements and
+absence-stating exclusions — so the only non-owner option the model has is "exclusion".
+
+**Change:** in Plan Content Rule 8 and the Plan template's traceability guidance, define
+three non-owner row kinds and their exact Owning/Verifying text:
+- exclusion (must not be introduced) → no owner, verified at Final Review;
+- not required for this work item → no owner, nothing to verify; never called an exclusion;
+- preserved existing behavior (unchanged; protected by named preserved tests) → no owner,
+  verified by the milestone whose preserved tests cover it.
+
+## Fix F — Acceptance criteria without planned evidence (weak; decide before applying)
+
+**Evidence:** the generated Plan's OTHER milestone named completion evidence only for the
+stability bar (N/N runs + full verify). A Final Acceptance Criterion requiring the test to
+pass under *each* of two valid outcomes had no evidence that both outcomes were actually
+exercised. The `prompt-driven-development` OTHER rules require "the evidence that shows
+completion" but do not tie it to the work item's acceptance criteria.
+
+**Change (proposed):** add one sentence to Plan Content Rules (or the OTHER section): every
+Final Acceptance Criterion must be covered by some milestone's completion evidence or by
+Final Review inspection, and the Plan names which. This may already be implied by the
+Final-Review template ("A criterion without evidence is not met"); if the maintainer judges
+the existing Final Review check sufficient, drop Fix F.
 
 ## Verification and release
 
