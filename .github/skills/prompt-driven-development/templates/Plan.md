@@ -101,7 +101,7 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 | --- | --- | --- |
 |  | Pending |  |
 
-<!-- A newly created or revised Plan records every milestone as Pending. After Plan approval, update only execution/status information unless an explicit replanning step is approved. A milestone stopped by a blocker is recorded as `Blocked — <reason>` until a revised Plan is approved. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
+<!-- A newly created Plan records every milestone as Pending; a revision keeps executed milestones and their evidence unchanged. After Plan approval, update only execution/status information unless an explicit replanning step is approved. A milestone stopped by a blocker is recorded as `Blocked — <reason>` until a revised Plan is approved. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
 
 ## Risks
 
