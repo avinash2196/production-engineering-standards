@@ -34,6 +34,8 @@ Keep every change project-neutral: no reference to any application, work item, o
 | Plan → Implementation Plan | Plan approval recorded nowhere in `Plan.md`; `create-implementation-plan` accepted a conversational "Plan.md is approved" and cited the conversation as the approval source, leaving `Plan.md` with no approval trace and its pending review fixes unapplied | Plugin | G |
 | Implementation Plan | Downgraded a Plan Final Acceptance Criterion ("passes under both valid race outcomes") to "not required to occur"; 30-run loop counts pass/fail only, no outcome tally | Model (Fix F would make the gap visible) | — |
 | Implementation Plan | Miscounted tests (says 20 `@Test` methods and 19 preserved; actual 21 and 20) | Model | — |
+| Implementation Plan | Verification loop had no upper bound (`while :` until both outcomes seen) | Model | — |
+| Execution | Implementation Plan Human Review status not updated to executed after verified execution (rule already in `prompt-driven-development` Approval Status) | Model | — |
 
 ## Files
 
