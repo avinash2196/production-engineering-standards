@@ -37,6 +37,10 @@ and capabilities the application had since added.
 - **SI-11** — The command opens the template by its exact path under the plugin root and verifies its
   first line; it never locates it by searching file contents. [User-observed Copilot run on 0.9.1: a
   content search for the file name opened the Claude template, which mentions the Copilot one]
+- **SI-12** — The generated file is the template byte for byte except the title line and the introductory
+  paragraphs; every HTML comment and FIXED / PDD-CONTROL marker is kept, and the command checks this before
+  finishing. [User-observed 0.9.2 runs: three runs of the same command kept all, some, or none of the
+  markers; user: "update the plugin"]
 - **SI-10** — When the target file exists, the command lists every line not in the template with the
   reason it is dropped and where it belongs; it does not move that content. [Derived from SI-7 —
   confirmed by the user's approval]
