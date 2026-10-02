@@ -188,10 +188,9 @@ Stop and surface conflicts for human review.
 
 ### Approval, replanning, and Final Review
 
-- **Approval is recorded in the artifact.** Requirements, Plan, contract, and each Implementation Plan carry a status line starting with `Awaiting`, `Approved by <name> on <date>`, `Executed`, or `Blocked`. Only the user approves; an approval given in conversation is written into the artifact before work continues.
-- **Plans can be replanned, with approval.** A Plan may be revised freely before approval. After approval it is the execution baseline and is never changed silently. A blocker that invalidates scope, order, architecture, assumptions, or acceptance criteria stops execution: the milestone is recorded as `Blocked — <reason>`, the milestone's Implementation Plan is marked `Blocked` and is never executed, a minimum Plan revision is proposed, and work continues only after the user approves it. A revision keeps executed milestones and their evidence unchanged.
+- **Approval is recorded in the artifact.** Requirements, Plan, and contract record human-review approval in their Status sections; each Implementation Plan records approval and execution in its Human Review section. Only the user approves; an approval given in conversation is written into the artifact before work continues.
+- **Plans can be replanned, with approval.** A Plan may be revised freely before approval. After approval it is the execution baseline and is never changed silently. A blocker that invalidates scope, order, architecture, assumptions, or acceptance criteria stops execution: the milestone is recorded as `Blocked — <reason>` in `Plan.md`, its Implementation Plan records that execution stopped and needs re-approval, the Plan is revised through `create-plan` and returns to awaiting review, and work continues only after the user approves it. A revision keeps executed milestones and their evidence unchanged.
 - **Final Review closes a work item.** Only `review-code` or `review-production-readiness`, run for a named work item, perform the Final Review and write `docs/.ai/<work-item>/Final-Review.md`. Other reviews, such as `review-architecture`, are intermediate.
-- **Every stop is explicit.** A command that waits for the user ends its output with `PDD-STOP: <awaiting approval | awaiting answer | blocked> — <detail>`, so a person or an automation loop can tell that work must not continue.
 
 ### Scope control
 

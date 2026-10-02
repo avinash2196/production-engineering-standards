@@ -20,7 +20,11 @@ Before planning:
 3. read current Plan execution status;
 3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
 4. verify predecessor milestone evidence and actual completed progress;
-5. verify the milestone type being planned matches what `Plan.md` records for this milestone.
+5. verify the milestone type being planned matches what `Plan.md` records for this milestone;
+6. confirm the milestone's Execution Status is Pending and no approved, unexecuted Implementation Plan already exists for it; when an earlier Implementation Plan for it stopped at a blocker, read that plan and the blocker evidence, and plan from the revised, approved Plan;
+7. read the product-level `docs/requirements.md` when it exists, as read-only context.
+
+List every document read, with its approval status, under Authoritative References.
 
 Create exactly one:
 

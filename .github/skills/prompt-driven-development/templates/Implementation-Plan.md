@@ -80,6 +80,6 @@ Criteria limiting which files may change exclude this milestone's own Execution 
 
 ## Human Review
 
-<!-- The only status field in this artifact. Only the user approves; see `prompt-driven-development` Approval Status. -->
+<!-- The only status field in this artifact. Only the user approves; see `prompt-driven-development` Approval Status. On approval: `Status: Approved by <name> on <date>`. After verified execution: `Status: Executed — see Plan.md`. If execution stops at a blocker: `Status: Execution stopped at a blocker — see Plan.md. Re-approval required before execution.` -->
 
 Status: Awaiting human approval

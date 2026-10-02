@@ -31,7 +31,7 @@ Before marking REFACTOR complete, verify every approved REFACTOR Acceptance / Co
 
 After successful verification, update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the REFACTOR milestone as completed with concise actual evidence.
 
-If behavior changes or verification fails, do not mark the REFACTOR milestone complete. When required, stop for replanning (`prompt-driven-development` Plan Integrity: record the blocker in `Plan.md` and the Implementation Plan's Human Review status, describe the minimum Plan revision, and wait for approval).
+If behavior changes or verification fails, do not mark the REFACTOR milestone complete. When required, stop for replanning (`prompt-driven-development` Plan Integrity: record the blocker in `Plan.md` and the stopped execution in the Implementation Plan's Human Review status, describe the minimum Plan revision, and wait — the Plan itself is revised only through `create-plan`).
 
 Report the commands actually executed and the observed evidence. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output, every planned-versus-executed difference with its reason, and every process you started stopped before reporting.
 

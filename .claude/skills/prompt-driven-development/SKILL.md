@@ -167,11 +167,11 @@ The planner may write proposed code in the Implementation Plan, but must not app
 
 Only the user approves an Implementation Plan; the AI never approves its own artifact. An Implementation Plan records its status in exactly one place — its Human Review section — and does not repeat it elsewhere in the artifact.
 
-Before any execution command changes a file, confirm approval. Approval is either already recorded in the plan's Human Review status, or given by the user in the current conversation in response to a request to approve that specific plan — no particular phrase is required ("go ahead" or "proceed" in that context is approval). Record the approval in the Human Review status before changing any file. A `Blocked` status is not approval. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval exists, ask and stop.
+Before any execution command changes a file, confirm approval. Approval is either already recorded in the plan's Human Review status, or given by the user in the current conversation in response to a request to approve that specific plan — no particular phrase is required ("go ahead" or "proceed" in that context is approval). Record the approval in the Human Review status before changing any file. An Implementation Plan whose execution stopped at a blocker is not approved until the user re-approves it. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval exists, ask and stop.
 
 After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
 
-The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section, and every status line starts with one of: `Awaiting`, `Approved by <name> on <date>`, `Executed`, or `Blocked`. Before working, a command reads its predecessor's recorded status; approval given by the user in the current conversation is recorded in that Status section first, and the command cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval exists, ask and stop.
+The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section. Before working, a command reads its predecessor's recorded status; approval given by the user in the current conversation is recorded in that Status section first, and the command cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval exists, ask and stop.
 
 ## Plan Content Rules
 
@@ -205,15 +205,12 @@ Before approval, the Plan is a working proposal and may be revised freely in res
 
 If execution reveals that the approved Plan itself must change, stop for replanning and human review. Replanning is allowed at any point, including after implementation has started; the control is human approval, not immutability. When a blocker materially invalidates approved scope, milestone order, architecture, assumptions, or acceptance criteria:
 
-1. stop execution; record the blocker in `Plan.md` Execution Status as `Blocked — <reason>`, with its evidence below the table, and set the milestone's Implementation Plan Human Review status to `Blocked — see Plan.md`;
-2. describe the minimum Plan revision in the report; the revision itself is made with `create-plan` revision mode, which addresses every `Blocked` row, replaces it with the revised milestone's Pending row, and returns the Plan to awaiting review;
-3. continue only from the revised Plan after the user approves it. An Implementation Plan whose status is `Blocked` is never executed; the revised milestone needs a new Implementation Plan, or the user's re-approval of the existing one recorded in its Human Review status.
+1. The execution command stops. It records the milestone in `Plan.md` Execution Status as `Blocked — <reason>`, with its evidence below the table, and records in the Implementation Plan's Human Review status: `Execution stopped at a blocker — see Plan.md. Re-approval required before execution.` It describes the minimum Plan revision in its report and changes nothing else in `Plan.md`.
+2. Any change to scope, milestones, architecture, or acceptance criteria is made only through `create-plan` revision mode, which addresses every `Blocked` row, replaces it with the revised milestone's Pending row, and keeps executed milestones and their evidence unchanged.
+3. The revised Plan returns to awaiting human review.
+4. Execution resumes only after the user approves the revised Plan, and the affected milestone runs only from a new Implementation Plan or the user's recorded re-approval of the existing one.
 
 Never replan and continue executing without that approval.
-
-### Stopping for the User
-
-Whenever a command stops to ask the user, wait for an approval, or report a blocker, it ends its output with one line: `PDD-STOP: <awaiting approval | awaiting answer | blocked> — <artifact or question>`. Nothing continues until the user responds.
 
 ## Milestone Controls
 

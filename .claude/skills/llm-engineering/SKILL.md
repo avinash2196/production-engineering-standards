@@ -5,7 +5,7 @@ description: Use when work involves LLM/model-backed behavior, RAG, agents or to
 
 # LLM Engineering
 
-Apply only the sections the approved requirements call for. Everything here is a consideration for planning and review, not a requirement: a threshold, metric, fallback, or control enters scope only when the requirements state it. When a material AI behavior is unspecified (for example an evaluation threshold or what happens with insufficient context), ask; do not choose.
+Apply only the sections the approved requirements call for. Everything here is a consideration for planning and review, not a requirement: a threshold, metric, fallback, or control enters scope only through an approved requirement or an explicitly human-reviewed Implementation Plan decision, never during execution. When a material AI behavior is unspecified (for example an evaluation threshold or what happens with insufficient context), ask; do not choose.
 
 ## Composes With
 
@@ -22,14 +22,15 @@ Use the general skill for the general concern; this skill adds only the AI-speci
 ## Model and Prompt Behavior
 
 - Model, provider, version, and parameters (for example temperature or output limits) can change behavior. Where they are part of an implementation decision, they are recorded and traceable, as are the prompts and system instructions.
-- A different model or provider is not behaviorally equivalent. A substitution is a behavior change: it needs requirement approval and evaluation evidence.
+- Do not assume two models, providers, or versions are behaviorally equivalent. A substitution is potentially behavior-affecting: re-evaluate it against the approved acceptance and evaluation criteria, and update and re-approve the authoritative artifacts only when it changes an approved behavior, constraint, contract, or implementation decision.
 
 ## Evaluation
 
 - Name what is evaluated: correctness, faithfulness/grounding, retrieval quality, tool selection, hallucination, safety, latency, or cost.
 - Version the evaluation dataset or representative cases with the code.
 - Keep deterministic assertions separate from model- or judge-based evaluation; record the judge's model and prompt.
-- Acceptance thresholds come from the requirements. Where outputs are nondeterministic, state how many runs and what pass rate count as passing.
+- Acceptance thresholds trace to an approved requirement, or to an explicitly human-reviewed evaluation or Implementation Plan decision that makes an approved criterion measurable without changing it; they are never invented during execution.
+- When nondeterminism materially affects the result, use a repeatable evaluation method and justify it — for example repeated runs with a pass rate, or dataset-level scoring.
 - Record model, prompt, parameters, dataset version, and results so later runs can be compared. Any framework may be used; none is required.
 
 ## RAG and Grounding
@@ -49,7 +50,7 @@ Use the general skill for the general concern; this skill adds only the AI-speci
 
 Applies only when the requirements call for central model routing, cost tracking, or fallback; do not propose a gateway otherwise.
 
-- Routing: how a request selects model and provider. Fallback to a different model is a behavior change (Model and Prompt Behavior), not only a resilience setting.
+- Routing: how a request selects model and provider. Fallback may change observable behavior: when fallback is in scope, define and evaluate the required fallback behavior, and do not assume the models or providers are equivalent.
 - Token and cost attribution per request, and per tenant, user, or feature where required; budgets or quotas only when required.
 - Provider rate limits, timeouts, and outages: the required behavior for each.
 - Streaming: whether retry or fallback is possible after part of a response has been sent.
