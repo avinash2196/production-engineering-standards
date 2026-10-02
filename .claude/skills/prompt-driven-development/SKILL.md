@@ -22,13 +22,36 @@ Requirements
 → Final Review
 ```
 
-The API/external contract is required when externally observable behavior must be defined before implementation, such as an HTTP API or another stable consumer-facing interface. When required, it is delivered by a CONTRACT milestone recorded in `Plan.md`.
+The API/external contract is required when the work item creates or changes externally observable behavior that must be defined before implementation, such as an HTTP API or another stable consumer-facing interface. When required, it is delivered by a CONTRACT milestone recorded in `Plan.md`. When the work item leaves an existing contract unchanged, that contract is a constraint the Plan references — not a CONTRACT milestone; do not record a milestone to restate, archive, or re-publish an unchanged contract.
 
 A CONTRACT milestone, when present, is always the first milestone after Plan approval. It precedes every FOUNDATION, RED, GREEN, and REFACTOR milestone, because no repository-changing milestone may start before the externally observable behavior it depends on is approved. Its deliverable is the API/external contract artifact itself; it changes no executable artifact, so it has no Implementation Plan — the contract artifact is the human-reviewed deliverable.
 
 CONTRACT, FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
 
 A RED milestone is followed by a GREEN milestone, then an optional REFACTOR milestone, once per independently reviewable capability/layer. See "Adaptive Milestone Decomposition" below for how many such milestone sequences a given piece of work should use.
+
+## Milestone Types
+
+Test-driven development is the heart of PDD: every requirement that adds or changes behavior is delivered by a RED milestone followed by a GREEN milestone. Choose each milestone's type by the kind of change it makes — not by whether the project is new or an enhancement:
+
+| Kind of change | Milestone type |
+| --- | --- |
+| Creates or changes an external contract | CONTRACT (first, no Implementation Plan) |
+| Adds or changes behavior | RED, then GREEN |
+| Executable prerequisite a RED milestone needs | FOUNDATION, before that RED |
+| Behavior-preserving cleanup after GREEN | REFACTOR (optional) |
+| Approved change with no production behavior change — for example test-only fixes, or replacing build, configuration, or infrastructure under unchanged behavior | OTHER |
+
+A new project normally needs CONTRACT (when it exposes a contract), FOUNDATION (when its build or test infrastructure does not exist), and RED/GREEN for every behavior. An enhancement uses only the types its requirements call for, and one work item may mix them — for example OTHER for an infrastructure swap plus RED/GREEN for a new failure behavior it introduces.
+
+### OTHER
+
+OTHER keeps every PDD gate — its own Implementation Plan, human review, verification, and Final Review — and the no-code-change-without-approval rule applies to it in full. It exists so that work with no behavior to drive is not forced into an artificial RED.
+
+- **Only without behavior change.** Use OTHER only when no requirement the milestone owns adds or changes production behavior. If a test could be written that fails first because behavior is missing, the work is RED then GREEN, not OTHER. The Plan states, per OTHER milestone, why none of its owned requirements changes behavior.
+- **Before and after evidence.** The Plan names the baseline evidence that shows the problem or the starting state (for example a failure rate, a log check, a timing, or the configuration in use) and the evidence that shows completion. The Implementation Plan records the baseline before any change.
+- **Existing tests are the safety net.** The Plan names the existing tests that prove behavior is preserved; they must pass after the milestone. Test changes in an OTHER milestone must not weaken or remove an assertion without a same-coverage replacement.
+- **Stop on a behavior change.** If an OTHER milestone turns out to need a production behavior change, stop and replan it as RED and GREEN.
 
 ## Work-Item Folders
 
@@ -120,15 +143,16 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 
 1. **Milestone order.** Record every milestone in one strictly linear sequence. Each milestone has exactly one predecessor — Plan approval for the first milestone, otherwise one earlier milestone. Do not record parallel, optional, or "logically but not strictly required" predecessors. When a CONTRACT milestone exists it is the first milestone; any FOUNDATION milestone follows it.
 2. **Contract-owned decisions stay in the contract.** Do not fix endpoint paths, operations/methods, status codes, parameter or field names, request/response schemas, validation rules, error behavior, result shapes for empty or missing data, or any decision the requirements defer to the contract — not even as examples, defaults, or "X or per contract" hints. Reference the contract artifact instead. The CONTRACT milestone's decision list contains the decisions the requirements defer to it plus the externally observable behavior needed to define the required operations — nothing else (no documentation formats, tooling, or extra capabilities). A decision the requirements explicitly defer to a CONTRACT milestone is owned by that milestone; it does not block Plan approval and must not be resolved, narrowed, or presumed in the Plan.
-3. **No internal design.** Do not name classes, files, methods, interfaces, packages, framework annotations, libraries or dependencies beyond the approved technology stack, test classes, mocking or test-isolation strategies, or internal layering within a milestone. Describe each milestone by the behavior and requirements it covers. Naming a decomposition boundary (for example a layer or capability chosen under Adaptive Milestone Decomposition) is allowed; prescribing its internal structure is not.
+3. **No internal design.** Do not name classes, files, methods, interfaces, packages, framework annotations, libraries or dependencies beyond the approved technology stack, test classes, mocking or test-isolation strategies, or internal layering within a milestone. Describe each milestone by the behavior and requirements it covers. Naming a decomposition boundary (for example a layer or capability chosen under Adaptive Milestone Decomposition) is allowed; prescribing its internal structure is not. This rule governs milestone descriptions; Current State, Risks, and an OTHER milestone's preserved-test list may name existing files, tests, and configuration as repository facts.
 4. **RED milestones deliver tests/checks only.** State the behaviors the tests must verify. Never list production types, scaffolding, or configuration as RED deliverables.
 5. **GREEN milestones deliver behavior.** State the behavior that makes the predecessor RED evidence pass. Do not list production classes or components.
 6. **FOUNDATION is prerequisite-only.** Limit it to the build, dependency, bootstrap, configuration, or test-infrastructure prerequisites that the RED milestones it serves need to execute — which may be more than the immediately following RED milestone (see rule 11) — consistent with approved requirements (never an alternative the requirements exclude). The domain model, schema derived from it, and target behavior belong to GREEN.
 7. **Complete milestone entries.** Every milestone records every field the Plan template requires, including explicit exclusions and success criteria.
-8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision). No requirement has two owners. A requirement that states an absence (for example "no X is required") is an exclusion: record it as traceable with no owning milestone, verified at Final Review — never assign it to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
+8. **Single ownership.** Every approved requirement and cross-cutting concern has exactly one owning delivery milestone, recorded in the Plan's requirement traceability. The owning milestone delivers it (GREEN for behavior, CONTRACT for contract decisions, FOUNDATION for prerequisites, OTHER for an approved change with no behavior change); the verifying milestone is the RED milestone whose tests verify it (or human review for a CONTRACT decision, or the OTHER milestone itself through its before/after evidence and preserved tests). No requirement has two owners. A requirement that states an absence (for example "no X is required") is an exclusion: record it as traceable with no owning milestone, verified at Final Review — never assign it to a delivery milestone or claim a RED milestone verifies it. Every requirement that the traceability names a RED milestone as verifying appears in that RED milestone's scope, and that RED milestone's scope verifies nothing the traceability does not assign to it.
 9. **No invented scope.** Do not add requirements, non-functional targets, coverage thresholds, exclusions, or constraints that are not in approved requirements or repository evidence. Out of Scope lists only exclusions the requirements state. Current State describes only what inspection of the repository shows. When the work item changes existing code, Current State lists the existing behavior the work item affects and the existing tests that cover it; for a new project with no code yet, it says so. Risks and mitigations must not weaken, reinterpret, or contradict a requirement or reassign a decision to a different milestone.
 10. **Honest status.** A newly created or revised Plan records every milestone as Pending and marks nothing approved, verified, or complete.
 11. **Prerequisite coverage for every RED milestone.** RED milestones cannot add dependencies, build configuration, or test infrastructure, and GREEN comes after RED, so every prerequisite a RED milestone needs must already exist when it starts. Walk the whole sequence: for each RED milestone, determine what its tests need to compile and run (dependencies, test infrastructure, configuration) given the repository state projected after all of its predecessor milestones complete — not only the current state. If any prerequisite is not provided by a predecessor, either widen an earlier FOUNDATION milestone to provide it or insert a FOUNDATION milestone immediately before that RED milestone. Record which RED milestones each FOUNDATION milestone serves.
+12. **Verification commands.** Record the commands that verify milestones in the Plan's Verification Commands section, each with its source (requirements, or repository evidence such as the build file or project documentation). Do not take them from the application instruction file, which holds no project facts. For a project with no build yet, state that the FOUNDATION milestone establishes them; its Implementation Plan records the exact commands.
 
 ## Plan Integrity
 
@@ -171,6 +195,7 @@ When work is decomposed across milestones, every requirement or cross-cutting co
 - GREEN Implementation Plans start from valid RED evidence and propose the smallest production change needed to satisfy it.
 - GREEN execution implements only the approved production change.
 - REFACTOR is optional, behavior-preserving, and requires a verified GREEN baseline plus its own approved Implementation Plan.
+- OTHER makes only approved changes with no production behavior change, records baseline evidence before changing anything, and is complete only when its after evidence and preserved tests pass (Milestone Types).
 - A completed milestone never implies approval of the next milestone.
 - A single end-to-end request does not remove these boundaries.
 

@@ -4,7 +4,9 @@
 
 ## Milestone Type
 
-FOUNDATION | RED | GREEN | REFACTOR
+FOUNDATION | RED | GREEN | REFACTOR | OTHER
+
+For OTHER: record the baseline evidence before any change, and the existing tests that must keep passing.
 
 ## Authoritative References
 

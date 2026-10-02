@@ -8,7 +8,7 @@ Apply `implementation-planning`, `prompt-driven-development`, and relevant domai
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, or REFACTOR) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
+This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
 
 Before planning:
 
@@ -55,6 +55,7 @@ If the milestone approved for this Implementation Plan is a RED milestone with n
 For RED, propose test/check changes only.
 For GREEN, require valid RED evidence and propose the smallest production change required to satisfy it.
 For REFACTOR, require a verified GREEN baseline and propose behavior-preserving changes only.
+For OTHER, confirm `Plan.md` records that no owned requirement changes behavior, record the baseline evidence before any change, name the existing tests that must keep passing, and propose only the approved changes; if a production behavior change turns out to be needed, stop for replanning as RED and GREEN.
 
 Proposed code may be written inside the Implementation Plan for review.
 

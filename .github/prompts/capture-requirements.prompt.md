@@ -21,6 +21,6 @@ Before finalizing, apply the `requirements-analysis` Operational Characteristics
 
 Before finalizing, ask the user to confirm every derived consequence, then apply the `requirements-analysis` provenance check: every item names its source, every repository citation was verified against the current repository during this capture, and nothing is copied from another work item's artifacts.
 
-Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, creating the work-item folder if it does not exist. Do not edit the product-level `docs/requirements.md`.
+Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, creating the work-item folder if it does not exist, using the `prompt-driven-development` skill's `templates/requirements.md` structure — including its Relationship to Product-Level Requirements, Operational Characteristics, and Provenance Check sections. Do not edit the product-level `docs/requirements.md`.
 
 Do not create Plan.md, an API/external contract, an Implementation Plan, tests, or production code.

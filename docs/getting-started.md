@@ -145,6 +145,16 @@ For an existing application with already-approved requirements, start from the e
 
 ## 6. Behavior-Changing Milestone Flow
 
+Choose each milestone's type by the kind of change, not by whether the project is new (`prompt-driven-development` Milestone Types): behavior changes are always RED then GREEN; a new or changed external contract is CONTRACT; a missing prerequisite for RED is FOUNDATION; cleanup after GREEN is REFACTOR; an approved change with no production behavior change — test-only fixes, or replacing infrastructure under unchanged behavior — is OTHER. A new project normally needs CONTRACT, FOUNDATION, RED, and GREEN; an enhancement uses what its requirements call for.
+
+For an OTHER milestone:
+
+1. `/create-implementation-plan` for the OTHER milestone (it records the baseline evidence and the existing tests that must keep passing).
+2. human review
+3. `/implement-approved-plan`
+4. verify the completion evidence against the baseline and that the preserved tests pass
+
+
 Each milestone the Plan defines runs this flow on its own — a separate Implementation Plan per milestone, never one Implementation Plan covering more than one milestone. FOUNDATION, RED, GREEN, and REFACTOR are each their own milestone — there is no containing milestone that runs more than one of these itself. A capability or layer that needs several of these gets a separate milestone entry, and a separate run of this flow, for each.
 
 For a FOUNDATION milestone (only when `Plan.md` records one as genuinely required):
