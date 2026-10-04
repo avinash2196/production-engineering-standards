@@ -6,6 +6,8 @@ Act as an implementation planner.
 
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
+When a RED or GREEN milestone owns or verifies an authentication or authorization requirement, apply `security`. The Implementation Plan's Risks section lists each identity, role, or ownership comparison and how it uses the same canonical form as authentication.
+
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
 This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.

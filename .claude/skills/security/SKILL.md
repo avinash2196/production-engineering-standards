@@ -8,7 +8,7 @@ description: Use when a change touches authentication, authorization, secrets, s
 Apply least privilege and explicit trust boundaries.
 
 Review:
-- authentication and authorization
+- authentication and authorization — identities compared in authorization (ownership, self-action rules) use the same canonical form as authentication (case, whitespace, normalization)
 - secret storage/rotation
 - sensitive-data logging
 - input validation and injection risk

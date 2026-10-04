@@ -62,6 +62,10 @@ Criteria limiting which files may change exclude this milestone's own Execution 
 
 ### Expected Evidence
 
+<!-- RED only: list new tests expected to pass at RED (`implementation-planning` RED), or state none. -->
+
+- Tests expected to pass at RED: none | `<test>` — delivered by `<milestone>`
+
 ### Planning-Time Dry Run
 
 <!-- The result of applying this plan's exact code in a disposable copy outside the repository and running the verification commands there (`implementation-planning` Planning-Time Dry Run): each command as run, with its trimmed real output. This is not milestone evidence. If a dry run was not performed, state why. -->
