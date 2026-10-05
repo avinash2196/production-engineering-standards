@@ -71,10 +71,17 @@ Write down in advance which questions and boundaries the run should raise. Grade
 
 ## Findings Log
 
-Empty until the run. Each row gets an ID (C1, C2, …), the phase, the finding, its kind (Plugin or Model), and the fix.
+Each row gets an ID (C1, C2, …), the phase, the finding, its kind (Plugin or Model), and the fix.
 
 | ID | Phase | Finding | Kind | Fix |
 | --- | --- | --- | --- | --- |
+| C1 | All approval gates (`medgemma-xray-demo`, work item `prompt-quality`, 0.14.0, 2026-10-05) | The user said "approve changes on my behalf". The plugin has no form for this: Approval Status says only the user approves, and `capture-requirements` says never to answer an operational characteristic yourself. The run improvised `Approved by Claude on behalf of <user> (delegated approval)` in every Status, and recorded Q9–Q11 as "Delegated" in the Clarification Log. | Plugin | Decide one rule: either delegation is not accepted (ask and stop), or there is a recorded delegated form that lists every delegated decision for the user to review at Final Review. |
+| C2 | RED planning (same run) | Plan traceability allows a "none — preserved" row whose verifying milestone is the one whose tests cover it, and the Plan gave the RED milestone tests for preserved behavior (R15). But `implementation-planning` RED allows a test that passes at RED only when an earlier milestone of the work item delivers its behavior. Four preserved-behavior tests passed at RED with no rule covering them. | Plugin | In RED, allow tests for preserved behavior that the Plan assigns to this RED milestone; list them in Expected Evidence as preserved, not RED evidence. |
+| C3 | Plan, OTHER milestone (same run) | The requirements need a manual four-case check on the deployed GPU model with owner-supplied images. OTHER was the only fit, but its Implementation Plan needs exact code and baseline evidence. There is also no status for a milestone waiting on external inputs (`Blocked` is for blockers that invalidate the Plan). | Plugin (Watch — seen once) | Let OTHER cover a human-run validation protocol in place of exact code, or add a "waiting on input" status. Decide after a second case. |
+| C4 | `capture-requirements` (same run) | AC4 was written stricter than the brief ("no spine or cervical content in other report types" versus brief AC-5 "must not introduce cervical-spine-specific behavior"). That would have removed existing Nasopharynx guidance. It was caught while planning RED and revised (Q11). The "Preserve the user's meaning" rule already covers this. | Model | No plugin change. |
+| C5 | Planning-time dry run (same run) | The first dry-run attempt failed on a Windows path conversion and created a gitignored `.venv/` in the repository root; it was removed. The "never modify the repository during a dry run" rule already covers this. | Model | No plugin change. |
+
+Run notes for `prompt-quality` (two services, but only the backend changed): one verification command set was enough, so this run neither confirms nor refutes G1–G4.
 
 ## Watch (carried from batch B)
 
