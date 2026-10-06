@@ -1,6 +1,6 @@
 # PDD Gap Fixes — October 2026 (batch C)
 
-Status: open, awaiting evidence. Nothing in this brief is fixed yet.
+Status: open, awaiting evidence. Nothing in this brief is fixed yet. It also holds the user's review of the batch-B fixes released in 0.14.0 (see "Review of released batch-B fixes").
 
 `docs/pdd-gap-fixes-2026-10-b.md` is closed (released in 0.14.0). This brief starts the next batch.
 
@@ -83,9 +83,24 @@ Each row gets an ID (C1, C2, …), the phase, the finding, its kind (Plugin or M
 
 Run notes for `prompt-quality` (two services, but only the backend changed): one verification command set was enough, so this run neither confirms nor refutes G1–G4.
 
-## Watch (carried from batch B)
+## Review of released batch-B fixes (user review, 2026-10-05)
 
-- **B5:** a new application folder with no application instruction file. `capture-requirements` could mention that `setup-claude-instructions` / `setup-copilot-instructions` has not been run. Seen once. The planned run runs setup first, so it will not test this.
+The user reviewed batch B's gaps after H1–H4 were released in 0.14.0. The verdicts below are the user's, compared with the released text. The follow-ups are candidates for the next release. Nothing is changed yet.
+
+| Batch B item | User verdict | Released 0.14.0 text | Follow-up for the next release |
+| --- | --- | --- | --- |
+| B1 / H1: contract amendment after milestones ran | Real gap, but the interpretation is wrong. PDD must not reopen or re-run an executed milestone, or renumber history. | Plan Integrity: an unmeetable contract decision uses the Blocked stop, and `create-api-contract` amendment mode is correct. `create-plan` then adds "a new Pending milestone **of the same type** (`<milestone> amendment`)" for each executed milestone the amendment lists. | Keep the Blocked trigger and the Amendments section. Replace the "same type / `<milestone> amendment`" wording: the revision adds a new milestone with its own name, typed by the kind of change it makes (Milestone Types), and never labelled as a continuation of an executed milestone. |
+| B2 / H2: operator configuration ownership | Partial gap. Implementation Plans already own concrete configuration decisions (Carried-Forward Decisions), so "no owning artifact" was overstated. The real gap is when operator configuration becomes a stable external contract and stops being an implementation detail. | Rule 2 and `create-api-contract`: "When the requirements require externally settable configuration, define the names and shapes operators set." | The released text matches the narrowed gap, so no text change. Correction to the record: B2's "had no owning artifact" was wrong. In the run, IP 004 decided the names and IP 006 carried them forward. |
+| B3 / H3: new tests passing at RED | Not a gap. A RED test must fail for the missing behavior, and a passing test for behavior already delivered is regression or predecessor coverage, not RED evidence. | `implementation-planning` RED allows such tests when an earlier milestone delivers the behavior, and the Implementation Plan template gains `Tests expected to pass at RED`. | Reclassify B3 as **Model**. The root cause was a traceability error: the Plan made the GREEN milestone M6 the owner of the hashed-password requirement although M4 delivered it, which Plan Content Rule 8 already covers. Decide whether to withdraw H3's allowance and the template field. **Interaction:** C2 builds on H3's allowance (extending it to preserved behavior), so if H3 is withdrawn, re-assess C2 on its own terms: tests for preserved behavior that the Plan explicitly assigns to a RED milestone. |
+| B4 / H4: security and identity comparison | Real gap, narrowly scoped: identity comparison and canonicalization are under-specified. | `security` skill line on canonical identity comparison, plus a `create-implementation-plan` rule to apply `security` and list every identity, role or ownership comparison in Risks. | Keep the `security` line. Consider removing the planning trigger: security already routes at review time (`code-reviewer`, `production-readiness-reviewer`), and that is how the defect was found. |
+| B5: missing application instruction file | Not a core PDD gap. This is bootstrap or orchestration, and `setup-claude-instructions` already says "Run first". Coupling requirements capture to setup is unnecessary. | Not changed (it was a Watch item). | Closed with no plugin change. Moved to "Keep out of the plugin". |
+
+### Late model findings from the batch-B evidence (no plugin change)
+
+| ID | Finding | Existing rule |
+| --- | --- | --- |
+| C6 | In approval-service `initial-build`, the model appended amendment text to an **executed** milestone's Execution Status row (M5) and titled the amendment Implementation Plan as part of that milestone. | Plan Integrity: "Do not rewrite the Plan to match implementation"; update only execution/status after verification; scope or milestone changes need replanning. |
+| C7 | In the same run, the Plan assigned the hashed-password requirement to the M6 GREEN milestone although M4 delivered it, so its M5 RED test passed at RED (the evidence behind B3). | Plan Content Rule 8: single ownership; the owning milestone delivers the requirement. |
 
 ## Rules for this batch
 
@@ -98,5 +113,7 @@ The rules are the same as in batches A and B:
 - Check every gap against the latest `.github/` text before logging it.
 
 ## Keep out of the plugin
+
+- **B5 (closed by user review, 2026-10-05):** do not make PDD commands check for or require the application instruction file. That is bootstrap; `setup-claude-instructions` / `setup-copilot-instructions` already say "Run first".
 
 These are evidence only, never skill text: the service names, the speech or LLM provider, the broker product, WebSocket libraries, and any audio format.
