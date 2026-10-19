@@ -1,8 +1,8 @@
 # PDD Gap Fixes — October 2026 (batch B)
 
-Status: closed. H1–H4 were released in 0.14.0. B5 (Watch) moves to `docs/pdd-gap-fixes-2026-10-c.md`.
+Status: closed. H1–H4 were released in 0.14.0. B5 (Watch) moves to `docs/history/pdd-gap-fixes-2026-10-c.md`.
 
-`docs/pdd-gap-fixes-2026-10.md` is closed (released in 0.12.0). This brief starts the next batch.
+`docs/history/pdd-gap-fixes-2026-10.md` is closed (released in 0.12.0). This brief starts the next batch.
 Every gap below was checked against 0.13.0 (`.github/` on `fix/review-routing-replanning-llm`)
 before it was logged.
 
