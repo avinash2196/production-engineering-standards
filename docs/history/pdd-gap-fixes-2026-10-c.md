@@ -128,6 +128,80 @@ Files: the `prompt-driven-development` SKILL Approval Status, plus the approval 
 - Validator and tests: every artifact-driven Claude command sets `context: fork` and an `agent` that exists in `.claude/agents/`, and every matching Copilot prompt contains the delegation line.
 - Verify before release: rerun the codeword probe against the real plugin's commands on both tools. The throwaway-plugin probe already passed for Claude `context: fork` and for Copilot subagent delegation. Then run one small real work item end to end and confirm each forked step worked from the artifacts alone.
 
+### D3: OTHER covers a human-run validation, and a milestone can wait on an input (fixes C3, which has two cases: RM6 and TM6)
+
+Current text: OTHER allows only tests, build, configuration, tooling, or infrastructure changes. Its Implementation Plan needs exact code (`implementation-planning` OTHER, "exact code"). Execution Status has only Pending, Blocked, and completed.
+
+Proposed:
+
+1. **Validation protocol in OTHER.** A new bullet in the `prompt-driven-development` OTHER section and in `implementation-planning` OTHER. When the requirements call for a check against a running system or with inputs the user supplies, the OTHER milestone may be a validation protocol. Its exact content is then:
+   - the exact commands or steps;
+   - each input, who supplies it, and where it is placed (never committed unless the requirements say so);
+   - the expected observation and the met or not-met rule for each case;
+   - a statement that it changes no repository file other than the evidence it records.
+
+   The dry run runs every step that needs no supplied input and lists the steps it could not run.
+2. **Waiting status.** A new Execution Status value, `Waiting — <named input> from <who>`, set when an approved milestone cannot start or continue until the user supplies a named input or performs a named action, such as images, a deployment, or credentials entered by the user. It is not `Blocked`: the Plan stays valid, and the milestone resumes on the same approved Implementation Plan once the input exists. `Blocked` remains the only status that needs replanning.
+3. Plan template Execution Status comment: list the allowed values as Pending, Waiting, Blocked, and Executed.
+
+Files: the `prompt-driven-development` SKILL (OTHER, Plan Integrity, Plan Progress), `implementation-planning` SKILL (OTHER, dry run), the Plan template, and `implement-approved-plan` (OTHER branch: set Waiting and stop). Tests: wording checks for the new status.
+
+### D4: amendment milestones are new milestones, not continuations (H1 follow-up from the user review)
+
+Current text (Plan Integrity, contract amendment step 2): "`create-plan` revision mode adds, for each executed milestone the amendment lists, a new Pending milestone **of the same type** (`<milestone> amendment`)".
+
+Proposed replacement for step 2: "`create-plan` revision mode adds new Pending milestones that bring the executed work into line with the amended contract. Each gets its own name and is typed by the kind of change it makes (Milestone Types). For example, a test that encodes the old decision is updated in an OTHER or RED milestone, and a production change is a RED and GREEN pair. None is labelled or numbered as part of an executed milestone. They are placed before the revised Blocked milestone, each with its own Implementation Plan numbered as the next `NNN`. The executed milestones' rows and evidence stay unchanged."
+
+Files: the `prompt-driven-development` SKILL and `create-plan`. Both contain the "same type" wording; `create-api-contract` does not. Tests: replace any check that expects "amendment" naming.
+
+### D5: withdraw the H3 allowance and replace it with the narrower C2 rule (B3 reclassified as Model)
+
+Current text: `implementation-planning` RED allows "a new, non-vacuous test that passes at RED … only when an earlier milestone of this work item already delivers its behavior". The Implementation Plan template has `Tests expected to pass at RED: none | <test> — delivered by <milestone>`.
+
+Proposed:
+
+1. Remove the H3 allowance. A RED test for behavior an earlier milestone delivered means the Plan's traceability is wrong (Rule 8). Stop and return to planning, and do not plan a passing test.
+2. Add the C2 rule. A RED milestone may include tests for **preserved existing behavior** only when the Plan's traceability assigns that preserved row to this RED milestone (Owning "none — preserved", Verifying this milestone). They are expected to pass at RED, are listed in Expected Evidence as preserved-behavior tests, and are never counted as RED evidence for any requirement.
+3. Template field renamed: `Preserved-behavior tests (expected to pass at RED): none | <test> — preserved row <requirement>`.
+
+**Decision (user, 2026-10-19):** withdraw the H3 allowance and its template field, and replace them with the C2 rule above. B3 stays reclassified as Model.
+
+Files: the `implementation-planning` SKILL (RED), the Implementation Plan template, and `generate-tests`, whose RED self-check compares passing tests with the old "Tests expected to pass at RED" list. Tests: update the H3 checks.
+
+### D6: a fourth traceability form for Final Review obligations (fixes C8)
+
+Current text: Rule 8 says "Three kinds of row have no owning milestone": exclusion, not required, and preserved. The Plan template lists the same three.
+
+Proposed: "Four kinds". Add: a requirement that the Final Review itself fulfils (for example a statement the Final Review must make) is a Final Review obligation. It uses Owning "none — Final Review obligation" and Verifying "Final Review". The Final Review template gets a short "Final Review Obligations" section that answers each such row. Never assign one to a delivery milestone.
+
+Files: the `prompt-driven-development` SKILL (Rule 8), the Plan template (traceability comment), the Final Review template, and `review-code` and `review-production-readiness` (answer every Final Review obligation row). Tests: wording checks.
+
+### D7: the contract template covers message, stream, and RPC interfaces (fixes C12, confirming G2)
+
+Current text: `api-design/templates/API-Contract.md` has only HTTP capability fields (Endpoint, HTTP method, status codes). Contract Completeness questions 1, 7, and 8 are HTTP-worded.
+
+Proposed:
+
+1. Rename "API Capabilities" to "Interfaces". Each interface declares its kind, **HTTP**, **Message or stream** (for example WebSocket or an event topic), or **RPC** (for example gRPC), and fills only that kind's fields:
+   - HTTP: the current fields, unchanged.
+   - Message or stream: connection and authentication (when credentials are presented and when they are checked); framing and envelope; message catalogue in each direction; ordering, acknowledgement, and delivery semantics, including duplicates and idempotency key; state rules (which message is allowed when); keepalive; close or termination codes and their meaning; limits (size, rate, backpressure).
+   - RPC: methods, unary or streaming; stream order and completion; metadata; status codes per failure condition; deadlines where the requirements state them.
+2. Reword Completeness questions 1, 7, and 8 to cover every interface kind:
+   - 1 "malformed or unreadable request body" becomes "malformed or unreadable input (request body, message, or RPC request)".
+   - 7 "status code per failure condition" becomes "error signal per failure condition (HTTP status, close code, or RPC status)".
+   - 8 "unknown identifiers" applies to every kind.
+3. Contract-Wide Rules gains "Versioning and compatibility of message or RPC schemas".
+
+The scribe-contracts `protocol-v1` contract is the worked evidence. Its improvised sections map onto these fields. Product, library, and protocol names stay out of the template (Keep out of the plugin).
+
+Files: `api-design` SKILL (Contract Completeness), the API-Contract template, and `create-api-contract` (one checklist row per question, unchanged). Tests: the template structure and Completeness checks.
+
+### Not in this batch
+
+- G1 and G3–G6 stay predictions until a run shows them.
+- C9 stays on Watch.
+- The H4 follow-up (dropping the planning trigger and keeping the `security` line) was raised in the user review but not chosen for 0.15.0.
+
 ## Review of released batch-B fixes (user review, 2026-10-05)
 
 The user reviewed batch B's gaps after H1–H4 were released in 0.14.0. The verdicts below are the user's, compared with the released text. The follow-ups are candidates for the next release. Nothing is changed yet.
