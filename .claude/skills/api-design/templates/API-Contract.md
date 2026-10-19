@@ -85,7 +85,15 @@ List every decision the Plan assigns to this contract and how it was resolved, c
 
 Include only compatibility requirements that are explicitly approved or repository-confirmed.
 
+## Amendments
+
+<!-- Only after approval, when execution shows an approved decision cannot be met (`prompt-driven-development` Plan Integrity). One row per amendment; earlier rows stay unchanged. Remove this section when there are none. -->
+
+| Change | Reason and evidence | Impact | Executed milestones encoding the old decision |
+| --- | --- | --- | --- |
+|  |  |  |  |
+
 ## Contract Review Status
 
-- Status: Draft
-- Human review required before implementation planning that depends on this contract.
+- Status: Awaiting human review
+- Human review required before implementation planning that depends on this contract. On approval the user replaces the status with `Approved by <name> on <date>`, and the CONTRACT milestone's row in `Plan.md` Execution Status is marked complete, pointing to this contract.

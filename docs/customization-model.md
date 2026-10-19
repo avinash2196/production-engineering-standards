@@ -60,6 +60,7 @@ resilience-and-degradation
 observability
 security
 production-readiness
+llm-engineering
 java-spring-boot
 python-fastapi
 oracle-to-postgres-modernization

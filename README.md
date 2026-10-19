@@ -186,6 +186,12 @@ Do not silently reconcile material conflicts between approved artifacts.
 
 Stop and surface conflicts for human review.
 
+### Approval, replanning, and Final Review
+
+- **Approval is recorded in the artifact.** Requirements, Plan, and contract record human-review approval in their Status sections; each Implementation Plan records approval and execution in its Human Review section. Only the user approves; an approval given in conversation is written into the artifact before work continues.
+- **Plans can be replanned, with approval.** A Plan may be revised freely before approval. After approval it is the execution baseline and is never changed silently. A blocker that invalidates scope, order, architecture, assumptions, or acceptance criteria stops execution: the milestone is recorded as `Blocked — <reason>` in `Plan.md`, its Implementation Plan records that execution stopped and needs re-approval, the Plan is revised through `create-plan` and returns to awaiting review, and work continues only after the user approves it. A revision keeps executed milestones and their evidence unchanged.
+- **Final Review closes a work item.** Only `review-code` or `review-production-readiness`, run for a named work item, perform the Final Review and write `docs/.ai/<work-item>/Final-Review.md`. Other reviews, such as `review-architecture`, are intermediate.
+
 ### Scope control
 
 Engineering standards are a review and design lens, not authorization to invent requirements or expand approved scope.
@@ -220,6 +226,7 @@ Examples include:
 - security
 - compliance engineering
 - production readiness
+- LLM engineering (model-backed behavior, RAG, agents and tools, AI gateways, LLM evaluation)
 - Java and Spring Boot
 - Python and FastAPI
 - Oracle to PostgreSQL modernization

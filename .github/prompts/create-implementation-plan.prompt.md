@@ -9,18 +9,24 @@ tools:
 ---
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
+When a RED or GREEN milestone owns or verifies an authentication or authorization requirement, apply `security`. The Implementation Plan's Risks section lists each identity, role, or ownership comparison and how it uses the same canonical form as authentication.
+
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
 This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
 
 Before planning:
 
-1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status) — a claim of approval elsewhere is recorded in `Plan.md` first; if none exists, ask and stop;
+1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status) — a claim of approval elsewhere is recorded in `Plan.md` first; if none exists, ask and stop. When the Plan records a CONTRACT milestone, also confirm the contract's Contract Review Status records approval and the CONTRACT row in `Plan.md` Execution Status is complete; record a conversational approval in both first, and cite the approved contract as an authoritative predecessor;
 2. inspect the current repository structure and relevant current implementation;
 3. read current Plan execution status;
 3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
 4. verify predecessor milestone evidence and actual completed progress;
-5. verify the milestone type being planned matches what `Plan.md` records for this milestone.
+5. verify the milestone type being planned matches what `Plan.md` records for this milestone;
+6. confirm the milestone's Execution Status is Pending and no approved, unexecuted Implementation Plan already exists for it; when an earlier Implementation Plan for it stopped at a blocker, read that plan and the blocker evidence, and plan from the revised, approved Plan;
+7. read the product-level `docs/requirements.md` when it exists, as read-only context.
+
+List every document read, with its approval status, under Authoritative References.
 
 Create exactly one:
 

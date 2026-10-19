@@ -272,9 +272,9 @@ Edit the canonical `.github/` files, then mirror byte-identically to `.claude/`:
 1. Edit `.github` canonical files; mirror to `.claude/`.
 2. `python tooling/scripts/validate_repository.py` and the unittest suite — both pass.
 3. Bump the version in `.claude/.claude-plugin/plugin.json`, `.github/plugin/plugin.json`,
-   and `.github/plugin/marketplace.json` (currently 0.11.0).
+   and `.github/plugin/marketplace.json` (done: 0.11.0 → 0.12.0).
 4. Commit; then `claude plugin marketplace update pes-marketplace` and
    `claude plugin update production-engineering-standards@pes-marketplace`.
 
-Timing: apply after both evidence work items finish Final Review, so each runs under one
-rule set. Add further findings here, not to the superseded logs.
+Released in 0.12.0 after both evidence work items finished Final Review. Record new findings
+in a new brief; this one is closed.

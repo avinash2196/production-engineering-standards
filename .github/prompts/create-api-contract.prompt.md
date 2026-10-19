@@ -17,7 +17,11 @@ This command executes the CONTRACT milestone recorded in the approved `Plan.md`.
 
 Create or update only the API/external contract artifact inside the work item's folder.
 
+Amendment mode: when `Plan.md` records a milestone `Blocked` because an approved contract decision cannot be met (`prompt-driven-development` Plan Integrity), revise the approved contract instead of executing the CONTRACT milestone. Change only that decision, add a row to the Amendments section (change, reason with evidence, impact, executed milestones that encode the old decision), update every reference to the changed decision, and return the contract to awaiting review. Do not change `Plan.md`; the Plan revision belongs to `create-plan`.
+
 Every contract capability must be traceable to approved requirements or Plan scope.
+
+When the requirements require externally settable configuration, define the names and shapes operators set (`prompt-driven-development` Plan Content Rule 2).
 
 Do not invent endpoints, fields, validations, errors, status codes, compatibility behavior, or implementation details.
 
@@ -25,7 +29,7 @@ If material contract behavior is unresolved, ask focused clarification questions
 
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
 
-Do not approve the contract yourself.
+Do not approve the contract yourself. When the user approves it, record the approval in the contract's Contract Review Status and mark the CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract; change nothing else in `Plan.md`.
 
 Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
 
