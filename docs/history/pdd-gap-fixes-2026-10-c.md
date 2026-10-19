@@ -124,5 +124,9 @@ The rules are the same as in batches A and B:
 ## Keep out of the plugin
 
 - **B5 (closed by user review, 2026-10-05):** do not make PDD commands check for or require the application instruction file. That is bootstrap; `setup-claude-instructions` / `setup-copilot-instructions` already say "Run first".
+- **Development loop (user decision, 2026-10-19):** do not add a loop, runner, or "keep going" command to the plugin. The plugin owns the rules, the artifacts, and where each command stops. A loop outside the plugin (Claude Code `/loop`, headless `claude -p`, Copilot CLI, or a script) may drive a whole work item. Each round it reads `Plan.md` and the approval status of each artifact. It then either runs the single next allowed command, or stops and reports what waits for the user. It never records an approval and never retries a failed verification. The loop does not iterate fixes inside an approved milestone. `implement-approved-plan` applies the plan's exact code, and any difference stops execution for re-approval. Iteration is allowed only on unapproved drafts.
+  - **Depends on C1:** the delegated-approval rule must state who may record an approval, so that a loop cannot record one itself.
+  - **Depends on C3:** a "waiting on input" status, so that a loop can tell "waiting for the user" apart from `Blocked`.
+  - Build and test the runner in its own repository after the release that fixes C1 and C3.
 
 These are evidence only, never skill text: the service names, the speech or LLM provider, the broker product, WebSocket libraries, and any audio format.
