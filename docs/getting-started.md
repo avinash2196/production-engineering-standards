@@ -8,9 +8,35 @@ The application remains responsible for its own project context, source code, te
 
 ## 1. Keep the Standards Repository Separate
 
-Do not make every application a Git submodule of this repository by default.
+Do not make every application a Git submodule of this repository by default. Install it as a plugin instead, once per machine.
 
-For personal or local use, keep this repository in a stable location and configure the supported Copilot or IDE customization mechanism to discover its agents and skills.
+Claude Code:
+
+```bash
+claude plugin marketplace add avinash2196/production-engineering-standards
+claude plugin install production-engineering-standards@pes-marketplace --scope user
+```
+
+GitHub Copilot CLI:
+
+```bash
+copilot plugin marketplace add avinash2196/production-engineering-standards
+copilot plugin install production-engineering-standards@pes-marketplace
+```
+
+To pick up a new release, update the marketplace and then the plugin:
+
+```bash
+claude plugin marketplace update pes-marketplace
+claude plugin update production-engineering-standards@pes-marketplace
+```
+
+```bash
+copilot plugin marketplace update pes-marketplace
+copilot plugin update production-engineering-standards@pes-marketplace
+```
+
+To work on the standards themselves, register a local checkout as the marketplace instead (`plugin marketplace add <path-to-checkout>`). Copilot CLI then loads the plugin live from that folder. Claude Code copies it and picks up changes only when the plugin version changes.
 
 Machine-specific checkout paths belong in personal IDE or user settings.
 

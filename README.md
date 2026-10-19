@@ -42,19 +42,34 @@ Material ambiguity is also a blocking boundary:
 
 > **Material ambiguity → Ask → Stop → Wait for human clarification**
 
-## Quickstart (Claude Code)
+## Quickstart
 
-Install the plugin once:
+Install the plugin once for the tool you use.
+
+**Claude Code:**
 
 ```bash
 claude plugin marketplace add avinash2196/production-engineering-standards
 claude plugin install production-engineering-standards@pes-marketplace --scope user
 ```
 
-Then, inside your application repository, run one work item end to end. Commands are shown without the `/production-engineering-standards:` prefix. Each command takes the work-item name, and each one stops for your review:
+**GitHub Copilot CLI:**
+
+```bash
+copilot plugin marketplace add avinash2196/production-engineering-standards
+copilot plugin install production-engineering-standards@pes-marketplace
+```
+
+Then, inside your application repository, generate the instruction file once:
 
 ```text
-/setup-claude-instructions                  once per repository → CLAUDE.md
+/setup-claude-instructions     Claude Code → CLAUDE.md
+/setup-copilot-instructions    Copilot     → .github/copilot-instructions.md
+```
+
+Next, run one work item end to end. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command takes the work-item name, and each one stops for your review:
+
+```text
 /capture-requirements order-cancellation    → docs/.ai/order-cancellation/requirements.md
 /create-plan order-cancellation             → Plan.md with the milestones
 /create-api-contract order-cancellation     only if the Plan has a CONTRACT milestone
@@ -64,7 +79,7 @@ Then, inside your application repository, run one work item end to end. Commands
 /review-code order-cancellation             Final Review → Final-Review.md
 ```
 
-Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. For Copilot, see [Getting Started](docs/getting-started.md).
+Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
 
 ## Current Limitations
 
