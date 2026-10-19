@@ -42,6 +42,56 @@ Material ambiguity is also a blocking boundary:
 
 > **Material ambiguity → Ask → Stop → Wait for human clarification**
 
+## Quickstart
+
+Install the plugin once for the tool you use.
+
+**Claude Code:**
+
+```bash
+claude plugin marketplace add avinash2196/production-engineering-standards
+claude plugin install production-engineering-standards@pes-marketplace --scope user
+```
+
+**GitHub Copilot CLI:**
+
+```bash
+copilot plugin marketplace add avinash2196/production-engineering-standards
+copilot plugin install production-engineering-standards@pes-marketplace
+```
+
+Then, inside your application repository, generate the instruction file once:
+
+```text
+/setup-claude-instructions     Claude Code → CLAUDE.md
+/setup-copilot-instructions    Copilot     → .github/copilot-instructions.md
+```
+
+Next, run one work item end to end. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command takes the work-item name, and each one stops for your review:
+
+```text
+/capture-requirements order-cancellation    → docs/.ai/order-cancellation/requirements.md
+/create-plan order-cancellation             → Plan.md with the milestones
+/create-api-contract order-cancellation     only if the Plan has a CONTRACT milestone
+/create-implementation-plan order-cancellation   one plan for the next milestone
+/generate-tests order-cancellation          RED milestone: failing tests only
+/implement-approved-plan order-cancellation FOUNDATION, GREEN, or OTHER milestone
+/review-code order-cancellation             Final Review → Final-Review.md
+```
+
+Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
+
+## Current Limitations
+
+This is a 0.x release. Rules and templates may still change between minor versions.
+
+- **Tested scope.** The workflow has been run end to end on single-service work items in one repository, covering Java/Spring Boot and Python/FastAPI, including an LLM-backed service. Work items that span several services or repositories are not yet validated. That includes product requirements shared across repositories and ordering between them.
+- **Contracts.** The contract template covers HTTP APIs. WebSocket, gRPC, and event contracts have no dedicated sections yet.
+- **Approvals.** There is no defined rule yet for delegated or blanket approval ("approve everything on my behalf"). Approve each artifact yourself.
+- **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
+
+Known gaps and how they were found are recorded in [docs/history](docs/history/).
+
 ## Repository Structure
 
 **Root-level configuration files:**
@@ -75,6 +125,7 @@ tooling/
 docs/
   getting-started.md
   customization-model.md
+  history/                 Gap briefs: findings from real runs and the fixes they led to
 ```
 
 There are intentionally no top-level:

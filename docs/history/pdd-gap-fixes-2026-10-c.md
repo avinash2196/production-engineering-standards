@@ -2,7 +2,7 @@
 
 Status: open, awaiting evidence. Nothing in this brief is fixed yet. It also holds the user's review of the batch-B fixes released in 0.14.0 (see "Review of released batch-B fixes").
 
-`docs/pdd-gap-fixes-2026-10-b.md` is closed (released in 0.14.0). This brief starts the next batch.
+`docs/history/pdd-gap-fixes-2026-10-b.md` is closed (released in 0.14.0). This brief starts the next batch.
 
 ## Why this brief is different
 

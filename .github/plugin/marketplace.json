@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "production-engineering-standards",
-      "description": "Production engineering standards, agents, skills, and Prompt-Driven Development workflow.",
+      "description": "Prompt-Driven Development (PDD): human-reviewed requirements, plans, contracts, and milestone-by-milestone RED/GREEN delivery, plus engineering skills and review agents for Java/Spring Boot, Python/FastAPI, API design, distributed systems, security, observability, LLM engineering, and Oracle-to-PostgreSQL migration.",
       "version": "0.14.0",
       "source": "."
     }
