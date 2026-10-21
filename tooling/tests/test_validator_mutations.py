@@ -109,6 +109,40 @@ class AgentAndCommandParityTest(ValidatorMutationTestCase):
         self.assert_error_containing(".claude/commands/refactor-code.md has diverged from")
 
 
+class FreshContextCommandTest(ValidatorMutationTestCase):
+    def _edit(self, rel: str, old: str, new: str) -> None:
+        path = self.repo / rel
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def test_missing_fork_fails(self):
+        self._edit(".claude/commands/generate-tests.md", "context: fork\n", "")
+        self.assert_error_containing("generate-tests.md: fresh-context command must set 'context: fork'")
+
+    def test_wrong_claude_agent_fails(self):
+        self._edit(".claude/commands/review-code.md", "agent: code-reviewer", "agent: planner")
+        self.assert_error_containing("review-code.md: fresh-context command must set 'agent: code-reviewer'")
+
+    def test_inline_command_may_not_fork(self):
+        self._edit(".claude/commands/capture-requirements.md", "\n---\n", "\ncontext: fork\n---\n")
+        self.assert_error_containing("capture-requirements.md: only fresh-context commands may set")
+
+    def test_missing_copilot_delegation_fails(self):
+        self._edit(".github/prompts/implement-approved-plan.prompt.md", "Run this command in the", "Please run this command in the")
+        self.assert_error_containing(
+            "implement-approved-plan.prompt.md: fresh-context prompt must open with the subagent delegation paragraph"
+        )
+
+    def test_wrong_copilot_delegate_fails(self):
+        self._edit(
+            ".github/prompts/refactor-code.prompt.md",
+            "Run this command in the `refactoring-engineer`",
+            "Run this command in the `planner`",
+        )
+        self.assert_error_containing("refactor-code.prompt.md: delegates to 'planner', expected 'refactoring-engineer'")
+
+
 class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
     def test_deleting_claude_skills_tree_fails(self):
         shutil.rmtree(self.repo / ".claude/skills")

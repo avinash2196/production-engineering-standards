@@ -35,11 +35,11 @@ Map each API capability to the approved requirement or Plan item that authorizes
 | --- | --- |
 |  |  |
 
-## API Capabilities
+## Interfaces
 
-For each API capability include:
+Declare each interface's kind — **HTTP**, **Message or stream** (for example a WebSocket protocol or an event topic), or **RPC** (for example a gRPC service) — and fill in only that kind's fields.
 
-### <Capability Name>
+### <Interface Name> (HTTP)
 
 - Purpose:
 - Related requirement:
@@ -54,6 +54,29 @@ For each API capability include:
 - Validation rules:
 - Identity / existence behavior (unknown vs malformed identifiers), where applicable:
 - Mutation semantics (replacement vs partial, immutable fields), where applicable:
+
+### <Interface Name> (Message or stream)
+
+- Purpose:
+- Related requirement:
+- Connection and authentication (how and when credentials are presented and checked):
+- Framing and message envelope:
+- Message catalogue (each message in each direction, with its fields):
+- Ordering, acknowledgement, and delivery semantics (duplicates, idempotency key):
+- State rules (which message is allowed in which state):
+- Keepalive:
+- Close or termination codes and their meaning:
+- Limits (message size, rate, backpressure):
+
+### <Interface Name> (RPC)
+
+- Purpose:
+- Related requirement:
+- Methods (unary or streaming, request and response messages):
+- Stream order and completion, where applicable:
+- Metadata:
+- Status codes per failure condition:
+- Deadlines, where the requirements state them:
 
 Do not invent fields, validations, errors, status codes, or compatibility behavior that are not authorized by approved requirements or Plan scope.
 
@@ -70,6 +93,7 @@ Record rules that apply to every capability, answering each applicable `api-desi
 - Collection ordering, empty results, limits:
 - Matching and filtering semantics:
 - Error response shape and which parts are normative:
+- Versioning and compatibility of message or RPC schemas:
 
 State "not applicable" with a reason where the API has no such behavior.
 

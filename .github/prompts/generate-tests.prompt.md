@@ -8,11 +8,13 @@ tools:
   - edit
   - execute
 ---
+Run this command in the `test-engineer` custom agent as a subagent (`prompt-driven-development` Fresh Context). Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged.
+
 Apply `testing`, `prompt-driven-development`, and relevant domain skills.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
+Before changing any file, confirm the Implementation Plan is approved in its Human Review status (`prompt-driven-development` Approval Status). If no approval is recorded, ask and stop. After verified execution, update that same status.
 
 Read:
 
@@ -42,7 +44,7 @@ If RED is invalid or verification fails unexpectedly, do not mark the RED milest
 
 Completing the RED milestone does not complete or authorize GREEN. GREEN is a separate milestone that still requires its own approved Implementation Plan and Human Review.
 
-Before reporting completion, re-read every test/check assertion you wrote or changed (or the existing test named as RED evidence) and confirm each one still asserts the actual approved behavior (not the current unimplemented state) — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting the required exception/value, is not valid RED evidence even if it fails for an unrelated reason. Also confirm that no test asserting only that something does not happen passes vacuously in RED — each such test must first exercise the positive case in the same test. Compare the new tests that pass at RED with the Implementation Plan's "Tests expected to pass at RED" list: they must match exactly; any other new test that passes stops execution for re-approval.
+Before reporting completion, re-read every test/check assertion you wrote or changed (or the existing test named as RED evidence) and confirm each one still asserts the actual approved behavior (not the current unimplemented state) — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting the required exception/value, is not valid RED evidence even if it fails for an unrelated reason. Also confirm that no test asserting only that something does not happen passes vacuously in RED — each such test must first exercise the positive case in the same test. Compare the new tests that pass at RED with the Implementation Plan's "Preserved-behavior tests (expected to pass at RED)" list: they must match exactly; any other new test that passes stops execution for re-approval.
 
 Report the commands actually executed and the observed evidence. Record evidence, deviations, and cleanup as `prompt-driven-development` Plan Progress requires: each command as run with its trimmed real output, every planned-versus-executed difference with its reason, and every process you started stopped before reporting.
 
