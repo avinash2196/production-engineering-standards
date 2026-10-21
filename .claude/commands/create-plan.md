@@ -1,5 +1,8 @@
 ---
 description: "Create or update docs/.ai/<work-item>/Plan.md. Planning only."
+context: fork
+agent: planner
+background: false
 ---
 
 Act as a requirements/planning expert.
@@ -8,7 +11,7 @@ Apply `requirements-analysis` and `prompt-driven-development`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Before planning, confirm the requirements artifact's Status records approval (`prompt-driven-development` Approval Status); a claim of approval elsewhere is recorded there first, and if none exists, ask and stop.
+Before planning, confirm the requirements artifact's Status records approval (`prompt-driven-development` Approval Status); if none is recorded, ask and stop.
 
 Read the work item's approved `docs/.ai/<work-item>/requirements.md` (and the product-level `docs/requirements.md` as read-only context when it exists) and inspect repository evidence relevant to the requested work.
 
@@ -38,6 +41,6 @@ If a material decision required for the Plan is unresolved, ask focused clarific
 
 If the requirements neither answer nor explicitly exclude an applicable operational characteristic (`requirements-analysis` Operational Characteristics), stop and route it back to requirements capture.
 
-When revising an existing Plan (for example to fold in clarification answers or approved replanning), treat it as a revision, not a fresh draft. Keep every executed milestone, its status, and its evidence unchanged, and address every `Blocked` row in Execution Status, replacing it with the revised milestone's Pending row (`prompt-driven-development` Plan Integrity). For a contract amendment, also add one Pending `<milestone> amendment` milestone of the same type for each executed milestone the contract's Amendments row lists, placed before the revised Blocked milestone. Then find every reference to each changed item — status rows, traceability rows, milestone fields, risks, and cross-references — and update all of them; no stale text may remain. In the self-check, compare against the previous version and report what changed and that every affected reference was updated.
+When revising an existing Plan (for example to fold in clarification answers or approved replanning), treat it as a revision, not a fresh draft. Keep every executed milestone, its status, and its evidence unchanged, and address every `Blocked` row in Execution Status, replacing it with the revised milestone's Pending row (`prompt-driven-development` Plan Integrity). For a contract amendment, also add new Pending milestones, each with its own name and typed by the kind of change it makes, that bring the executed work the contract's Amendments row lists into line with the amended contract; never label them as part of an executed milestone, and place them before the revised Blocked milestone (`prompt-driven-development` Plan Integrity). Then find every reference to each changed item — status rows, traceability rows, milestone fields, risks, and cross-references — and update all of them; no stale text may remain. In the self-check, compare against the previous version and report what changed and that every affected reference was updated.
 
 Before stopping, confirm that no label or identifier this artifact introduces reuses a label already defined by an approved artifact it references (`prompt-driven-development` Artifact Authority).

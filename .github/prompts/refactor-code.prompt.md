@@ -8,11 +8,13 @@ tools:
   - edit
   - execute
 ---
+Run this command in the `refactoring-engineer` custom agent as a subagent (`prompt-driven-development` Fresh Context). Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged.
+
 Apply `prompt-driven-development` and relevant engineering/domain skills.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
+Before changing any file, confirm the Implementation Plan is approved in its Human Review status (`prompt-driven-development` Approval Status). If no approval is recorded, ask and stop. After verified execution, update that same status.
 
 Read:
 

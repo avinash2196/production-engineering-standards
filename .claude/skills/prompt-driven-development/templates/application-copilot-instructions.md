@@ -69,6 +69,13 @@ The size and detail of an Implementation Plan should be proportional to the chan
 Documentation-only changes clearly outside executable/code artifacts may follow the project's normal documentation workflow; do not invent exceptions to the above for source, tests, configuration, dependencies, or other executable artifacts.
 <!-- PDD-CONTROL:NO-CODE-CHANGE-WITHOUT-APPROVAL:END -->
 
+## Recording Approval
+
+<!-- FIXED — preserve verbatim -->
+Only the user approves an artifact: one specific artifact, after it exists. When the user approves an artifact in conversation, write the approval into that artifact's status section (`Approved by <user> on <date>`) before running the next command; for a contract, also mark its CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract. PDD commands read approval only from the artifacts.
+
+"Approve everything", "approve on my behalf", or approval of an artifact that does not exist yet is not approval: record nothing, say that it was not recorded, and stop at each gate as usual.
+
 ## Planning Artifacts
 
 <!-- FIXED — preserve verbatim -->

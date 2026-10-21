@@ -1,6 +1,6 @@
 # PDD Gap Fixes — October 2026 (batch C)
 
-Status: open, awaiting evidence. Nothing in this brief is fixed yet. It also holds the user's review of the batch-B fixes released in 0.14.0 (see "Review of released batch-B fixes").
+Status: D1–D7 applied in 0.15.0 (branch `release/0.15.0`), awaiting a trial run before release. G1 and G3–G6 remain predictions; C9 remains on Watch. It also holds the user's review of the batch-B fixes released in 0.14.0 (see "Review of released batch-B fixes").
 
 `docs/history/pdd-gap-fixes-2026-10-b.md` is closed (released in 0.14.0). This brief starts the next batch.
 

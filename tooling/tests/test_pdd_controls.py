@@ -1173,5 +1173,94 @@ class MilestoneSemanticsTest(unittest.TestCase):
             self.assertNotIn("RED migration/application tests", text, rel)
             self.assertIn("Type each milestone by the kind of change", text, rel)
 
+
+class Release015ControlsTest(unittest.TestCase):
+    """Batch C fixes released in 0.15.0 (docs/history/pdd-gap-fixes-2026-10-c.md D1-D7)."""
+
+    SKILL = ".github/skills/prompt-driven-development/SKILL.md"
+    TEMPLATES = ".github/skills/prompt-driven-development/templates/"
+
+    def _read(self, rel):
+        return (ROOT / rel).read_text(encoding="utf-8")
+
+    def test_d1_approval_is_read_only_from_the_artifact(self):
+        skill = self._read(self.SKILL)
+        self.assertIn("Approval is read only from the artifact.", skill)
+        self.assertIn('"Approve everything", "approve on my behalf", or approval of an artifact not yet written is not approval', skill)
+        self.assertIn("No command, subagent, or external loop records an approval on its own.", skill)
+        self.assertNotIn("given by the user in the current conversation", skill)
+        for name in ["application-claude-instructions.md", "application-copilot-instructions.md"]:
+            text = self._read(self.TEMPLATES + name)
+            self.assertIn("## Recording Approval", text, name)
+            self.assertIn("PDD commands read approval only from the artifacts.", text, name)
+        paths = sorted((ROOT / ".github/prompts").glob("*.prompt.md")) + sorted((ROOT / ".claude/commands").glob("*.md"))
+        for path in paths:
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn("a claim of approval elsewhere is recorded", text, path.name)
+            self.assertNotIn("record that approval in its Human Review status", text, path.name)
+            self.assertNotIn("record a conversational approval", text, path.name)
+
+    def test_d2_fresh_context_section_matches_validator(self):
+        skill = self._read(self.SKILL)
+        self.assertIn("### Fresh Context", skill)
+        self.assertIn("`Stopped \u2014 awaiting user: <questions, or the approval needed>`", skill)
+        section = skill.split("### Fresh Context", 1)[1].split("## Plan Content Rules", 1)[0]
+        for command, agent in validate_repository_module.FRESH_CONTEXT_COMMANDS.items():
+            self.assertIn(f"`{command}`", section)
+            self.assertTrue((ROOT / f".claude/agents/{agent}.md").is_file(), agent)
+
+    def test_d3_validation_protocol_and_waiting_status(self):
+        skill = self._read(self.SKILL)
+        waiting = "`Waiting \u2014 <named input> from <who>`"
+        self.assertIn("- **Validation protocol.**", skill)
+        self.assertIn(waiting, skill)
+        self.assertIn("only `Blocked` needs replanning", skill)
+        self.assertIn(waiting, self._read(self.TEMPLATES + "Plan.md"))
+        self.assertIn("validation-protocol OTHER milestone", self._read(".github/skills/implementation-planning/SKILL.md"))
+        for rel in [".github/prompts/implement-approved-plan.prompt.md", ".claude/commands/implement-approved-plan.md"]:
+            self.assertIn(waiting, self._read(rel), rel)
+
+    def test_d4_amendment_milestones_are_new_milestones(self):
+        for rel in [self.SKILL, ".github/prompts/create-plan.prompt.md", ".claude/commands/create-plan.md"]:
+            text = self._read(rel)
+            self.assertNotIn("of the same type", text, rel)
+            self.assertNotIn("`<milestone> amendment`", text, rel)
+        self.assertIn("None is labelled or numbered as part of an executed milestone.", self._read(self.SKILL))
+
+    def test_d5_pass_at_red_allowance_withdrawn(self):
+        planning = self._read(".github/skills/implementation-planning/SKILL.md")
+        self.assertNotIn("is allowed only when an earlier milestone of this work item already delivers its behavior", planning)
+        self.assertIn("means the Plan's traceability is wrong (Plan Content Rule 8)", planning)
+        self.assertIn("preserved row to this RED milestone", planning)
+        template = self._read(self.TEMPLATES + "Implementation-Plan.md")
+        self.assertNotIn("Tests expected to pass at RED", template)
+        self.assertIn("Preserved-behavior tests (expected to pass at RED)", template)
+        for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md"]:
+            self.assertIn('"Preserved-behavior tests (expected to pass at RED)" list', self._read(rel), rel)
+
+    def test_d6_final_review_obligation_form(self):
+        self.assertIn("Four kinds of row have no owning milestone", self._read(self.SKILL))
+        self.assertIn('Owning "none \u2014 Final Review obligation", Verifying "Final Review"', self._read(self.TEMPLATES + "Plan.md"))
+        self.assertIn("## Final Review Obligations", self._read(self.TEMPLATES + "Final-Review.md"))
+        for rel in [
+            ".github/prompts/review-code.prompt.md",
+            ".claude/commands/review-code.md",
+            ".github/prompts/review-production-readiness.prompt.md",
+            ".claude/commands/review-production-readiness.md",
+        ]:
+            self.assertIn("answer every final review obligation row", self._read(rel).lower(), rel)
+
+    def test_d7_contract_template_covers_every_interface_kind(self):
+        template = self._read(".github/skills/api-design/templates/API-Contract.md")
+        self.assertNotIn("## API Capabilities", template)
+        self.assertIn("## Interfaces", template)
+        for kind in ["(HTTP)", "(Message or stream)", "(RPC)"]:
+            self.assertIn(f"### <Interface Name> {kind}", template)
+        for field in ["Close or termination codes", "Ordering, acknowledgement, and delivery semantics", "Status codes per failure condition"]:
+            self.assertIn(field, template)
+        skill = self._read(".github/skills/api-design/SKILL.md")
+        self.assertIn("(HTTP status, close or termination code, or RPC status)", skill)
+        self.assertIn("(a request body, message, or RPC request)", skill)
+
 if __name__ == "__main__":
     unittest.main()

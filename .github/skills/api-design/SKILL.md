@@ -17,14 +17,14 @@ description: Use when creating or changing HTTP/API contracts, DTOs, validation,
 
 An API/external contract is complete only when it answers each question below for every operation where the question applies. Tests are written directly from the contract, so an unanswered question becomes a guess in the tests.
 
-1. **Input parsing:** response to a malformed or unreadable request body, and to path or query values of the wrong type or format.
+1. **Input parsing:** response to malformed or unreadable input (a request body, message, or RPC request), and to path, query, or field values of the wrong type or format.
 2. **Absent, null, empty, and blank values:** how each is treated for every input field and parameter.
 3. **Read-only and unknown request fields:** whether server-assigned or derived fields, and fields the contract does not define, are rejected or ignored when supplied.
 4. **Numeric semantics:** type, precision, scale, and rounding for decimal, monetary, or computed numeric values, including how derived values are calculated.
 5. **Collections:** ordering of returned collections, or an explicit statement that ordering is unspecified; empty-result behavior; any limit.
 6. **Matching and filtering:** exact or partial match and case sensitivity for every filter or lookup.
-7. **Error responses:** status code per failure condition, response shape, and which parts of an error body clients may rely on versus informative text.
-8. **Identity and existence:** behavior for unknown identifiers, and how that differs from malformed identifiers.
+7. **Error responses:** the error signal per failure condition (HTTP status, close or termination code, or RPC status), the error shape, and which parts of it clients may rely on versus informative text.
+8. **Identity and existence:** behavior for unknown identifiers, and how that differs from malformed identifiers, for every interface kind.
 9. **Mutation semantics:** replacement versus partial update, immutable fields, and what the response returns after a change.
 10. **Internal consistency:** no statement contradicts another statement, the approved requirements, or the approved Plan.
 11. **Authority:** the contract governs externally observable behavior only; the approved Plan remains authoritative for scope and milestones.

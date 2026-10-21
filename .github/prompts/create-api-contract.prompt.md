@@ -7,11 +7,13 @@ tools:
   - search
   - edit
 ---
+Run this command in the `planner` custom agent as a subagent (`prompt-driven-development` Fresh Context). Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged.
+
 Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Read the approved requirements and Plan before defining the contract. Confirm the Plan's Status records approval (`prompt-driven-development` Approval Status); a claim of approval elsewhere is recorded there first, and if none exists, ask and stop.
+Read the approved requirements and Plan before defining the contract. Confirm the Plan's Status records approval (`prompt-driven-development` Approval Status); if none is recorded, ask and stop.
 
 This command executes the CONTRACT milestone recorded in the approved `Plan.md`. If the Plan records no CONTRACT milestone, or its predecessor is not satisfied, stop and surface that for human review. Resolve every decision the Plan assigns to the CONTRACT milestone; do not add scope the Plan does not assign.
 
@@ -19,7 +21,7 @@ Create or update only the API/external contract artifact inside the work item's 
 
 Amendment mode: when `Plan.md` records a milestone `Blocked` because an approved contract decision cannot be met (`prompt-driven-development` Plan Integrity), revise the approved contract instead of executing the CONTRACT milestone. Change only that decision, add a row to the Amendments section (change, reason with evidence, impact, executed milestones that encode the old decision), update every reference to the changed decision, and return the contract to awaiting review. Do not change `Plan.md`; the Plan revision belongs to `create-plan`.
 
-Every contract capability must be traceable to approved requirements or Plan scope.
+Every contract interface must be traceable to approved requirements or Plan scope.
 
 When the requirements require externally settable configuration, define the names and shapes operators set (`prompt-driven-development` Plan Content Rule 2).
 
@@ -29,7 +31,7 @@ If material contract behavior is unresolved, ask focused clarification questions
 
 Do not create production code, tests, controllers, services, repositories, database schema, or implementation plans.
 
-Do not approve the contract yourself. When the user approves it, record the approval in the contract's Contract Review Status and mark the CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract; change nothing else in `Plan.md`.
+Do not approve the contract yourself. The user's approval is recorded in the contract's Contract Review Status, and the CONTRACT milestone is marked complete in `Plan.md` Execution Status, pointing to the contract (`prompt-driven-development` Approval Status); nothing else in `Plan.md` changes.
 
 Use the `api-design` skill's `templates/API-Contract.md` structure and answer every applicable Contract Completeness question from the approved requirements, the approved Plan, or the task prompt. Project-specific choices come only from those sources; this command stays project-neutral.
 
