@@ -87,10 +87,120 @@ Each row gets an ID (C1, C2, …), the phase, the finding, its kind (Plugin or M
 | C11 | All gates (`medgemma-xray-demo`, work item `two-pass-experiment`, 0.14.0, 2026-10-08) | Second occurrence of C1. Mid-capture the user said "all steps are approved complete it and let me know once ready for deployment", a blanket approval of artifacts not yet written. The model recorded each Status as "Pre-approved … recorded for review" and executed through GREEN, stopping before the cost-bearing deployment. Also second occurrence of C3: an OTHER validation milestone waiting on an owner-run deployment had no status other than Pending. | Plugin (evidence for C1 and C3) | Same fix as C1; C3 now has two cases (prompt-robustness RM6, two-pass-experiment TM6), so it can leave Watch. |
 | C12 | CONTRACT milestone (`scribe-contracts`, work item `protocol-v1`, 0.14.0, 2026-10-18) | Confirms G2. The work item needed a WebSocket client protocol, a gRPC bidirectional stream and a unary gRPC call besides two REST operations. The template's capability fields (Endpoint, HTTP method, success and failure status codes) fit only the two REST operations. The model added its own sections for the WebSocket protocol (handshake and auth timing, message envelope, ack semantics, state machine, ping/pong, close-code table, limits) and for each gRPC interface (methods, stream order, metadata, status codes). Contract Completeness questions 1–9 are HTTP-worded, so their WebSocket and gRPC answers were improvised in Contract-Wide Rules. Also observed: the requirements deferred field-level decisions to the contract, but `create-api-contract` forbids choosing them, so the model asked one round of proposals (9 questions, all accepted) and flagged 7 further details as "Derived for review", which the user confirmed at contract review. That flow worked and needs no fix. Latest `.github/skills/api-design/templates/API-Contract.md` still has only the HTTP capability fields (checked 2026-10-18). | Plugin | Design from this evidence: add per-interface-kind sections to the template (message or stream interface: connection and auth, framing, message catalogue, ordering and ack semantics, state rules, keepalive, close or status codes, limits; RPC interface: methods, stream order, metadata, status codes), and word Completeness questions 1, 7 and 8 so they apply to non-HTTP interfaces. |
 | C9 | Before M4 planning (same work item) | The user had switched the deployed model outside PDD (`/health` reported a different model than the repository's setting). It was found only because the assistant compared `/health` with the repository by hand. M4's baseline evidence ("health response showing the model loaded") did not require comparing the deployed configuration with the repository's. | Plugin (Watch — seen once) | For an OTHER milestone that validates a deployment, the baseline evidence could require confirming the deployment matches the repository state being validated. Decide after a second case. |
+| C13 | All phases, Claude Code (user observation across the medgemma, scribe-contracts and approval-service runs, 0.14.0, 2026-10-19) | The artifacts are designed for a cold start: each command reads requirements, Plan, contract, Implementation Plan, and the repository. Yet every Claude Code command runs inside the user's main conversation, so whole work items ran in one growing context. Two effects follow. Quality and cost degrade as the context grows. The hand-off the artifacts exist to guarantee is never tested: the model can rely on conversation memory, so a gap in a Plan or Implementation Plan goes unnoticed. Repository evidence (checked 2026-10-19): none of the 14 `.claude/commands/*.md` files sets `context` or `agent`; they say "Act as an implementation engineer" and so on, and the role agents in `.claude/agents/` are never used by a command. The 14 `.github/prompts/*.prompt.md` files name an `agent:`. **Copilot CLI probe (1.0.98, 2026-10-19):** a throwaway plugin first told the session a codeword, then ran a prompt file. A prompt file with `agent: "probe-agent"` ran inline as a skill and reported the codeword, the same as a prompt file with no `agent:`. So `agent:` does not give a fresh context in Copilot CLI. A prompt file that tells the model to delegate to the custom agent as a subagent, passing only the instruction, made the subagent report `CODEWORD=NONE`. That is a fresh context, but the main model writes the subagent's prompt, so it could still pass conversation content on. **Claude Code probe (2.1.277, 2026-10-19):** run in the same continued session after the codeword. A command with no `context` reported `CODEWORD=PELICAN-42`. A command with `context: fork`, `agent: probe-agent` and `background: false` reported `CODEWORD=NONE`, and the main session waited for the result. So `context: fork` gives a fresh context. The PDD skill Approval Status accepts approval "given by the user in the current conversation", which a fresh context cannot see. Claude Code command files support `context: fork` with `agent: <subagent>`: a new subagent with no conversation history, given the command text as its prompt (`background: false` waits for the result). | Plugin | Run every artifact-driven Claude command as a forked subagent: `create-plan`, `create-api-contract` and `create-implementation-plan` with `planner`; `generate-tests` with `test-engineer`; `implement-approved-plan` with `implementation-engineer`; `refactor-code` with `refactoring-engineer`; `review-code`, `review-production-readiness` and `review-architecture` with the matching reviewer. Keep `capture-requirements` and `review-requirements` in the main conversation, because they need back-and-forth with the user. A forked command that needs clarification ends and returns its questions ("ask and stop" already). **Linked to C1:** fix them together. A forked command can rely only on approval recorded in the artifact, so approval given in conversation must be written into the artifact (by the main conversation, at the user's word) before the forked command runs. Copilot needs a different mechanism (see the probe): the prompt body delegates to the role agent as a subagent and passes only the work item and the command's instruction. Supports the external loop decision (each loop step is then already a fresh, self-contained run). |
 
 Run notes for `prompt-quality` (two services, but only the backend changed): one verification command set was enough, so this run neither confirms nor refutes G1–G4.
 
 Run notes for the scribe platform (2026-10-16, Claude Code, 0.14.0; seven services, one repository per service, Java and Python): before any PDD command ran, the architecture was settled in conversation and written into the product-level `docs/requirements.md` (services, data ownership, auth boundaries, queue rules, decision log), because no PDD artifact holds it. This is early evidence for G1's question "where do architecture decisions end up": in the product requirements, outside any reviewed work-item artifact. G5 and G6 were raised by the same run. Work items start in `scribe-contracts` (`protocol-v1`); watch them for G1–G6.
+
+## Draft fixes (awaiting user review)
+
+Nothing below is applied. Each draft names the findings it fixes, the proposed rule, the files it touches, and what to verify. Both D1 and D2 change `.github/` first and mirror the change to `.claude/`.
+
+### D1: approval comes only from the user and is recorded in the artifact (fixes C1 and C11; prerequisite for D2)
+
+Proposed rule. It replaces the conversation clause in the `prompt-driven-development` Approval Status section:
+
+1. An approval is valid for one specific, existing artifact, and only the user gives it.
+2. When the user approves in conversation, the main conversation writes it into that artifact's Status (`Approved by <user> on <date>`) before any command builds on it.
+3. Every command, including a forked one, accepts only approval recorded in the artifact. It never reads approval from the conversation. If no approval is recorded, it asks and stops.
+4. Approval of an artifact that does not exist yet, and "approve everything" or "approve on my behalf", is not approval. Record nothing, tell the user it was not recorded, and stop at each gate as usual.
+5. Neither a subagent nor an external loop ever records an approval.
+
+**Decision (user, 2026-10-19):** keep rule 4. Delegated or blanket approval is not approval. The recorded delegated form proposed in C1 is rejected.
+
+Files: the `prompt-driven-development` SKILL Approval Status, plus the approval lines in `create-plan`, `create-api-contract`, `generate-tests`, `implement-approved-plan` and `refactor-code`. Those commands now record an approval given in conversation themselves; they should only confirm the approval already recorded. Tests: update the `test_pdd_controls` wording checks.
+
+### D2: artifact-driven commands run in a fresh context (fixes C13)
+
+| Command | Claude Code frontmatter | Copilot prompt body (first line) |
+| --- | --- | --- |
+| `create-plan`, `create-api-contract`, `create-implementation-plan` | `context: fork`, `agent: planner`, `background: false` | Delegate to `planner` as a subagent |
+| `generate-tests` | fork, `test-engineer` | Delegate to `test-engineer` |
+| `implement-approved-plan` | fork, `implementation-engineer` | Delegate to `implementation-engineer` |
+| `refactor-code` | fork, `refactoring-engineer` | Delegate to `refactoring-engineer` |
+| `review-code`, `review-production-readiness`, `review-architecture` | fork, matching reviewer | Delegate to the matching reviewer |
+| `capture-requirements`, `review-requirements`, `setup-*`, `migrate-oracle-to-postgres` | unchanged (inline) | unchanged |
+
+- The Copilot delegation line reads: "Run this command in the `<role>` custom agent as a subagent. Pass it only the work item name and this command's text, and nothing from this conversation. Relay its report unchanged." Keep the existing `agent:` frontmatter, because other Copilot surfaces may use it.
+- A forked command's report ends with exactly one of these: written or executed with its evidence; `Stopped — awaiting user: <questions or approval needed>`; or `Blocked — <reason>`. The main conversation relays it, and the user answers there.
+- The role agents already have Read, Edit, Write, Bash, Grep and Glob, so they need no tool change.
+- Validator and tests: every artifact-driven Claude command sets `context: fork` and an `agent` that exists in `.claude/agents/`, and every matching Copilot prompt contains the delegation line.
+- Verify before release: rerun the codeword probe against the real plugin's commands on both tools. The throwaway-plugin probe already passed for Claude `context: fork` and for Copilot subagent delegation. Then run one small real work item end to end and confirm each forked step worked from the artifacts alone.
+
+### D3: OTHER covers a human-run validation, and a milestone can wait on an input (fixes C3, which has two cases: RM6 and TM6)
+
+Current text: OTHER allows only tests, build, configuration, tooling, or infrastructure changes. Its Implementation Plan needs exact code (`implementation-planning` OTHER, "exact code"). Execution Status has only Pending, Blocked, and completed.
+
+Proposed:
+
+1. **Validation protocol in OTHER.** A new bullet in the `prompt-driven-development` OTHER section and in `implementation-planning` OTHER. When the requirements call for a check against a running system or with inputs the user supplies, the OTHER milestone may be a validation protocol. Its exact content is then:
+   - the exact commands or steps;
+   - each input, who supplies it, and where it is placed (never committed unless the requirements say so);
+   - the expected observation and the met or not-met rule for each case;
+   - a statement that it changes no repository file other than the evidence it records.
+
+   The dry run runs every step that needs no supplied input and lists the steps it could not run.
+2. **Waiting status.** A new Execution Status value, `Waiting — <named input> from <who>`, set when an approved milestone cannot start or continue until the user supplies a named input or performs a named action, such as images, a deployment, or credentials entered by the user. It is not `Blocked`: the Plan stays valid, and the milestone resumes on the same approved Implementation Plan once the input exists. `Blocked` remains the only status that needs replanning.
+3. Plan template Execution Status comment: list the allowed values as Pending, Waiting, Blocked, and Executed.
+
+Files: the `prompt-driven-development` SKILL (OTHER, Plan Integrity, Plan Progress), `implementation-planning` SKILL (OTHER, dry run), the Plan template, and `implement-approved-plan` (OTHER branch: set Waiting and stop). Tests: wording checks for the new status.
+
+### D4: amendment milestones are new milestones, not continuations (H1 follow-up from the user review)
+
+Current text (Plan Integrity, contract amendment step 2): "`create-plan` revision mode adds, for each executed milestone the amendment lists, a new Pending milestone **of the same type** (`<milestone> amendment`)".
+
+Proposed replacement for step 2: "`create-plan` revision mode adds new Pending milestones that bring the executed work into line with the amended contract. Each gets its own name and is typed by the kind of change it makes (Milestone Types). For example, a test that encodes the old decision is updated in an OTHER or RED milestone, and a production change is a RED and GREEN pair. None is labelled or numbered as part of an executed milestone. They are placed before the revised Blocked milestone, each with its own Implementation Plan numbered as the next `NNN`. The executed milestones' rows and evidence stay unchanged."
+
+Files: the `prompt-driven-development` SKILL and `create-plan`. Both contain the "same type" wording; `create-api-contract` does not. Tests: replace any check that expects "amendment" naming.
+
+### D5: withdraw the H3 allowance and replace it with the narrower C2 rule (B3 reclassified as Model)
+
+Current text: `implementation-planning` RED allows "a new, non-vacuous test that passes at RED … only when an earlier milestone of this work item already delivers its behavior". The Implementation Plan template has `Tests expected to pass at RED: none | <test> — delivered by <milestone>`.
+
+Proposed:
+
+1. Remove the H3 allowance. A RED test for behavior an earlier milestone delivered means the Plan's traceability is wrong (Rule 8). Stop and return to planning, and do not plan a passing test.
+2. Add the C2 rule. A RED milestone may include tests for **preserved existing behavior** only when the Plan's traceability assigns that preserved row to this RED milestone (Owning "none — preserved", Verifying this milestone). They are expected to pass at RED, are listed in Expected Evidence as preserved-behavior tests, and are never counted as RED evidence for any requirement.
+3. Template field renamed: `Preserved-behavior tests (expected to pass at RED): none | <test> — preserved row <requirement>`.
+
+**Decision (user, 2026-10-19):** withdraw the H3 allowance and its template field, and replace them with the C2 rule above. B3 stays reclassified as Model.
+
+Files: the `implementation-planning` SKILL (RED), the Implementation Plan template, and `generate-tests`, whose RED self-check compares passing tests with the old "Tests expected to pass at RED" list. Tests: update the H3 checks.
+
+### D6: a fourth traceability form for Final Review obligations (fixes C8)
+
+Current text: Rule 8 says "Three kinds of row have no owning milestone": exclusion, not required, and preserved. The Plan template lists the same three.
+
+Proposed: "Four kinds". Add: a requirement that the Final Review itself fulfils (for example a statement the Final Review must make) is a Final Review obligation. It uses Owning "none — Final Review obligation" and Verifying "Final Review". The Final Review template gets a short "Final Review Obligations" section that answers each such row. Never assign one to a delivery milestone.
+
+Files: the `prompt-driven-development` SKILL (Rule 8), the Plan template (traceability comment), the Final Review template, and `review-code` and `review-production-readiness` (answer every Final Review obligation row). Tests: wording checks.
+
+### D7: the contract template covers message, stream, and RPC interfaces (fixes C12, confirming G2)
+
+Current text: `api-design/templates/API-Contract.md` has only HTTP capability fields (Endpoint, HTTP method, status codes). Contract Completeness questions 1, 7, and 8 are HTTP-worded.
+
+Proposed:
+
+1. Rename "API Capabilities" to "Interfaces". Each interface declares its kind, **HTTP**, **Message or stream** (for example WebSocket or an event topic), or **RPC** (for example gRPC), and fills only that kind's fields:
+   - HTTP: the current fields, unchanged.
+   - Message or stream: connection and authentication (when credentials are presented and when they are checked); framing and envelope; message catalogue in each direction; ordering, acknowledgement, and delivery semantics, including duplicates and idempotency key; state rules (which message is allowed when); keepalive; close or termination codes and their meaning; limits (size, rate, backpressure).
+   - RPC: methods, unary or streaming; stream order and completion; metadata; status codes per failure condition; deadlines where the requirements state them.
+2. Reword Completeness questions 1, 7, and 8 to cover every interface kind:
+   - 1 "malformed or unreadable request body" becomes "malformed or unreadable input (request body, message, or RPC request)".
+   - 7 "status code per failure condition" becomes "error signal per failure condition (HTTP status, close code, or RPC status)".
+   - 8 "unknown identifiers" applies to every kind.
+3. Contract-Wide Rules gains "Versioning and compatibility of message or RPC schemas".
+
+The scribe-contracts `protocol-v1` contract is the worked evidence. Its improvised sections map onto these fields. Product, library, and protocol names stay out of the template (Keep out of the plugin).
+
+Files: `api-design` SKILL (Contract Completeness), the API-Contract template, and `create-api-contract` (one checklist row per question, unchanged). Tests: the template structure and Completeness checks.
+
+### Not in this batch
+
+- G1 and G3–G6 stay predictions until a run shows them.
+- C9 stays on Watch.
+- The H4 follow-up (dropping the planning trigger and keeping the `security` line) was raised in the user review but not chosen for 0.15.0.
 
 ## Review of released batch-B fixes (user review, 2026-10-05)
 
@@ -124,5 +234,9 @@ The rules are the same as in batches A and B:
 ## Keep out of the plugin
 
 - **B5 (closed by user review, 2026-10-05):** do not make PDD commands check for or require the application instruction file. That is bootstrap; `setup-claude-instructions` / `setup-copilot-instructions` already say "Run first".
+- **Development loop (user decision, 2026-10-19):** do not add a loop, runner, or "keep going" command to the plugin. The plugin owns the rules, the artifacts, and where each command stops. A loop outside the plugin (Claude Code `/loop`, headless `claude -p`, Copilot CLI, or a script) may drive a whole work item. Each round it reads `Plan.md` and the approval status of each artifact. It then either runs the single next allowed command, or stops and reports what waits for the user. It never records an approval and never retries a failed verification. The loop does not iterate fixes inside an approved milestone. `implement-approved-plan` applies the plan's exact code, and any difference stops execution for re-approval. Iteration is allowed only on unapproved drafts.
+  - **Depends on C1:** the delegated-approval rule must state who may record an approval, so that a loop cannot record one itself.
+  - **Depends on C3:** a "waiting on input" status, so that a loop can tell "waiting for the user" apart from `Blocked`.
+  - Build and test the runner in its own repository after the release that fixes C1 and C3.
 
 These are evidence only, never skill text: the service names, the speech or LLM provider, the broker product, WebSocket libraries, and any audio format.
