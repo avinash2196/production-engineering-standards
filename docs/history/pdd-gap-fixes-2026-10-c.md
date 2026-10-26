@@ -203,6 +203,82 @@ The scribe-contracts `protocol-v1` contract is the worked evidence. Its improvis
 
 Files: `api-design` SKILL (Contract Completeness), the API-Contract template, and `create-api-contract` (one checklist row per question, unchanged). Tests: the template structure and Completeness checks.
 
+### Trial follow-up drafts (awaiting user review)
+
+D1–D7 above are applied on `release/0.15.0` (1bd6fe7). D8–D10 come from the 0.15.0 trial. The user accepted them on 2026-10-26; they are not applied yet. They are planned to go into the same release, before it merges.
+
+### D8: deferred contract decisions are labelled proposals (fixes C14)
+
+Current conflict:
+
+- `create-plan` gives the CONTRACT milestone "every decision the requirements defer to the contract".
+- `create-api-contract` ("ask … and stop instead of choosing") and `api-design` Contract Completeness ("do not choose a default on the user's behalf") forbid choosing.
+- In scribe (C12) the model asked first. In the trial (C14) it decided all eight decisions silently.
+
+Proposed rule. It applies only to decisions the approved requirements or Plan **explicitly defer to the contract**:
+
+1. The contract proposes a resolution for each one and records it in Decisions Resolved with Source `Proposed — deferred by <requirement or Plan item>`.
+2. The command's report lists every proposal, so the user sees them before reviewing the contract.
+3. Approving the contract accepts the listed proposals. Rejecting a proposal sends the contract back for revision.
+4. Anything the sources neither answer nor defer is still a clarification question: ask and stop, never choose.
+5. The scribe flow, which asked a round of proposals before writing, stays allowed as the alternative to 1. The choice is the command's; the labelling is required either way.
+
+Files:
+
+- `create-api-contract`: the self-check sentence, plus a new sentence on deferred decisions.
+- `api-design` SKILL: an exception for deferred decisions in the Contract Completeness paragraph.
+- The API-Contract template: the Decisions Resolved Source column allows `Proposed — deferred by …`.
+- Tests: wording checks.
+
+### D9: Copilot passes the command text verbatim and the subagent writes the artifact (fixes C15)
+
+Current delegation paragraph: "Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged." In the trial (Copilot CLI with claude-haiku-4.5), the main model read the artifacts first, passed its own 2.7k-character summary instead of the text, and wrote `Plan.md` itself.
+
+Proposed replacement paragraph for the nine prompts:
+
+> Do not read any artifact or repository file before delegating. Run this command in the `<agent>` custom agent as a subagent (`prompt-driven-development` Fresh Context): pass the work item and the rest of this file verbatim — everything after this paragraph — with nothing added, summarized, or taken from this conversation. The subagent reads the artifacts and writes every file; you write none. Relay its report unchanged.
+
+Before release:
+
+- Retest `create-plan` in Copilot CLI with a stronger model than Haiku and with the real prompt (its `tools:` list included). Pass means the `task` call's prompt contains the command text verbatim, the subagent writes `Plan.md`, and the report is relayed unchanged.
+- **If the retest still fails:** remove Copilot delegation for 0.15.0, so Copilot prompts run inline as in 0.14.0. The README then states that fresh context is Claude Code only. A Copilot run that summarizes is worse than one that runs inline, because the summary drops the command's rules.
+
+Files: the nine `.github/prompts`, the validator's `COPILOT_DELEGATION_LINE`, the mutation tests, and the PDD skill Fresh Context sentence on Copilot.
+
+### D10: as few milestones as keep each plan reviewable; split only for a stated reason (fixes C18)
+
+Current text: Adaptive Milestone Decomposition says "Do not default to one giant RED/GREEN pair" and "For complex requirements that span multiple independently testable architectural layers, create separate layer-wise implementation milestones". The application instruction templates repeat it. In the trial, a field, a query and an endpoint were read as "spanning layers": the work became 7 milestones and cost about $52 before the user stopped it.
+
+Constraint from existing guidelines: milestone count must not depend on whether a project is new. The PDD skill says "do not decide FOUNDATION from whether the project is labeled greenfield or brownfield". `getting-started.md` says "Choose each milestone's type by the kind of change, not by whether the project is new". New projects split more because they usually have the reasons below, not because they are new.
+
+Proposed rule (replaces the opening of Adaptive Milestone Decomposition):
+
+1. **Every gate stays.** Requirements, Plan, contract when needed, an Implementation Plan for each milestone, execution, and Final Review are each reviewed by the user. Fewer milestones never removes a gate, never merges RED and GREEN, and never leaves a requirement without an owning milestone and a RED test (Rule 8).
+2. **Use as few milestones as keep each Implementation Plan reviewable as exact code.** The default for one cohesive behavior change is one RED milestone and one GREEN milestone, plus CONTRACT and FOUNDATION when the Milestone Types call for them.
+3. **Split only for a stated reason.** The Plan records `Decomposition: one pair` or `Split: <reason>` for every work item, and the user approves it at Plan review. Valid reasons:
+   - **size:** one Implementation Plan would be too large to review well as exact code;
+   - **independent capabilities:** separate behaviors that can be verified on their own, for example create, cancel and list;
+   - **different risk:** a data migration or a security change needs its own gate;
+   - **ordering:** one part must be verified before the next can be planned;
+   - **different verification setup:** a part needs its own test infrastructure.
+4. **Layers alone are not a reason.** When a stated reason applies to complex layered work, the layer boundaries are still the preferred split. The existing layer-wise guidance and "not a mandatory architectural template" stay. So a new service with several capabilities normally gets FOUNDATION, CONTRACT, and a pair for each capability or layer. A small new service, or a small enhancement such as `recent-reservations`, gets CONTRACT and one pair.
+5. **Lighter planning dry runs, with no lost checks.**
+   - Kept: apply the exact code in a disposable copy, run the tests the milestone adds or affects, and, for RED, prove those tests fail without the change and pass with it.
+   - Dropped: the full verification suite runs once at execution, not repeatedly during planning. Repeated isolated runs stay where the existing rule requires them (tests that touch persistent state).
+   - No mutation testing beyond the RED fail-and-pass proof unless the requirements ask for it.
+
+**Decision (user, 2026-10-26):** D8, D9 and D10 are accepted, including rule 4's narrowing of the layer-wise rule: split by layer only when a stated reason applies. `test_pdd_skill_expresses_layer_wise_decomposition_for_complex_work` and `test_application_instructions_prefer_layers_without_forcing_them` are updated to the new wording, not deleted.
+
+Files:
+
+- The `prompt-driven-development` SKILL: Adaptive Milestone Decomposition.
+- Both application instruction templates: the PDD Workflow paragraph.
+- The Plan template: a `Decomposition:` line.
+- `create-plan`: record the decomposition line.
+- `implementation-planning` Planning-Time Dry Run.
+- README and `getting-started.md`, which describe decomposition.
+- Tests: the two layer tests above, plus new checks for the `Decomposition:` line and the dry-run scope.
+
 ### Not in this batch
 
 - G1 and G3–G6 stay predictions until a run shows them.
