@@ -425,6 +425,81 @@ def validate_single_claude_tree(root: Path, errors: list[str]) -> None:
             )
 
 
+# ---------------------------------------------------------------------------
+# Copilot loads the plugin from the repository root through its own
+# marketplace. Both marketplaces publish one plugin under one name, and every
+# manifest carries the same version, so a release bump cannot be partial.
+# ---------------------------------------------------------------------------
+
+COPILOT_MARKETPLACE = ".github/plugin/marketplace.json"
+COPILOT_PLUGIN_MANIFEST = ".github/plugin/plugin.json"
+CLAUDE_MARKETPLACE = ".claude-plugin/marketplace.json"
+CLAUDE_PLUGIN_MANIFEST = f"{PLUGIN_ROOT}/.claude-plugin/plugin.json"
+
+
+def _load_json(root: Path, rel: str, errors: list[str]) -> dict | None:
+    path = root / rel
+    if not path.is_file():
+        errors.append(f"missing manifest: {rel}")
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"{rel} is not valid JSON: {exc}")
+        return None
+    if not isinstance(data, dict):
+        errors.append(f"{rel}: top level must be a JSON object")
+        return None
+    return data
+
+
+def validate_copilot_marketplace(root: Path, errors: list[str]) -> None:
+    market = _load_json(root, COPILOT_MARKETPLACE, errors)
+    plugin = _load_json(root, COPILOT_PLUGIN_MANIFEST, errors)
+    claude_market = _load_json(root, CLAUDE_MARKETPLACE, errors)
+    claude_plugin = _load_json(root, CLAUDE_PLUGIN_MANIFEST, errors)
+    if market is None or plugin is None:
+        return
+
+    if claude_market is not None and market.get("name") != claude_market.get("name"):
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: marketplace name {market.get('name')!r} differs from "
+            f"{CLAUDE_MARKETPLACE} name {claude_market.get('name')!r}"
+        )
+
+    entries = market.get("plugins", [])
+    if len(entries) != 1:
+        errors.append(f"{COPILOT_MARKETPLACE}: expected exactly one plugin entry, found {len(entries)}")
+        return
+    entry = entries[0]
+    if entry.get("name") != plugin.get("name"):
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: plugin name {entry.get('name')!r} differs from "
+            f"{COPILOT_PLUGIN_MANIFEST} name {plugin.get('name')!r}"
+        )
+    if entry.get("source") != ".":
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: plugin source is {entry.get('source')!r}, expected '.' "
+            f"(the repository root, where {COPILOT_PLUGIN_MANIFEST} is found)"
+        )
+
+    for key in ("agents", "skills", "commands"):
+        target = plugin.get(key)
+        if not target or ".." in target or not (root / target).is_dir():
+            errors.append(f"{COPILOT_PLUGIN_MANIFEST}: '{key}' must name an existing repository directory, got {target!r}")
+
+    versions = {
+        f"{COPILOT_MARKETPLACE} metadata.version": (market.get("metadata") or {}).get("version"),
+        f"{COPILOT_MARKETPLACE} plugins[0].version": entry.get("version"),
+        f"{COPILOT_PLUGIN_MANIFEST} version": plugin.get("version"),
+    }
+    if claude_plugin is not None:
+        versions[f"{CLAUDE_PLUGIN_MANIFEST} version"] = claude_plugin.get("version")
+    if len(set(versions.values())) != 1:
+        listed = ", ".join(f"{where} = {value!r}" for where, value in versions.items())
+        errors.append(f"plugin versions differ: {listed}")
+
+
 def validate_agent_and_prompt_names(root: Path, errors: list[str]) -> None:
     agent_root = root / ".github/agents"
     prompt_root = root / ".github/prompts"
@@ -646,6 +721,7 @@ VALIDATORS = [
     validate_command_prompt_parity,
     validate_fresh_context_commands,
     validate_single_claude_tree,
+    validate_copilot_marketplace,
     validate_agent_and_prompt_names,
     validate_prompt_agent_bindings,
     validate_markdown_links,

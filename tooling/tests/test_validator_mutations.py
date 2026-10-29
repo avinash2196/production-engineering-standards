@@ -142,6 +142,42 @@ class FreshContextCommandTest(ValidatorMutationTestCase):
         self._edit(".github/prompts/refactor-code.prompt.md", 'agent: "refactoring-engineer"', 'agent: "planner"')
         self.assert_error_containing("refactor-code.prompt.md: agent binding must be 'refactoring-engineer'")
 
+class CopilotMarketplaceTest(ValidatorMutationTestCase):
+    MARKET = ".github/plugin/marketplace.json"
+
+    def _rewrite(self, rel: str, change) -> None:
+        import json
+
+        path = self.repo / rel
+        data = json.loads(path.read_text(encoding="utf-8"))
+        change(data)
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    def test_wrong_source_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["plugins"][0].update(source="./.github/plugin"))
+        self.assert_error_containing("marketplace.json: plugin source is './.github/plugin', expected '.'")
+
+    def test_plugin_name_mismatch_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["plugins"][0].update(name="pes"))
+        self.assert_error_containing("marketplace.json: plugin name 'pes' differs from .github/plugin/plugin.json")
+
+    def test_marketplace_name_mismatch_fails(self):
+        self._rewrite(self.MARKET, lambda d: d.update(name="other-marketplace"))
+        self.assert_error_containing("marketplace name 'other-marketplace' differs from .claude-plugin/marketplace.json")
+
+    def test_partial_version_bump_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["metadata"].update(version="9.9.9"))
+        self.assert_error_containing("plugin versions differ:")
+
+    def test_claude_manifest_version_drift_fails(self):
+        self._rewrite(".claude/.claude-plugin/plugin.json", lambda d: d.update(version="0.0.1"))
+        self.assert_error_containing("plugin versions differ:")
+
+    def test_missing_component_directory_fails(self):
+        self._rewrite(".github/plugin/plugin.json", lambda d: d.update(skills=".github/skillz/"))
+        self.assert_error_containing("plugin.json: 'skills' must name an existing repository directory")
+
+
 class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
     def test_deleting_claude_skills_tree_fails(self):
         shutil.rmtree(self.repo / ".claude/skills")
