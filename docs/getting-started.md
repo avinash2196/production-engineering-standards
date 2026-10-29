@@ -160,7 +160,7 @@ For a new application or a change whose requirements are not yet captured (after
 1. `/capture-requirements <work-item>`
 2. resolve all material ambiguity
 3. human requirements review
-4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8) based on complexity, responsibility boundaries, risk, and independent verifiability; a small cohesive change may need only one, larger work several
+4. `/create-plan` — the Plan decides how many implementation milestones this work needs (see step 8): as few as keep each Implementation Plan reviewable, splitting only for a stated reason recorded as `Split: <reason>`; a cohesive change needs one RED/GREEN pair, larger work several
 5. human Plan review
 6. `/create-api-contract` when externally visible behavior must be defined before implementation
 7. human contract review
@@ -258,9 +258,9 @@ Possible milestone boundaries include:
 - migration
 - infrastructure/configuration
 
-A small, cohesive change (e.g. a single new read-only endpoint reusing existing persistence and validation) may need only one RED milestone / GREEN milestone pair.
+A cohesive change (e.g. a new read-only endpoint with one new field and one query) uses one RED milestone / GREEN milestone pair, even though it touches several layers — layers alone are not a reason to split. The Plan records `Decomposition: one pair`.
 
-A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API) is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
+A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API, where one Implementation Plan would be too large to review) states its reason (`Split: size`) and is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
 
 ```text
 Complex Spring Boot feature

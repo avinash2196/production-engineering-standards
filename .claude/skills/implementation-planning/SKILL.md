@@ -172,6 +172,7 @@ Before presenting an Implementation Plan for review, apply its exact code in a d
 
 - For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. For RED whose evidence is an existing failing test, apply the probe and confirm that test passes with it. The stub or probe never enters the repository.
 - Cover every artifact type the milestone introduces or changes — build files, configuration, runtime or infrastructure definitions — not only dependencies; use each tool's own validation (for example resolving dependencies, or a configuration file's validate or dry-run mode).
+- Keep the dry run proportional: run each verification command once — repeat runs only where Repeatable, Isolated Verification requires them — and add no mutation testing beyond the RED fail-and-pass proof unless the requirements ask for it. The full suite's repeatability is shown at execution.
 - Record each command verbatim with its trimmed real output, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
 - Never modify the repository during a dry run, create nothing outside a temporary location, list anything created, and delete the disposable copy afterward.
 - If a dry run cannot be performed, state why in the plan. "The repository must not be modified" is not a reason — the dry run runs outside it.

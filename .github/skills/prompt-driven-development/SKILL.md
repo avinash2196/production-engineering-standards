@@ -176,7 +176,7 @@ The same rule applies to every artifact a command builds on: the requirements be
 
 ### Fresh Context
 
-The artifacts carry all state between steps, so every command that works from artifacts runs in a fresh context with its role agent and no conversation history: `create-plan`, `create-api-contract`, and `create-implementation-plan` (planner); `generate-tests` (test-engineer); `implement-approved-plan` (implementation-engineer); `refactor-code` (refactoring-engineer); `review-code`, `review-production-readiness`, and `review-architecture` (the matching reviewer). Claude Code runs them with `context: fork`; Copilot delegates them to the role agent as a subagent, passing only the work item and the command's text. Commands that need back-and-forth with the user — `capture-requirements`, `review-requirements`, the setup commands, and `migrate-oracle-to-postgres` — run in the main conversation.
+The artifacts carry all state between steps, so every command that works from artifacts runs in a fresh context with its role agent and no conversation history: `create-plan`, `create-api-contract`, and `create-implementation-plan` (planner); `generate-tests` (test-engineer); `implement-approved-plan` (implementation-engineer); `refactor-code` (refactoring-engineer); `review-code`, `review-production-readiness`, and `review-architecture` (the matching reviewer). Claude Code runs them with `context: fork`. Copilot runs them inline in the main conversation, because Copilot CLI subagents cannot yet write files with these agents' tool lists; there the command still reads state only from the artifacts and the repository and does not rely on earlier conversation. Commands that need back-and-forth with the user — `capture-requirements`, `review-requirements`, the setup commands, and `migrate-oracle-to-postgres` — run in the main conversation.
 
 A fresh-context command reads state only from the artifacts and the repository. Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
 
@@ -229,19 +229,27 @@ Never replan and continue executing without that approval.
 
 ### Adaptive Milestone Decomposition
 
-For larger changes, decompose implementation into independently reviewable sequences of RED milestone → GREEN milestone → optional REFACTOR milestone based on complexity, risk, responsibility boundaries, and independent verifiability.
+Use as few milestones as keep each Implementation Plan reviewable as exact code. One cohesive behavior change uses one RED milestone and one GREEN milestone, plus CONTRACT and FOUNDATION when Milestone Types call for them. This applies to new and existing projects alike; a new project usually has more milestones because it has more of the reasons below, not because it is new.
 
-A small cohesive change may use one RED milestone / GREEN milestone pair.
+Every review gate stays whatever the count: requirements, Plan, contract when required, an Implementation Plan for each milestone, execution, and Final Review. Fewer milestones never merges RED and GREEN and never leaves a requirement without an owning milestone and a RED test that verifies it (Plan Content Rule 8).
 
-Do not default to one giant RED/GREEN pair for the whole feature. Do not mechanically create one pair per class or file.
+Split into more milestones only for a stated reason, and record the decision in the Plan as `Decomposition: one pair` or `Split: <reason>` for each split, so the user approves it at Plan review. Valid reasons:
+
+- **size:** one Implementation Plan would be too large to review well as exact code;
+- **independent capabilities:** separate behaviors that can each be verified on their own;
+- **different risk:** a part, such as a data migration or a security change, needs its own gate;
+- **ordering:** one part must be verified before the next can be planned;
+- **different verification setup:** a part needs its own test infrastructure.
+
+Architectural layers alone are not a reason to split. Do not mechanically create one pair per class or file.
 
 Boundaries may include persistence, business behavior, API behavior, integration, or another independently testable capability. See `docs/getting-started.md` for fuller illustrative examples — this skill states the rule, not an exhaustive catalog of boundaries.
 
-For complex requirements that span multiple independently testable architectural layers, create separate layer-wise implementation milestones — a separate RED milestone and GREEN milestone (and optional REFACTOR milestone) for each layer — rather than one feature-wide RED/GREEN pair. In a typical layered application, this may result in separate milestone sequences for persistence/data access, domain/service behavior, API/controller behavior, and cross-layer integration — for example: Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN. There is no containing "capability milestone" that owns these as internal phases — each is its own milestone with its own Implementation Plan and Human Review before execution. Before the RED milestone for each layer, determine whether a preceding FOUNDATION milestone is required — see "Conditional SETUP / FOUNDATION" below.
+When a stated reason to split applies to complex requirements that span multiple independently testable architectural layers, create separate layer-wise implementation milestones — a separate RED milestone and GREEN milestone (and optional REFACTOR milestone) for each layer — rather than one feature-wide RED/GREEN pair. In a typical layered application, this may result in separate milestone sequences for persistence/data access, domain/service behavior, API/controller behavior, and cross-layer integration — for example: Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN. There is no containing "capability milestone" that owns these as internal phases — each is its own milestone with its own Implementation Plan and Human Review before execution. Before the RED milestone for each layer, determine whether a preceding FOUNDATION milestone is required — see "Conditional SETUP / FOUNDATION" below.
 
 Layer-wise decomposition is not a mandatory architectural template. If the system is better decomposed by capability, workflow, domain aggregate, integration boundary, migration step, concurrency concern, or another independently reviewable responsibility, use that boundary instead.
 
-The governing rule is: decompose complex work into the smallest meaningful independently reviewable implementation milestones. When the complexity crosses architectural layers, prefer separate layer-wise milestones over one feature-wide cycle — but do not force layer boundaries onto an architecture that does not support them.
+The governing rule is: use the fewest independently reviewable implementation milestones that keep each Implementation Plan reviewable. When a stated reason to split applies and the complexity crosses architectural layers, prefer separate layer-wise milestones over one feature-wide cycle — but do not force layer boundaries onto an architecture that does not support them.
 
 When work is decomposed across milestones, every requirement or cross-cutting concern within approved scope — for example validation, error mapping, authorization, observability, or persistence behavior — must have an explicit owning milestone recorded in the Plan. Not every concern needs its own milestone; a single milestone may own several, but no approved concern may be left without an assigned owner across the decomposition.
 

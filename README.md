@@ -36,7 +36,7 @@ Each Implementation Plan authorizes exactly one repository-changing milestone �
 
 When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
-How many milestones a piece of work needs is decided in `Plan.md`, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use a single RED milestone / GREEN milestone pair, while larger work is decomposed into multiple sequential milestone sequences, for example: `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN`. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
+How many milestones a piece of work needs is decided in `Plan.md`: as few as keep each Implementation Plan reviewable. A cohesive change uses a single RED milestone / GREEN milestone pair; the Plan splits only for a stated reason (size, independent capabilities, different risk, ordering, or different verification setup), for example `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN` for a large layered feature. Layers alone are not a reason, and every review gate stays whatever the count. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 Material ambiguity is also a blocking boundary:
 
@@ -88,7 +88,7 @@ This is a 0.x release. Rules and templates may still change between minor versio
 - **Tested scope.** The workflow has been run end to end on single-service work items in one repository, covering Java/Spring Boot and Python/FastAPI, including an LLM-backed service. Work items that span several services or repositories are not yet validated. That includes product requirements shared across repositories and ordering between them.
 - **Contracts.** The contract template covers HTTP, message or stream (for example WebSocket or events), and RPC interfaces. Only the HTTP form has been used in a full run so far.
 - **Approvals.** Only you approve, one artifact at a time, and the approval is written into the artifact. Delegated or blanket approval ("approve everything on my behalf") is not accepted.
-- **Fresh context.** Commands that work from artifacts run in a fresh context with their role agent (Claude Code `context: fork`; Copilot subagent delegation). Copilot delegation has been checked in Copilot CLI only.
+- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files.
 - **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
 
 Known gaps and how they were found are recorded in [docs/history](docs/history/).

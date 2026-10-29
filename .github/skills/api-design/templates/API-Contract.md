@@ -99,7 +99,7 @@ State "not applicable" with a reason where the API has no such behavior.
 
 ## Decisions Resolved
 
-List every decision the Plan assigns to this contract and how it was resolved, citing the requirement, Plan item, or task-prompt decision that authorizes it.
+List every decision the Plan assigns to this contract and how it was resolved, citing the requirement, Plan item, or task-prompt decision that authorizes it. A decision the requirements or Plan defer to the contract is proposed here with Source `Proposed — deferred by <requirement or Plan item>`; approving the contract accepts it.
 
 | Decision | Resolution | Source |
 | --- | --- | --- |

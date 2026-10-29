@@ -55,7 +55,7 @@ When an API / External Contract is required, it is a CONTRACT milestone recorded
 
 Completion of one milestone does not authorize the next.
 
-How many milestones this work needs is decided in the Plan, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use one RED milestone / GREEN milestone pair; larger work should use multiple sequential milestone sequences. Do not default to one pair for the whole feature. Do not mechanically create one milestone per class — but for complex requirements spanning independently testable architectural layers, create a separate RED milestone and GREEN milestone for each layer, as defined by the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
+How many milestones this work needs is decided in the Plan: as few as keep each Implementation Plan reviewable as exact code. One cohesive behavior change uses one RED milestone / GREEN milestone pair. The Plan records `Decomposition: one pair` or `Split: <reason>` (size, independent capabilities, different risk, ordering, or different verification setup); architectural layers alone are not a reason. Fewer milestones never removes a review gate. Do not mechanically create one milestone per class — but when a stated reason applies to complex requirements spanning independently testable architectural layers, create a separate RED milestone and GREEN milestone for each layer, as defined by the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 ## No Code Change Without Approval
 

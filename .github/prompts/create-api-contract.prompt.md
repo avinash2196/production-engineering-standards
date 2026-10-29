@@ -7,8 +7,6 @@ tools:
   - search
   - edit
 ---
-Run this command in the `planner` custom agent as a subagent (`prompt-driven-development` Fresh Context). Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged.
-
 Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
@@ -37,7 +35,7 @@ Use the `api-design` skill's `templates/API-Contract.md` structure and answer ev
 
 When the Plan records that this CONTRACT milestone changes an existing contract, follow `prompt-driven-development` Changed Contracts: start from the verified current contract, carry its unchanged content over, apply only the approved changes, and fill in the template's Baseline and Changes in This Work Item sections. If the baseline diverges from the repository or a published contract, stop and surface the divergence for human review.
 
-Before stopping, check the contract with evidence: re-read the written contract, confirm each Contract Completeness question is answered or marked not applicable with a reason, and search for statements that contradict each other, the requirements, or the Plan. Fix what the sources already answer; for anything they do not answer, ask focused clarification questions and stop instead of choosing. Report the result question by question.
+Before stopping, check the contract with evidence: re-read the written contract, confirm each Contract Completeness question is answered or marked not applicable with a reason, and search for statements that contradict each other, the requirements, or the Plan. Fix what the sources already answer. For a decision the approved requirements or Plan explicitly defer to the contract, propose a resolution and record it in Decisions Resolved with Source `Proposed — deferred by <requirement or Plan item>` (or ask about it before writing); list every proposal in the report. The user's contract approval accepts the listed proposals, and a rejected proposal sends the contract back for revision. For anything the sources neither answer nor defer, ask focused clarification questions and stop instead of choosing. Report the result question by question.
 
 When revising an existing contract (for example to fold in clarification answers), treat it as a revision, not a fresh draft:
 

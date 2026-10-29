@@ -238,9 +238,9 @@ CLAUDE_COMMAND_ROLE_LINE = re.compile(r"\AAct as [^\n]*\.\n\n")
 COPILOT_TO_CLAUDE_PATH_PREFIXES = (("`.github/skills/", "`skills/"),)
 
 # Commands that work from artifacts run in a fresh context with their role
-# agent (`prompt-driven-development` Fresh Context): Claude Code through
-# `context: fork`, Copilot by delegating to the agent as a subagent in the
-# prompt's first paragraph.
+# agent in Claude Code through `context: fork` (`prompt-driven-development`
+# Fresh Context). Copilot runs them inline, bound to the same role agent:
+# Copilot CLI subagents cannot yet write files with these agents' tool lists.
 FRESH_CONTEXT_COMMANDS = {
     "create-plan": "planner",
     "create-api-contract": "planner",
@@ -252,12 +252,6 @@ FRESH_CONTEXT_COMMANDS = {
     "review-production-readiness": "production-readiness-reviewer",
     "review-architecture": "architecture-reviewer",
 }
-COPILOT_DELEGATION_LINE = re.compile(
-    r"\ARun this command in the `(?P<agent>[^`]+)` custom agent as a subagent "
-    r"\(`prompt-driven-development` Fresh Context\)\. Pass it only the work item and "
-    r"the rest of this command's text \(everything after this paragraph\), and nothing "
-    r"from this conversation\. Relay its report unchanged\.\n\n"
-)
 
 
 def _split_frontmatter(text: str) -> tuple[str, str] | None:
@@ -341,10 +335,7 @@ def validate_agent_body_sync(root: Path, errors: list[str]) -> None:
 def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
     # A Claude command is its Copilot prompt's body, optionally preceded by
     # one role sentence, with skill paths rebased onto the Claude plugin root.
-    # Copilot's subagent-delegation paragraph is expressed in Claude Code
-    # through frontmatter instead (validate_fresh_context_commands).
     def normalize_copilot(body: str) -> str:
-        body = COPILOT_DELEGATION_LINE.sub("", body, count=1)
         for copilot_prefix, claude_prefix in COPILOT_TO_CLAUDE_PATH_PREFIXES:
             body = body.replace(copilot_prefix, claude_prefix)
         return body.rstrip()
@@ -359,8 +350,8 @@ def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
 
 
 def validate_fresh_context_commands(root: Path, errors: list[str]) -> None:
-    # Fresh-context commands fork in Claude Code and delegate in Copilot, both
-    # to the same existing role agent; every other command runs inline.
+    # Fresh-context commands fork in Claude Code to their role agent and bind
+    # the same agent in Copilot; every other Claude command runs inline.
     for path in sorted((root / ".claude/commands").glob("*.md")):
         name = path.name.removesuffix(".md")
         parts = _split_frontmatter(path.read_text(encoding="utf-8"))
@@ -386,16 +377,9 @@ def validate_fresh_context_commands(root: Path, errors: list[str]) -> None:
         if parts is None:
             continue
         rel = path.relative_to(root).as_posix()
-        match = COPILOT_DELEGATION_LINE.match(parts[1])
         agent = FRESH_CONTEXT_COMMANDS.get(name)
         if agent is None:
-            if match:
-                errors.append(f"{rel}: only fresh-context prompts may delegate to a subagent")
             continue
-        if not match:
-            errors.append(f"{rel}: fresh-context prompt must open with the subagent delegation paragraph")
-        elif match.group("agent") != agent:
-            errors.append(f"{rel}: delegates to '{match.group('agent')}', expected '{agent}'")
         binding = (_frontmatter_field(parts[0], "agent") or "").strip('"')
         if binding != agent:
             errors.append(f"{rel}: agent binding must be '{agent}'")

@@ -68,7 +68,9 @@ class PddControlsTest(unittest.TestCase):
 
         # complex requirements decompose into independently reviewable milestones
         self.assertIn("independently reviewable implementation milestones", text)
-        # layer-wise decomposition is the expected pattern for complex layered work
+        # layer-wise decomposition is the preferred split for complex layered
+        # work once a stated reason to split applies (D10, 0.15.0)
+        self.assertIn("When a stated reason to split applies to complex requirements", text)
         self.assertIn("layer-wise implementation milestones", text)
         self.assertIn("independently testable architectural layers", text)
         # a layer contributes separate RED/GREEN milestones, not one
@@ -351,6 +353,8 @@ class PddControlsTest(unittest.TestCase):
                 "each layer",
                 text,
             )
+            # D10 (0.15.0): layers split only when a stated reason applies
+            self.assertIn("when a stated reason applies to complex requirements", text)
 
     def test_plan_execution_status_is_milestone_based(self):
         # Reversed from an earlier pass that removed OTHER as a milestone
@@ -1261,6 +1265,38 @@ class Release015ControlsTest(unittest.TestCase):
         skill = self._read(".github/skills/api-design/SKILL.md")
         self.assertIn("(HTTP status, close or termination code, or RPC status)", skill)
         self.assertIn("(a request body, message, or RPC request)", skill)
+    def test_d8_deferred_contract_decisions_are_labelled_proposals(self):
+        for rel in [".github/prompts/create-api-contract.prompt.md", ".claude/commands/create-api-contract.md"]:
+            text = self._read(rel)
+            self.assertIn("explicitly defer to the contract, propose a resolution", text, rel)
+            self.assertIn("For anything the sources neither answer nor defer, ask focused clarification questions and stop instead of choosing.", text, rel)
+        self.assertIn("explicitly defer to the contract: the contract proposes a resolution", self._read(".github/skills/api-design/SKILL.md"))
+        self.assertIn("`Proposed \u2014 deferred by <requirement or Plan item>`", self._read(".github/skills/api-design/templates/API-Contract.md"))
+
+    def test_d9_fallback_copilot_runs_inline(self):
+        # D9 retest (C19): Copilot CLI subagents could not write files, so
+        # Copilot prompts run inline and fresh context is Claude Code only.
+        for command in validate_repository_module.FRESH_CONTEXT_COMMANDS:
+            text = self._read(f".github/prompts/{command}.prompt.md")
+            self.assertNotIn("custom agent as a subagent", text, command)
+        self.assertIn("Copilot runs them inline in the main conversation", self._read(self.SKILL))
+
+    def test_d10_fewest_reviewable_milestones_with_stated_reason(self):
+        skill = self._read(self.SKILL)
+        self.assertIn("Use as few milestones as keep each Implementation Plan reviewable as exact code.", skill)
+        self.assertIn("Architectural layers alone are not a reason to split.", skill)
+        self.assertIn("Every review gate stays whatever the count", skill)
+        self.assertIn("`Decomposition: one pair` or `Split: <reason>`", skill)
+        self.assertNotIn("Do not default to one giant RED/GREEN pair", skill)
+        self.assertIn("Decomposition: one pair | Split:", self._read(self.TEMPLATES + "Plan.md"))
+        for rel in [".github/prompts/create-plan.prompt.md", ".claude/commands/create-plan.md"]:
+            self.assertIn("Record the decomposition as `Decomposition: one pair` or `Split: <reason>`", self._read(rel), rel)
+        for name in ["application-claude-instructions.md", "application-copilot-instructions.md"]:
+            text = self._read(self.TEMPLATES + name)
+            self.assertIn("architectural layers alone are not a reason", text, name)
+            self.assertNotIn("Do not default to one pair for the whole feature", text, name)
+        self.assertIn("Keep the dry run proportional", self._read(".github/skills/implementation-planning/SKILL.md"))
+
 
 if __name__ == "__main__":
     unittest.main()

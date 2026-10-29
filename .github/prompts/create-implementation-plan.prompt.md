@@ -7,8 +7,6 @@ tools:
   - search
   - edit
 ---
-Run this command in the `planner` custom agent as a subagent (`prompt-driven-development` Fresh Context). Pass it only the work item and the rest of this command's text (everything after this paragraph), and nothing from this conversation. Relay its report unchanged.
-
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
 When a RED or GREEN milestone owns or verifies an authentication or authorization requirement, apply `security`. The Implementation Plan's Risks section lists each identity, role, or ownership comparison and how it uses the same canonical form as authentication.

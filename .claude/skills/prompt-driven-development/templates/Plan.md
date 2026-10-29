@@ -43,7 +43,9 @@ If the work item changes an existing contract, name the current contract the CON
 
 ## Milestones
 
-<!-- Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide how many milestones this work needs, and record the reason for the chosen decomposition.
+Decomposition: one pair | Split: <reason — size, independent capabilities, different risk, ordering, or different verification setup>
+
+<!-- Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules: as few milestones as keep each Implementation Plan reviewable; split only for a stated reason, never for layers alone.
 
 A milestone represents one independently approved execution boundary — CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, or OTHER. There is no containing milestone that owns several of these as internal phases; a capability or layer that needs more than one milestone type gets a separate milestone entry for each (for example: Persistence RED, then Persistence GREEN, as two entries, not one "Persistence" milestone with a RED/GREEN lifecycle).
 

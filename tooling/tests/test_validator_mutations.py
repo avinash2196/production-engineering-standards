@@ -128,20 +128,19 @@ class FreshContextCommandTest(ValidatorMutationTestCase):
         self._edit(".claude/commands/capture-requirements.md", "\n---\n", "\ncontext: fork\n---\n")
         self.assert_error_containing("capture-requirements.md: only fresh-context commands may set")
 
-    def test_missing_copilot_delegation_fails(self):
-        self._edit(".github/prompts/implement-approved-plan.prompt.md", "Run this command in the", "Please run this command in the")
-        self.assert_error_containing(
-            "implement-approved-plan.prompt.md: fresh-context prompt must open with the subagent delegation paragraph"
-        )
-
-    def test_wrong_copilot_delegate_fails(self):
+    def test_copilot_delegation_paragraph_is_drift(self):
+        # Copilot runs fresh-context commands inline (0.15.0, C19); a
+        # delegation paragraph the Claude command lacks is behavioral drift.
         self._edit(
-            ".github/prompts/refactor-code.prompt.md",
-            "Run this command in the `refactoring-engineer`",
-            "Run this command in the `planner`",
+            ".github/prompts/implement-approved-plan.prompt.md",
+            "\n---\n",
+            "\n---\nRun this command in the `implementation-engineer` custom agent as a subagent.\n\n",
         )
-        self.assert_error_containing("refactor-code.prompt.md: delegates to 'planner', expected 'refactoring-engineer'")
+        self.assert_error_containing(".claude/commands/implement-approved-plan.md has diverged from")
 
+    def test_wrong_copilot_agent_binding_fails(self):
+        self._edit(".github/prompts/refactor-code.prompt.md", 'agent: "refactoring-engineer"', 'agent: "planner"')
+        self.assert_error_containing("refactor-code.prompt.md: agent binding must be 'refactoring-engineer'")
 
 class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
     def test_deleting_claude_skills_tree_fails(self):
