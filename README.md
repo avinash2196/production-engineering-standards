@@ -36,7 +36,7 @@ Each Implementation Plan authorizes exactly one repository-changing milestone �
 
 When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
-How many milestones a piece of work needs is decided in `Plan.md`, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use a single RED milestone / GREEN milestone pair, while larger work is decomposed into multiple sequential milestone sequences, for example: `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN`. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
+How many milestones a piece of work needs is decided in `Plan.md`: as few as keep each Implementation Plan reviewable. A cohesive change uses a single RED milestone / GREEN milestone pair; the Plan splits only for a stated reason (a separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup), for example `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN` for a large layered feature. A layer is a reason only when it carries its own engineering decision, and every review gate stays whatever the count. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 Material ambiguity is also a blocking boundary:
 
@@ -79,15 +79,16 @@ Next, run one work item end to end. In Claude Code, the installed commands carry
 /review-code order-cancellation             Final Review → Final-Review.md
 ```
 
-Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
+Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Each report ends with a `Next:` line naming the step that follows. In Copilot, run each command after `capture-requirements` in a new chat. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
 
 ## Current Limitations
 
 This is a 0.x release. Rules and templates may still change between minor versions.
 
 - **Tested scope.** The workflow has been run end to end on single-service work items in one repository, covering Java/Spring Boot and Python/FastAPI, including an LLM-backed service. Work items that span several services or repositories are not yet validated. That includes product requirements shared across repositories and ordering between them.
-- **Contracts.** The contract template covers HTTP APIs. WebSocket, gRPC, and event contracts have no dedicated sections yet.
-- **Approvals.** There is no defined rule yet for delegated or blanket approval ("approve everything on my behalf"). Approve each artifact yourself.
+- **Contracts.** The contract template covers HTTP, message or stream (for example WebSocket or events), and RPC interfaces. Only the HTTP form has been used in a full run so far.
+- **Approvals.** Only you approve, one artifact at a time, and the approval is written into the artifact. Delegated or blanket approval ("approve everything on my behalf") is not accepted.
+- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files. In Copilot, start a new chat for each planning, execution, or review command.
 - **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
 
 Known gaps and how they were found are recorded in [docs/history](docs/history/).
@@ -239,7 +240,7 @@ Stop and surface conflicts for human review.
 
 ### Approval, replanning, and Final Review
 
-- **Approval is recorded in the artifact.** Requirements, Plan, and contract record human-review approval in their Status sections; each Implementation Plan records approval and execution in its Human Review section. Only the user approves; an approval given in conversation is written into the artifact before work continues.
+- **Approval is recorded in the artifact.** Requirements, Plan, and contract record human-review approval in their Status sections; each Implementation Plan records approval and execution in its Human Review section. Only the user approves; an approval given in conversation is written into the artifact before work continues. Commands read approval only from the artifact.
 - **Plans can be replanned, with approval.** A Plan may be revised freely before approval. After approval it is the execution baseline and is never changed silently. A blocker that invalidates scope, order, architecture, assumptions, or acceptance criteria stops execution: the milestone is recorded as `Blocked — <reason>` in `Plan.md`, its Implementation Plan records that execution stopped and needs re-approval, the Plan is revised through `create-plan` and returns to awaiting review, and work continues only after the user approves it. A revision keeps executed milestones and their evidence unchanged.
 - **Final Review closes a work item.** Only `review-code` or `review-production-readiness`, run for a named work item, perform the Final Review and write `docs/.ai/<work-item>/Final-Review.md`. Other reviews, such as `review-architecture`, are intermediate.
 

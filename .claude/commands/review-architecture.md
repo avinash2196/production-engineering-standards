@@ -1,5 +1,8 @@
 ---
 description: "Review architecture boundaries and distributed-system trade-offs."
+context: fork
+agent: architecture-reviewer
+background: false
 ---
 
 Act as an architecture reviewer.

@@ -109,6 +109,75 @@ class AgentAndCommandParityTest(ValidatorMutationTestCase):
         self.assert_error_containing(".claude/commands/refactor-code.md has diverged from")
 
 
+class FreshContextCommandTest(ValidatorMutationTestCase):
+    def _edit(self, rel: str, old: str, new: str) -> None:
+        path = self.repo / rel
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def test_missing_fork_fails(self):
+        self._edit(".claude/commands/generate-tests.md", "context: fork\n", "")
+        self.assert_error_containing("generate-tests.md: fresh-context command must set 'context: fork'")
+
+    def test_wrong_claude_agent_fails(self):
+        self._edit(".claude/commands/review-code.md", "agent: code-reviewer", "agent: planner")
+        self.assert_error_containing("review-code.md: fresh-context command must set 'agent: code-reviewer'")
+
+    def test_inline_command_may_not_fork(self):
+        self._edit(".claude/commands/capture-requirements.md", "\n---\n", "\ncontext: fork\n---\n")
+        self.assert_error_containing("capture-requirements.md: only fresh-context commands may set")
+
+    def test_copilot_delegation_paragraph_is_drift(self):
+        # Copilot runs fresh-context commands inline (0.15.0, C19); a
+        # delegation paragraph the Claude command lacks is behavioral drift.
+        self._edit(
+            ".github/prompts/implement-approved-plan.prompt.md",
+            "\n---\n",
+            "\n---\nRun this command in the `implementation-engineer` custom agent as a subagent.\n\n",
+        )
+        self.assert_error_containing(".claude/commands/implement-approved-plan.md has diverged from")
+
+    def test_wrong_copilot_agent_binding_fails(self):
+        self._edit(".github/prompts/refactor-code.prompt.md", 'agent: "refactoring-engineer"', 'agent: "planner"')
+        self.assert_error_containing("refactor-code.prompt.md: agent binding must be 'refactoring-engineer'")
+
+class CopilotMarketplaceTest(ValidatorMutationTestCase):
+    MARKET = ".github/plugin/marketplace.json"
+
+    def _rewrite(self, rel: str, change) -> None:
+        import json
+
+        path = self.repo / rel
+        data = json.loads(path.read_text(encoding="utf-8"))
+        change(data)
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    def test_wrong_source_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["plugins"][0].update(source="./.github/plugin"))
+        self.assert_error_containing("marketplace.json: plugin source is './.github/plugin', expected '.'")
+
+    def test_plugin_name_mismatch_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["plugins"][0].update(name="pes"))
+        self.assert_error_containing("marketplace.json: plugin name 'pes' differs from .github/plugin/plugin.json")
+
+    def test_marketplace_name_mismatch_fails(self):
+        self._rewrite(self.MARKET, lambda d: d.update(name="other-marketplace"))
+        self.assert_error_containing("marketplace name 'other-marketplace' differs from .claude-plugin/marketplace.json")
+
+    def test_partial_version_bump_fails(self):
+        self._rewrite(self.MARKET, lambda d: d["metadata"].update(version="9.9.9"))
+        self.assert_error_containing("plugin versions differ:")
+
+    def test_claude_manifest_version_drift_fails(self):
+        self._rewrite(".claude/.claude-plugin/plugin.json", lambda d: d.update(version="0.0.1"))
+        self.assert_error_containing("plugin versions differ:")
+
+    def test_missing_component_directory_fails(self):
+        self._rewrite(".github/plugin/plugin.json", lambda d: d.update(skills=".github/skillz/"))
+        self.assert_error_containing("plugin.json: 'skills' must name an existing repository directory")
+
+
 class MissingEnvironmentStructureTest(ValidatorMutationTestCase):
     def test_deleting_claude_skills_tree_fails(self):
         shutil.rmtree(self.repo / ".claude/skills")
