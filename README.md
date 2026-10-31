@@ -36,7 +36,7 @@ Each Implementation Plan authorizes exactly one repository-changing milestone �
 
 When an API / External Contract is required, it is a CONTRACT milestone recorded in the Plan — the first milestone after Plan approval, before any FOUNDATION milestone. It has no Implementation Plan; the contract artifact is its reviewed deliverable. The approved Plan is the single source of truth for the complete development.
 
-How many milestones a piece of work needs is decided in `Plan.md`: as few as keep each Implementation Plan reviewable. A cohesive change uses a single RED milestone / GREEN milestone pair; the Plan splits only for a stated reason (size, independent capabilities, different risk, ordering, or different verification setup), for example `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN` for a large layered feature. Layers alone are not a reason, and every review gate stays whatever the count. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
+How many milestones a piece of work needs is decided in `Plan.md`: as few as keep each Implementation Plan reviewable. A cohesive change uses a single RED milestone / GREEN milestone pair; the Plan splits only for a stated reason (a separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup), for example `Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN` for a large layered feature. A layer is a reason only when it carries its own engineering decision, and every review gate stays whatever the count. See the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 Material ambiguity is also a blocking boundary:
 

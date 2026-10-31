@@ -260,7 +260,7 @@ Possible milestone boundaries include:
 - migration
 - infrastructure/configuration
 
-A cohesive change (e.g. a new read-only endpoint with one new field and one query) uses one RED milestone / GREEN milestone pair, even though it touches several layers — layers alone are not a reason to split. The Plan records `Decomposition: one pair`.
+A cohesive change (e.g. a new read-only endpoint with one new field and one query) uses one RED milestone / GREEN milestone pair, even though it touches several layers — none of them carries a separate engineering decision, so the layers are not a reason to split. The Plan records `Decomposition: one pair`.
 
 A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API, where one Implementation Plan would be too large to review) states its reason (`Split: size`) and is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
 

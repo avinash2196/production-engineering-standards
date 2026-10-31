@@ -354,7 +354,7 @@ class PddControlsTest(unittest.TestCase):
                 text,
             )
             # D10 (0.15.0): layers split only when a stated reason applies
-            self.assertIn("when a stated reason applies to complex requirements", text)
+            self.assertIn("when the layers of complex requirements each carry a separate engineering decision", text)
 
     def test_plan_execution_status_is_milestone_based(self):
         # Reversed from an earlier pass that removed OTHER as a milestone
@@ -1284,16 +1284,17 @@ class Release015ControlsTest(unittest.TestCase):
     def test_d10_fewest_reviewable_milestones_with_stated_reason(self):
         skill = self._read(self.SKILL)
         self.assertIn("Use as few milestones as keep each Implementation Plan reviewable as exact code.", skill)
-        self.assertIn("Architectural layers alone are not a reason to split.", skill)
+        self.assertIn("Never split mechanically: not one pair per class or file, and not one pair per layer by habit.", skill)
+        self.assertIn("- **separate engineering decision:**", skill)
+        self.assertIn("`Decomposition: one milestone`", skill)
         self.assertIn("Every review gate stays whatever the count", skill)
-        self.assertIn("`Decomposition: one pair` or `Split: <reason>`", skill)
         self.assertNotIn("Do not default to one giant RED/GREEN pair", skill)
-        self.assertIn("Decomposition: one pair | Split:", self._read(self.TEMPLATES + "Plan.md"))
+        self.assertIn("Decomposition: one pair | one milestone | Split:", self._read(self.TEMPLATES + "Plan.md"))
         for rel in [".github/prompts/create-plan.prompt.md", ".claude/commands/create-plan.md"]:
-            self.assertIn("Record the decomposition as `Decomposition: one pair` or `Split: <reason>`", self._read(rel), rel)
+            self.assertIn("Record the decomposition as `Decomposition: one pair`, `Decomposition: one milestone`, or `Split: <reason>`", self._read(rel), rel)
         for name in ["application-claude-instructions.md", "application-copilot-instructions.md"]:
             text = self._read(self.TEMPLATES + name)
-            self.assertIn("architectural layers alone are not a reason", text, name)
+            self.assertIn("a layer is a reason only when it carries its own engineering decision", text, name)
             self.assertNotIn("Do not default to one pair for the whole feature", text, name)
         self.assertIn("Keep the dry run proportional", self._read(".github/skills/implementation-planning/SKILL.md"))
 

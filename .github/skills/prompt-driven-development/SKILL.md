@@ -235,15 +235,16 @@ Use as few milestones as keep each Implementation Plan reviewable as exact code.
 
 Every review gate stays whatever the count: requirements, Plan, contract when required, an Implementation Plan for each milestone, execution, and Final Review. Fewer milestones never merges RED and GREEN and never leaves a requirement without an owning milestone and a RED test that verifies it (Plan Content Rule 8).
 
-Split into more milestones only for a stated reason, and record the decision in the Plan as `Decomposition: one pair` or `Split: <reason>` for each split, so the user approves it at Plan review. Valid reasons:
+Split into more milestones only for a stated reason, and record the decision in the Plan as `Decomposition: one pair`, `Decomposition: one milestone` (work that is a single OTHER or standalone REFACTOR milestone), or `Split: <reason>` for each split, so the user approves it at Plan review. Valid reasons:
 
+- **separate engineering decision:** a part carries a material design decision the user should review and approve on its own, such as a schema or query design, a business rule, or an API mapping. A layer counts when it carries such a decision;
 - **size:** one Implementation Plan would be too large to review well as exact code;
 - **independent capabilities:** separate behaviors that can each be verified on their own;
 - **different risk:** a part, such as a data migration or a security change, needs its own gate;
 - **ordering:** one part must be verified before the next can be planned;
 - **different verification setup:** a part needs its own test infrastructure.
 
-Architectural layers alone are not a reason to split. Do not mechanically create one pair per class or file.
+Never split mechanically: not one pair per class or file, and not one pair per layer by habit. A layer with no material decision of its own, such as a pass-through controller or a one-line mapping, stays in the milestone that needs it.
 
 Boundaries may include persistence, business behavior, API behavior, integration, or another independently testable capability. See `docs/getting-started.md` for fuller illustrative examples — this skill states the rule, not an exhaustive catalog of boundaries.
 
