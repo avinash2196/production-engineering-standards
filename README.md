@@ -79,7 +79,7 @@ Next, run one work item end to end. In Claude Code, the installed commands carry
 /review-code order-cancellation             Final Review → Final-Review.md
 ```
 
-Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
+Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Each report ends with a `Next:` line naming the step that follows. In Copilot, run each command after `capture-requirements` in a new chat. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
 
 ## Current Limitations
 
@@ -88,7 +88,7 @@ This is a 0.x release. Rules and templates may still change between minor versio
 - **Tested scope.** The workflow has been run end to end on single-service work items in one repository, covering Java/Spring Boot and Python/FastAPI, including an LLM-backed service. Work items that span several services or repositories are not yet validated. That includes product requirements shared across repositories and ordering between them.
 - **Contracts.** The contract template covers HTTP, message or stream (for example WebSocket or events), and RPC interfaces. Only the HTTP form has been used in a full run so far.
 - **Approvals.** Only you approve, one artifact at a time, and the approval is written into the artifact. Delegated or blanket approval ("approve everything on my behalf") is not accepted.
-- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files.
+- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files. In Copilot, start a new chat for each planning, execution, or review command.
 - **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
 
 Known gaps and how they were found are recorded in [docs/history](docs/history/).

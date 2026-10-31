@@ -24,6 +24,8 @@ copilot plugin marketplace add avinash2196/production-engineering-standards
 copilot plugin install production-engineering-standards@pes-marketplace
 ```
 
+In Copilot, start a new chat for each planning, execution, or review command. Copilot runs these commands inline, so a new chat keeps the earlier conversation out of them. Claude Code gives them a fresh context on its own.
+
 To pick up a new release, update the marketplace and then the plugin:
 
 ```bash

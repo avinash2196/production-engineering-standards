@@ -180,6 +180,8 @@ The artifacts carry all state between steps, so every command that works from ar
 
 A fresh-context command reads state only from the artifacts and the repository. Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
 
+Every PDD command's report then closes with one `Next:` line naming the step that follows: the approval needed and the next command with its work item (for example `Next: approve Plan.md, then create-implementation-plan order-cancellation`), the answers needed, or `Next: none — work item closed`. In Copilot, run each fresh-context command above in a new chat. Copilot runs them inline, so a new chat is what keeps the earlier conversation out. Record any pending approval in the artifact before switching chats.
+
 ## Plan Content Rules
 
 The Plan defines WHAT is delivered and in which milestone order. It does not define HOW (Implementation Plans) or externally observable behavior (the API/external contract). When creating or revising a Plan:

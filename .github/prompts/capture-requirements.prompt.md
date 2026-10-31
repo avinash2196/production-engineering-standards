@@ -25,4 +25,4 @@ Create or update only the work item's `docs/.ai/<work-item>/requirements.md`, cr
 
 When updating an existing requirements artifact, treat it as a revision (`requirements-analysis` Revise the whole artifact): no statement the change contradicts may remain, and the Provenance Check is re-derived, not restated. Continue clarification numbering from the artifact's Clarification Log and record every new question and answer there. Remove every template comment (`<!-- … -->`) from the finished artifact.
 
-Do not create Plan.md, an API/external contract, an Implementation Plan, tests, or production code.
+Do not create Plan.md, an API/external contract, an Implementation Plan, tests, or production code. End the report with the `prompt-driven-development` `Next:` line: approval of `requirements.md`, then `create-plan <work-item>`. Do not continue into planning in this conversation.

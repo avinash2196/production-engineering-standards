@@ -1297,6 +1297,15 @@ class Release015ControlsTest(unittest.TestCase):
             self.assertNotIn("Do not default to one pair for the whole feature", text, name)
         self.assertIn("Keep the dry run proportional", self._read(".github/skills/implementation-planning/SKILL.md"))
 
+    def test_d11_reports_name_next_step_and_copilot_uses_new_chat(self):
+        skill = self._read(self.SKILL)
+        self.assertIn("closes with one `Next:` line", skill)
+        self.assertIn("In Copilot, run each fresh-context command above in a new chat.", skill)
+        for rel in [".github/prompts/capture-requirements.prompt.md", ".claude/commands/capture-requirements.md"]:
+            self.assertIn("Do not continue into planning in this conversation.", self._read(rel), rel)
+        for rel in ["README.md", "docs/getting-started.md"]:
+            self.assertIn("start a new chat for each planning, execution, or review command", self._read(rel), rel)
+
 
 if __name__ == "__main__":
     unittest.main()
