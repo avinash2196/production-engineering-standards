@@ -62,9 +62,9 @@ Criteria limiting which files may change exclude this milestone's own Execution 
 
 ### Expected Evidence
 
-<!-- RED only: list new tests expected to pass at RED (`implementation-planning` RED), or state none. -->
+<!-- RED only: list the preserved-behavior tests the Plan assigns to this RED milestone, which are expected to pass at RED (`implementation-planning` RED), or state none. -->
 
-- Tests expected to pass at RED: none | `<test>` — delivered by `<milestone>`
+- Preserved-behavior tests (expected to pass at RED): none | `<test>` — preserved row `<requirement>`
 
 ### Planning-Time Dry Run
 

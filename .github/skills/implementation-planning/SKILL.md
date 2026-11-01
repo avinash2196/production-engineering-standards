@@ -91,7 +91,8 @@ If the milestone approved for this Implementation Plan is a RED milestone with n
 - state the expected RED failure as a class of failure attributable to the missing behavior, not as one exact value the missing implementation happens to produce;
 - map every normative rule of the approved contract that this milestone verifies to a test, or list it as not tested with the reason; never test behavior the contract leaves undefined;
 - a test that asserts only that something does not happen (no event, call, write, or message) passes vacuously while the behavior is absent, so it is not RED evidence; in the same test, first exercise the positive case that proves the behavior is active, then assert the negative, so the test fails in RED for the missing behavior and still proves the negative after GREEN;
-- a new, non-vacuous test that passes at RED is allowed only when an earlier milestone of this work item already delivers its behavior; name each such test and that milestone in Expected Evidence. It is not RED evidence for any requirement, and every requirement this milestone verifies still needs a test that fails at RED;
+- a new test that would pass at RED because an earlier milestone already delivers its behavior means the Plan's traceability is wrong (Plan Content Rule 8): stop and return to planning instead of planning a passing test;
+- a test for preserved existing behavior may be included only when the Plan's traceability assigns that preserved row to this RED milestone (Owning "none — preserved", Verifying this milestone); it is expected to pass at RED, is listed in Expected Evidence as a preserved-behavior test, and is never RED evidence for any requirement. Every requirement this milestone verifies still needs a test that fails at RED;
 - do not propose production implementation.
 - In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 
@@ -119,11 +120,12 @@ When `Plan.md` names an existing failing test as this milestone's RED evidence:
 
 - confirm `Plan.md` records why no requirement this milestone owns adds or changes production behavior;
 - record the baseline evidence `Plan.md` names (for example a failure rate, a timing, or the configuration in use) by observing it on the unmodified repository before proposing changes;
-- propose only the approved changes — tests, build, configuration, tooling, or infrastructure — with no production behavior change;
+- propose only the approved changes — tests, build, configuration, tooling, infrastructure, or a validation protocol — with no production behavior change;
 - name the existing tests that prove behavior is preserved and must pass after the milestone;
 - never weaken or remove a test assertion without a same-coverage replacement in the same plan;
 - the Acceptance / Completion Criteria are the completion evidence measured against the recorded baseline plus the preserved tests passing;
-- if a production behavior change turns out to be needed, stop and return to planning for RED and GREEN.
+- if a production behavior change turns out to be needed, stop and return to planning for RED and GREEN;
+- for a validation-protocol OTHER milestone (`prompt-driven-development` OTHER), the exact code is the exact commands or steps, each input with who supplies it and where it is placed, and the met or not-met rule for each case; the dry run runs every step that needs no supplied input and lists the steps it could not run.
 
 For database work, include data migration, compatibility, deployment ordering, and rollback/recovery where relevant.
 
@@ -170,6 +172,7 @@ Before presenting an Implementation Plan for review, apply its exact code in a d
 
 - For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. For RED whose evidence is an existing failing test, apply the probe and confirm that test passes with it. The stub or probe never enters the repository.
 - Cover every artifact type the milestone introduces or changes — build files, configuration, runtime or infrastructure definitions — not only dependencies; use each tool's own validation (for example resolving dependencies, or a configuration file's validate or dry-run mode).
+- Keep the dry run proportional: run each verification command once — repeat runs only where Repeatable, Isolated Verification requires them — and add no mutation testing beyond the RED fail-and-pass proof unless the requirements ask for it. The full suite's repeatability is shown at execution.
 - Record each command verbatim with its trimmed real output, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
 - Never modify the repository during a dry run, create nothing outside a temporary location, list anything created, and delete the disposable copy afterward.
 - If a dry run cannot be performed, state why in the plan. "The repository must not be modified" is not a reason — the dry run runs outside it.

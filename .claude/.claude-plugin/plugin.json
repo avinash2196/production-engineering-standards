@@ -2,7 +2,7 @@
   "name": "production-engineering-standards",
   "displayName": "Production Engineering Standards",
   "description": "Prompt-Driven Development (PDD): human-reviewed requirements, plans, contracts, and milestone-by-milestone RED/GREEN delivery, plus engineering skills and review agents for Java/Spring Boot, Python/FastAPI, API design, distributed systems, security, observability, LLM engineering, and Oracle-to-PostgreSQL migration.",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "author": {
     "name": "Avinash Srivastava"
   }

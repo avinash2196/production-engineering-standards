@@ -33,6 +33,14 @@ This review produces findings and recommendations only (`prompt-driven-developme
 | --- | --- | --- |
 |  |  |  |
 
+## Final Review Obligations
+
+<!-- One row per Plan traceability row with Owning "none — Final Review obligation". Answer each one here; write "none" when the Plan has no such row. -->
+
+| Requirement | Answer | Evidence |
+| --- | --- | --- |
+|  |  |  |
+
 ## Product-Level Statements Now Out of Date
 
 <!-- Product-level `docs/requirements.md` statements and user-facing documentation (for example README files) that the work item made false. The user updates them; this review does not edit them. Also list the sections checked and still accurate. -->

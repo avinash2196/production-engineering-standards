@@ -43,7 +43,9 @@ If the work item changes an existing contract, name the current contract the CON
 
 ## Milestones
 
-<!-- Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules to decide how many milestones this work needs, and record the reason for the chosen decomposition.
+Decomposition: one pair | one milestone | Split: <reason — separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup>
+
+<!-- Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules: as few milestones as keep each Implementation Plan reviewable; split only for a stated reason, never mechanically.
 
 A milestone represents one independently approved execution boundary — CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, or OTHER. There is no containing milestone that owns several of these as internal phases; a capability or layer that needs more than one milestone type gets a separate milestone entry for each (for example: Persistence RED, then Persistence GREEN, as two entries, not one "Persistence" milestone with a RED/GREEN lifecycle).
 
@@ -89,7 +91,8 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 <!-- Every approved requirement and cross-cutting concern appears exactly once (Plan Content Rule 8). Rows that no milestone delivers use exactly one of these forms:
 - exclusion (must not be introduced): Owning "none — exclusion", Verifying "Final Review";
 - not required for this work item: Owning "none — not required", Verifying "none"; never called an exclusion;
-- preserved existing behavior: Owning "none — preserved", Verifying the milestone whose preserved tests cover it. -->
+- preserved existing behavior: Owning "none — preserved", Verifying the milestone whose preserved tests cover it;
+- a requirement the Final Review itself fulfils: Owning "none — Final Review obligation", Verifying "Final Review". -->
 
 ## Verification Commands
 
@@ -101,7 +104,7 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 | --- | --- | --- |
 |  | Pending |  |
 
-<!-- A newly created Plan records every milestone as Pending; a revision keeps executed milestones and their evidence unchanged. After Plan approval, update only execution/status information unless an explicit replanning step is approved. A milestone stopped by a blocker is recorded as `Blocked — <reason>` until a revised Plan is approved. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
+<!-- A newly created Plan records every milestone as Pending; a revision keeps executed milestones and their evidence unchanged. After Plan approval, update only execution/status information unless an explicit replanning step is approved. Status values: Pending; `Waiting — <named input> from <who>` while an approved milestone waits on an input or action from the user (no replanning); `Blocked — <reason>` for a blocker, until a revised Plan is approved; completed, with evidence. Keep each row on one line; put evidence (each command as run with its trimmed real output) below the table and point to it from the row. -->
 
 ## Risks
 

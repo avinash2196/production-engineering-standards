@@ -12,7 +12,7 @@ Apply `prompt-driven-development` and relevant stack/domain skills.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-Before changing any file, confirm the Implementation Plan is approved and record that approval in its Human Review status (`prompt-driven-development` Approval Status). If no approval exists, ask and stop. After verified execution, update that same status.
+Before changing any file, confirm the Implementation Plan is approved in its Human Review status (`prompt-driven-development` Approval Status). If no approval is recorded, ask and stop. After verified execution, update that same status.
 
 Read:
 
@@ -46,6 +46,7 @@ First read which milestone type the approved Implementation Plan declares (FOUND
 - execute only the approved changes; make no production behavior change — if one turns out to be needed, stop for replanning as RED and GREEN;
 - do not weaken or remove a test assertion without the same-coverage replacement the Implementation Plan approves;
 - before marking OTHER complete, verify every approved Acceptance / Completion Criterion, show the completion evidence against the baseline, and confirm the named preserved tests pass;
+- if a named input the approved plan requires from the user is not yet available, record the milestone in `Plan.md` Execution Status as `Waiting — <named input> from <who>`, change nothing else, and stop; resume on the same approved Implementation Plan once the input exists;
 - update only the corresponding execution/status information in `docs/.ai/<work-item>/Plan.md`, recording the OTHER milestone as completed with concise actual evidence.
 
 For any milestone type: if verification fails, do not mark that milestone complete.

@@ -55,7 +55,7 @@ When an API / External Contract is required, it is a CONTRACT milestone recorded
 
 Completion of one milestone does not authorize the next.
 
-How many milestones this work needs is decided in the Plan, based on complexity, responsibility boundaries, risk, and independent verifiability — a small cohesive change may use one RED milestone / GREEN milestone pair; larger work should use multiple sequential milestone sequences. Do not default to one pair for the whole feature. Do not mechanically create one milestone per class — but for complex requirements spanning independently testable architectural layers, create a separate RED milestone and GREEN milestone for each layer, as defined by the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
+How many milestones this work needs is decided in the Plan: as few as keep each Implementation Plan reviewable as exact code. One cohesive behavior change uses one RED milestone / GREEN milestone pair. The Plan records `Decomposition: one pair` or `Split: <reason>` (a separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup); a layer is a reason only when it carries its own engineering decision, and nothing is split mechanically by class, file, or layer habit. Fewer milestones never removes a review gate. Do not mechanically create one milestone per class — but when the layers of complex requirements each carry a separate engineering decision, create a separate RED milestone and GREEN milestone for each layer, as defined by the `prompt-driven-development` skill's Adaptive Milestone Decomposition.
 
 ## No Code Change Without Approval
 
@@ -68,6 +68,13 @@ The size and detail of an Implementation Plan should be proportional to the chan
 
 Documentation-only changes clearly outside executable/code artifacts may follow the project's normal documentation workflow; do not invent exceptions to the above for source, tests, configuration, dependencies, or other executable artifacts.
 <!-- PDD-CONTROL:NO-CODE-CHANGE-WITHOUT-APPROVAL:END -->
+
+## Recording Approval
+
+<!-- FIXED — preserve verbatim -->
+Only the user approves an artifact: one specific artifact, after it exists. When the user approves an artifact in conversation, write the approval into that artifact's status section (`Approved by <user> on <date>`) before running the next command; for a contract, also mark its CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract. PDD commands read approval only from the artifacts.
+
+"Approve everything", "approve on my behalf", or approval of an artifact that does not exist yet is not approval: record nothing, say that it was not recorded, and stop at each gate as usual.
 
 ## Planning Artifacts
 

@@ -237,6 +237,22 @@ CLAUDE_COMMAND_ROLE_LINE = re.compile(r"\AAct as [^\n]*\.\n\n")
 # Skill paths are relative to each plugin root, which differs per platform.
 COPILOT_TO_CLAUDE_PATH_PREFIXES = (("`.github/skills/", "`skills/"),)
 
+# Commands that work from artifacts run in a fresh context with their role
+# agent in Claude Code through `context: fork` (`prompt-driven-development`
+# Fresh Context). Copilot runs them inline, bound to the same role agent:
+# Copilot CLI subagents cannot yet write files with these agents' tool lists.
+FRESH_CONTEXT_COMMANDS = {
+    "create-plan": "planner",
+    "create-api-contract": "planner",
+    "create-implementation-plan": "planner",
+    "generate-tests": "test-engineer",
+    "implement-approved-plan": "implementation-engineer",
+    "refactor-code": "refactoring-engineer",
+    "review-code": "code-reviewer",
+    "review-production-readiness": "production-readiness-reviewer",
+    "review-architecture": "architecture-reviewer",
+}
+
 
 def _split_frontmatter(text: str) -> tuple[str, str] | None:
     match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
@@ -333,6 +349,42 @@ def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
         _check_pair(root, errors, canonical, mirror, normalize_copilot, normalize_claude)
 
 
+def validate_fresh_context_commands(root: Path, errors: list[str]) -> None:
+    # Fresh-context commands fork in Claude Code to their role agent and bind
+    # the same agent in Copilot; every other Claude command runs inline.
+    for path in sorted((root / ".claude/commands").glob("*.md")):
+        name = path.name.removesuffix(".md")
+        parts = _split_frontmatter(path.read_text(encoding="utf-8"))
+        if parts is None:
+            continue  # reported by the parity validator
+        rel = path.relative_to(root).as_posix()
+        fields = {f: _frontmatter_field(parts[0], f) for f in ("context", "agent", "background")}
+        agent = FRESH_CONTEXT_COMMANDS.get(name)
+        if agent is None:
+            if any(fields.values()):
+                errors.append(f"{rel}: only fresh-context commands may set context, agent, or background")
+            continue
+        expected = {"context": "fork", "agent": agent, "background": "false"}
+        for field, value in expected.items():
+            if fields[field] != value:
+                errors.append(f"{rel}: fresh-context command must set '{field}: {value}'")
+        if not (root / ".claude/agents" / f"{agent}.md").is_file():
+            errors.append(f"{rel}: agent '{agent}' has no .claude/agents/{agent}.md")
+
+    for path in sorted((root / ".github/prompts").glob("*.prompt.md")):
+        name = path.name.removesuffix(".prompt.md")
+        parts = _split_frontmatter(path.read_text(encoding="utf-8"))
+        if parts is None:
+            continue
+        rel = path.relative_to(root).as_posix()
+        agent = FRESH_CONTEXT_COMMANDS.get(name)
+        if agent is None:
+            continue
+        binding = (_frontmatter_field(parts[0], "agent") or "").strip('"')
+        if binding != agent:
+            errors.append(f"{rel}: agent binding must be '{agent}'")
+
+
 # ---------------------------------------------------------------------------
 # .claude/ is both the drop-in project configuration and the installable
 # plugin. The marketplace must point at it, and no second packaged copy may
@@ -371,6 +423,81 @@ def validate_single_claude_tree(root: Path, errors: list[str]) -> None:
                 f".claude-plugin/marketplace.json: plugin '{entry.get('name')}' "
                 f"source is {source!r}, expected './{PLUGIN_ROOT}'"
             )
+
+
+# ---------------------------------------------------------------------------
+# Copilot loads the plugin from the repository root through its own
+# marketplace. Both marketplaces publish one plugin under one name, and every
+# manifest carries the same version, so a release bump cannot be partial.
+# ---------------------------------------------------------------------------
+
+COPILOT_MARKETPLACE = ".github/plugin/marketplace.json"
+COPILOT_PLUGIN_MANIFEST = ".github/plugin/plugin.json"
+CLAUDE_MARKETPLACE = ".claude-plugin/marketplace.json"
+CLAUDE_PLUGIN_MANIFEST = f"{PLUGIN_ROOT}/.claude-plugin/plugin.json"
+
+
+def _load_json(root: Path, rel: str, errors: list[str]) -> dict | None:
+    path = root / rel
+    if not path.is_file():
+        errors.append(f"missing manifest: {rel}")
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"{rel} is not valid JSON: {exc}")
+        return None
+    if not isinstance(data, dict):
+        errors.append(f"{rel}: top level must be a JSON object")
+        return None
+    return data
+
+
+def validate_copilot_marketplace(root: Path, errors: list[str]) -> None:
+    market = _load_json(root, COPILOT_MARKETPLACE, errors)
+    plugin = _load_json(root, COPILOT_PLUGIN_MANIFEST, errors)
+    claude_market = _load_json(root, CLAUDE_MARKETPLACE, errors)
+    claude_plugin = _load_json(root, CLAUDE_PLUGIN_MANIFEST, errors)
+    if market is None or plugin is None:
+        return
+
+    if claude_market is not None and market.get("name") != claude_market.get("name"):
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: marketplace name {market.get('name')!r} differs from "
+            f"{CLAUDE_MARKETPLACE} name {claude_market.get('name')!r}"
+        )
+
+    entries = market.get("plugins", [])
+    if len(entries) != 1:
+        errors.append(f"{COPILOT_MARKETPLACE}: expected exactly one plugin entry, found {len(entries)}")
+        return
+    entry = entries[0]
+    if entry.get("name") != plugin.get("name"):
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: plugin name {entry.get('name')!r} differs from "
+            f"{COPILOT_PLUGIN_MANIFEST} name {plugin.get('name')!r}"
+        )
+    if entry.get("source") != ".":
+        errors.append(
+            f"{COPILOT_MARKETPLACE}: plugin source is {entry.get('source')!r}, expected '.' "
+            f"(the repository root, where {COPILOT_PLUGIN_MANIFEST} is found)"
+        )
+
+    for key in ("agents", "skills", "commands"):
+        target = plugin.get(key)
+        if not target or ".." in target or not (root / target).is_dir():
+            errors.append(f"{COPILOT_PLUGIN_MANIFEST}: '{key}' must name an existing repository directory, got {target!r}")
+
+    versions = {
+        f"{COPILOT_MARKETPLACE} metadata.version": (market.get("metadata") or {}).get("version"),
+        f"{COPILOT_MARKETPLACE} plugins[0].version": entry.get("version"),
+        f"{COPILOT_PLUGIN_MANIFEST} version": plugin.get("version"),
+    }
+    if claude_plugin is not None:
+        versions[f"{CLAUDE_PLUGIN_MANIFEST} version"] = claude_plugin.get("version")
+    if len(set(versions.values())) != 1:
+        listed = ", ".join(f"{where} = {value!r}" for where, value in versions.items())
+        errors.append(f"plugin versions differ: {listed}")
 
 
 def validate_agent_and_prompt_names(root: Path, errors: list[str]) -> None:
@@ -592,7 +719,9 @@ VALIDATORS = [
     validate_pdd_commands_across_environments,
     validate_agent_body_sync,
     validate_command_prompt_parity,
+    validate_fresh_context_commands,
     validate_single_claude_tree,
+    validate_copilot_marketplace,
     validate_agent_and_prompt_names,
     validate_prompt_agent_bindings,
     validate_markdown_links,
