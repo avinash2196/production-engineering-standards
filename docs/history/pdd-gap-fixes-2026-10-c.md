@@ -304,6 +304,8 @@ Added after the trial drafts. **Decision (user, 2026-10-31):** accept only the v
 - **Not taken:** `PHASE_TRANSITIONS.md`, an `ARCHIVE/` folder, per-phase folders, and subagent delegation for Copilot (C19).
 - **Test:** `test_d11_reports_name_next_step_and_copilot_uses_new_chat` checks the skill, both `capture-requirements` copies, the README and `getting-started.md`. The validator keeps the two skill copies byte-identical.
 
+**D11 extension (user, 2026-10-31): new chat at phase boundaries in both tools.** Evidence: a cost analysis the user shared of medgemma session `11bd89fa` (work item `xray-pipeline`, before 0.15.0, so every command ran inline, as in C13). One conversation ran requirements, Plan, contract, and about 13 milestones (XM2 to XM13) with about 40 phase boundaries, plus deploy testing. By XM13 each message re-read 400k to 900k tokens of history (the requirements discussion, earlier plans, old `mvn` output, deploy logs), almost none of it relevant. Free-form "Act as a test engineer…" prompts also started subagents on top of that large main chat. D2's `context: fork` keeps command output out of the Claude main chat, but the main chat still grows with every report and approval. Added: start a new chat after the requirements are approved and after each executed GREEN, OTHER, or REFACTOR milestone, and a `Next:` line that crosses one of these points ends with `(new chat)`. README and `getting-started.md` say the same for both tools. Measure on the next run: the main-chat size at Final Review, and the cost per milestone compared with `xray-pipeline`.
+
 ### Not in this batch
 
 - C20 (Implementation Plan Review Summary) is held for 0.16.0 by user decision.

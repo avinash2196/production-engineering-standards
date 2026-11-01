@@ -1302,6 +1302,8 @@ class Release015ControlsTest(unittest.TestCase):
         skill = self._read(self.SKILL)
         self.assertIn("closes with one `Next:` line", skill)
         self.assertIn("In Copilot, run each fresh-context command above in a new chat.", skill)
+        self.assertIn("start a new chat after the requirements are approved and after each executed GREEN, OTHER, or REFACTOR milestone", skill)
+        self.assertIn("ends with `(new chat)`", skill)
         for rel in [".github/prompts/capture-requirements.prompt.md", ".claude/commands/capture-requirements.md"]:
             self.assertIn("Do not continue into planning in this conversation.", self._read(rel), rel)
         for rel in ["README.md", "docs/getting-started.md"]:
