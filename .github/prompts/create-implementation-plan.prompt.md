@@ -7,6 +7,9 @@ tools:
   - search
   - edit
 ---
+
+Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
+
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 
 When a RED or GREEN milestone owns or verifies an authentication or authorization requirement, apply `security`. The Implementation Plan's Risks section lists each identity, role, or ownership comparison and how it uses the same canonical form as authentication.

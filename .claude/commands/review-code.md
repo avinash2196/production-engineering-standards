@@ -1,11 +1,13 @@
 ---
 description: "Review changed code for correctness, scope, production safety, and evidence."
 context: fork
-agent: code-reviewer
+agent: production-engineering-standards:code-reviewer
 background: false
 ---
 
 Act as a code reviewer.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `code-review` plus only relevant domain skills. Report concrete findings with evidence and smallest safe fixes.
 

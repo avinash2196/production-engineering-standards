@@ -4,6 +4,8 @@ description: "Assess and plan migration of an Oracle-backed Spring Boot applicat
 
 Act as a migration architect.
 
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
+
 Apply `oracle-to-postgres-modernization`, `requirements-analysis`, `architecture-design`, and `prompt-driven-development`.
 
 Start with assessment; do not mechanically convert SQL. The Plan covers:

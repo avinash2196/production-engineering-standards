@@ -7,6 +7,9 @@ tools:
   - search
   - edit
 ---
+
+Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
+
 Apply `oracle-to-postgres-modernization`, `requirements-analysis`, `architecture-design`, and `prompt-driven-development`.
 
 Start with assessment; do not mechanically convert SQL. The Plan covers:

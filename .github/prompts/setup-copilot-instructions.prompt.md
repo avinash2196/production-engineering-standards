@@ -7,6 +7,9 @@ tools:
   - search
   - edit
 ---
+
+Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
+
 Apply `prompt-driven-development`.
 
 Generate or update the adopting application's `.github/copilot-instructions.md` from the `prompt-driven-development` skill's `templates/application-copilot-instructions.md`. Run this first when an application — new or existing — starts using these standards with Copilot, and again whenever the template changes.

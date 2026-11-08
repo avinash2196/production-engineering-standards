@@ -88,7 +88,7 @@ This is a 0.x release. Rules and templates may still change between minor versio
 - **Tested scope.** The workflow has been run end to end on single-service work items in one repository, covering Java/Spring Boot and Python/FastAPI, including an LLM-backed service. Work items that span several services or repositories are not yet validated. That includes product requirements shared across repositories and ordering between them.
 - **Contracts.** The contract template covers HTTP, message or stream (for example WebSocket or events), and RPC interfaces. Only the HTTP form has been used in a full run so far.
 - **Approvals.** Only you approve, one artifact at a time, and the approval is written into the artifact. Delegated or blanket approval ("approve everything on my behalf") is not accepted.
-- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files. In Copilot, start a new chat for each planning, execution, or review command. In both tools, start a new chat after the requirements are approved and after each executed milestone, so a long work item never runs in one growing conversation.
+- **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`, bound to the namespaced agent such as `production-engineering-standards:planner`; drop-in use falls back to `general-purpose`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files. In Copilot, start a new chat for each planning, execution, or review command. In both tools, start a new chat after the requirements are approved and after each executed milestone, so a long work item never runs in one growing conversation.
 - **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
 
 Known gaps and how they were found are recorded in [docs/history](docs/history/).
@@ -168,7 +168,7 @@ A simple way to think about the model is:
 
 The `.claude/` directory is the single Claude Code tree. It serves two uses without duplicating any files:
 
-**Direct (drop-in) usage** — `.claude/` is project configuration loaded automatically when this repository (or any adopting project that copies it in) is opened in Claude Code. No installation step required; commands are unprefixed (e.g., `/create-plan`).
+**Direct (drop-in) usage** — `.claude/` is project configuration loaded automatically when this repository (or any adopting project that copies it in) is opened in Claude Code. No installation step required; commands are unprefixed (e.g., `/create-plan`). Drop-in use has two limits: forked commands run as `general-purpose` instead of their role agent, because they bind the plugin's namespaced agent names (`production-engineering-standards:planner` and so on), and `${CLAUDE_PLUGIN_ROOT}` is not expanded, so commands fall back to the project's `.claude/` folder. Install the plugin (or pass `--plugin-dir ./.claude`) to run forks with their role agents.
 
 **Plugin usage** — `.claude/` is also the plugin root: `.claude/.claude-plugin/plugin.json` is the plugin manifest, and the repository root carries `.claude-plugin/marketplace.json`, which registers this repo as a Claude Code plugin marketplace with `./.claude` as its one entry. Claude Code does not treat `.claude-plugin/` as project configuration, so it is inert for drop-in usage.
 
@@ -201,6 +201,8 @@ claude plugin install production-engineering-standards@pes-marketplace --scope u
 ```
 
 `--scope user` makes the plugin available in every project on the current machine; use `--scope project` or `--scope local` to limit it to one repo. When installed, skills, agents, and commands are namespaced as `/production-engineering-standards:<name>` (e.g., `/production-engineering-standards:create-plan`, `/production-engineering-standards:code-review`).
+
+To update, run `claude plugin marketplace update pes-marketplace` and then `claude plugin update production-engineering-standards@pes-marketplace`. After updating, remove the older version folders from the Claude Code plugin cache, `~/.claude/plugins/cache/pes-marketplace/production-engineering-standards/<old-version>/`, keeping only the version you just installed. The commands read plugin files only from the running version, but a leftover older copy is still on disk for a model to find.
 
 **`.claude/` as a translation** — `.claude/` contains a translation of `.github/` content into Claude Code's format. It is kept in sync manually; `.github/` remains the source of truth for GitHub Copilot. When an adopting project copies in this standards repository:
 

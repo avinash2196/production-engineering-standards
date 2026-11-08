@@ -1,11 +1,13 @@
 ---
 description: "Perform an approved behavior-preserving REFACTOR milestone from a verified GREEN baseline and record verified progress."
 context: fork
-agent: refactoring-engineer
+agent: production-engineering-standards:refactoring-engineer
 background: false
 ---
 
 Act as a refactoring engineer.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `prompt-driven-development` and relevant engineering/domain skills.
 

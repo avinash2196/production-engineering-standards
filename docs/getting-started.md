@@ -38,6 +38,8 @@ copilot plugin marketplace update pes-marketplace
 copilot plugin update production-engineering-standards@pes-marketplace
 ```
 
+After updating, remove the older version folders from the Claude Code plugin cache, `~/.claude/plugins/cache/pes-marketplace/production-engineering-standards/<old-version>/`, keeping only the version you just installed. The commands read plugin files only from the running version, but a leftover older copy is still on disk for a model to find.
+
 To work on the standards themselves, register a local checkout as the marketplace instead (`plugin marketplace add <path-to-checkout>`). Copilot CLI then loads the plugin live from that folder. Claude Code copies it and picks up changes only when the plugin version changes.
 
 Machine-specific checkout paths belong in personal IDE or user settings.

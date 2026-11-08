@@ -234,13 +234,35 @@ COMMAND_PARITY_ENVIRONMENTS = (".github/prompts", ".claude/commands")
 # through the prompt's `agent:` binding instead.
 CLAUDE_COMMAND_ROLE_LINE = re.compile(r"\AAct as [^\n]*\.\n\n")
 
-# Skill paths are relative to each plugin root, which differs per platform.
-COPILOT_TO_CLAUDE_PATH_PREFIXES = (("`.github/skills/", "`skills/"),)
+# Plugin files resolve from the running plugin, never from a cached older
+# version (C23). Every Copilot prompt states the rule below; its Claude
+# command names the root through `${CLAUDE_PLUGIN_ROOT}`, which Claude Code
+# expands in plugin commands (inline and forked) and leaves literal in
+# drop-in use. Skill paths are rebased onto that root. These substitutions
+# are the only allowed wording differences besides the role line.
+PLUGIN_NAME = "production-engineering-standards"
+COPILOT_PLUGIN_ROOT_PHRASE = f"the installed {PLUGIN_NAME} plugin running this command"
+CLAUDE_PLUGIN_ROOT_PHRASE = (
+    f"`${{CLAUDE_PLUGIN_ROOT}}`, {COPILOT_PLUGIN_ROOT_PHRASE} "
+    "(in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder)"
+)
+PLUGIN_FILES_RULE = (
+    f"Plugin files: read this plugin's skills and templates only from {COPILOT_PLUGIN_ROOT_PHRASE}; "
+    "never search plugin caches or read files from another installed version."
+)
+COPILOT_TO_CLAUDE_SUBSTITUTIONS = (
+    ("`.github/skills/", "`${CLAUDE_PLUGIN_ROOT}/skills/"),
+    (COPILOT_PLUGIN_ROOT_PHRASE, CLAUDE_PLUGIN_ROOT_PHRASE),
+)
 
 # Commands that work from artifacts run in a fresh context with their role
 # agent in Claude Code through `context: fork` (`prompt-driven-development`
 # Fresh Context). Copilot runs them inline, bound to the same role agent:
 # Copilot CLI subagents cannot yet write files with these agents' tool lists.
+# Claude Code registers plugin agents as `<plugin>:<agent>` and runs a fork
+# whose bare agent name does not resolve as `general-purpose` (C24), so the
+# Claude command binds the namespaced name; the Copilot prompt keeps the
+# bare name.
 FRESH_CONTEXT_COMMANDS = {
     "create-plan": "planner",
     "create-api-contract": "planner",
@@ -334,10 +356,11 @@ def validate_agent_body_sync(root: Path, errors: list[str]) -> None:
 
 def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
     # A Claude command is its Copilot prompt's body, optionally preceded by
-    # one role sentence, with skill paths rebased onto the Claude plugin root.
+    # one role sentence, with the plugin root named through
+    # `${CLAUDE_PLUGIN_ROOT}` (COPILOT_TO_CLAUDE_SUBSTITUTIONS).
     def normalize_copilot(body: str) -> str:
-        for copilot_prefix, claude_prefix in COPILOT_TO_CLAUDE_PATH_PREFIXES:
-            body = body.replace(copilot_prefix, claude_prefix)
+        for copilot_text, claude_text in COPILOT_TO_CLAUDE_SUBSTITUTIONS:
+            body = body.replace(copilot_text, claude_text)
         return body.rstrip()
 
     def normalize_claude(body: str) -> str:
@@ -347,11 +370,27 @@ def validate_command_prompt_parity(root: Path, errors: list[str]) -> None:
         root, errors, COMMAND_PARITY_ENVIRONMENTS, (".prompt.md", ".md"), "command"
     ):
         _check_pair(root, errors, canonical, mirror, normalize_copilot, normalize_claude)
+        if PLUGIN_FILES_RULE not in canonical.read_text(encoding="utf-8"):
+            errors.append(
+                f"{canonical.relative_to(root).as_posix()}: missing the plugin-files rule "
+                f"'{PLUGIN_FILES_RULE}'"
+            )
 
 
 def validate_fresh_context_commands(root: Path, errors: list[str]) -> None:
     # Fresh-context commands fork in Claude Code to their role agent and bind
     # the same agent in Copilot; every other Claude command runs inline.
+    manifest = root / PLUGIN_ROOT / ".claude-plugin/plugin.json"
+    if manifest.is_file():
+        try:
+            name = json.loads(manifest.read_text(encoding="utf-8")).get("name")
+        except json.JSONDecodeError:
+            name = None  # reported by the manifest validators
+        if name is not None and name != PLUGIN_NAME:
+            errors.append(
+                f"{PLUGIN_ROOT}/.claude-plugin/plugin.json: name must be '{PLUGIN_NAME}', "
+                "the namespace fresh-context commands bind their agents under"
+            )
     for path in sorted((root / ".claude/commands").glob("*.md")):
         name = path.name.removesuffix(".md")
         parts = _split_frontmatter(path.read_text(encoding="utf-8"))
@@ -364,7 +403,7 @@ def validate_fresh_context_commands(root: Path, errors: list[str]) -> None:
             if any(fields.values()):
                 errors.append(f"{rel}: only fresh-context commands may set context, agent, or background")
             continue
-        expected = {"context": "fork", "agent": agent, "background": "false"}
+        expected = {"context": "fork", "agent": f"{PLUGIN_NAME}:{agent}", "background": "false"}
         for field, value in expected.items():
             if fields[field] != value:
                 errors.append(f"{rel}: fresh-context command must set '{field}: {value}'")
