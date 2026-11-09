@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch D): code quality, review, and API conventions
 
-Status: draft for user review. Nothing here is applied. Skill text changes start only after 0.15.0 is released and the user approves this brief (user decision, 2026-10-30).
+Status: decisions recorded (user, 2026-11-09); see "Decisions". Nothing here is applied yet. Target 0.16.0, together with C20, lighter plans and brief E.
 
 ## Why this brief
 
@@ -68,7 +68,7 @@ Before applying, sweep the remaining Final Reviews and code-review outputs (appr
 | ID | Rule | Severity |
 | --- | --- | --- |
 | CM1 | Comments explain **why** (a constraint, a decision, a workaround and its reason), never **what** the code already says. | Medium |
-| CM2 | A public API (exported class, public method of a library, endpoint handler) has a doc comment stating its contract. | Medium |
+| CM2 | A public API (exported class, public method of a library, endpoint handler) has a doc comment stating its contract. | Dropped (user decision, 2026-11-09) |
 | CM3 | No commented-out code. | High |
 | CM4 | A TODO or FIXME names a ticket or an owner. | Medium |
 
@@ -118,7 +118,7 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 
 | ID | Rule |
 | --- | --- |
-| PR1 | One command, `prepare-pr <work-item>`. In Claude Code it is a fork bound to `production-engineering-standards:code-reviewer`; no new agent. It covers one executed milestone, or a RED/GREEN pair of the same work item (RV1). |
+| PR1 | One command, `prepare-pr <work-item>`. In Claude Code it is a fork bound to `production-engineering-standards:code-reviewer`; no new agent. It runs after a RED/GREEN pair's GREEN milestone, or after a single OTHER, FOUNDATION or REFACTOR milestone; never after a RED milestone alone, whose tests fail by design (RV1). |
 | PR2 | **Stop 1, review (writes nothing).** Diff the branch against its base. Check the diff against the Implementation Plan's file list (RV2), the approved contract (RV5), `code-quality`, and the relevant domain skills. Report findings ordered High, Medium, Low (RV6). Draft the commit message and PR body from the artifacts: work item and milestone IDs, requirements covered, verification command and its recorded result, and any justified Medium finding. Then stop. |
 | PR3 | **Recommend, never fix.** A finding's fix is a recommendation. Any code change goes through PDD: an amendment milestone (D4) or a small fix work item (brief E, C27). A High finding blocks stop 2 until it is fixed that way and stop 1 runs again. |
 | PR4 | **Stop 2, commit and PR (on the user's word only).** Only after the user says go in a new message, and with no open High finding: commit with the drafted message, push the branch, and open the PR as a draft unless the user asks otherwise. Never merge, never force-push, never commit to the default branch. Report the commit hash and the PR link. |
@@ -135,13 +135,17 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 - Both setup templates: an optional `## Code Standards` section for project overrides (limits, shared-code location, domain packages).
 - Validator and tests: the skill exists and is mirrored, every rule ID is unique, the agents reference it, the template has the override section, and `prepare-pr` is mirrored and bound to the namespaced code-reviewer.
 
-## Open decisions for the user
+## Decisions (user, 2026-11-09)
 
-1. Keep the default numbers (400-line file, 40-line method, nesting 3, 4 parameters, 400-line PR) or change them.
-2. Which rules without run evidence (E6 only) stay.
-3. Whether SZ and NM are Medium everywhere (proposed) or High for new code.
-4. Release target: 0.16.0 together with C20 and lighter plans (proposed), or its own release.
-5. `prepare-pr`: whether stop 2 opens the PR as a draft by default (proposed), and whether it runs after every executed milestone or only after the GREEN of a pair.
+| # | Question | Decision |
+| --- | --- | --- |
+| 1 | Default limits | Keep: 400-line file, 40-line method, nesting 3, 4 parameters, 400-line PR. Projects override them in `## Code Standards`. |
+| 2 | Rules with no run evidence (E6 only) | Keep all, at their listed severity, except CM2, which is dropped. LY1, LG3, LG5 and AP2 stay High. |
+| 3 | SZ and NM severity | Medium everywhere. |
+| 4 | Release target | 0.16.0, with C20, lighter plans and brief E, so one trial tests the Implementation Plan changes together. |
+| 5 | `prepare-pr` | Stop 2 opens a draft PR by default. It runs after a pair's GREEN, or after a single OTHER, FOUNDATION or REFACTOR milestone (PR1). |
+
+The evidence sweep above (approval-service, scribe, workspace-reservation) is still to do before the rules are applied.
 
 ## Keep out of the plugin
 
