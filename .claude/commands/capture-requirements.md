@@ -2,6 +2,8 @@
 description: "Capture or update a requirements artifact without planning or implementation."
 ---
 
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
+
 Apply `requirements-analysis` and `prompt-driven-development`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.

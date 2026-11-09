@@ -1,11 +1,13 @@
 ---
 description: "Create one detailed human-reviewable Implementation Plan for one approved Plan milestone based on the current repository state."
 context: fork
-agent: planner
+agent: production-engineering-standards:planner
 background: false
 ---
 
 Act as an implementation planner.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
 

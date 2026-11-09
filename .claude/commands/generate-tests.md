@@ -1,11 +1,13 @@
 ---
 description: "Execute an approved RED Implementation Plan, establish valid RED evidence, and record verified RED progress."
 context: fork
-agent: test-engineer
+agent: production-engineering-standards:test-engineer
 background: false
 ---
 
 Act as a test engineer.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `testing`, `prompt-driven-development`, and relevant domain skills.
 

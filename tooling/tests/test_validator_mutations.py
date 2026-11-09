@@ -97,6 +97,23 @@ class AgentAndCommandParityTest(ValidatorMutationTestCase):
         )
         self.assert_error_containing("extra-command.md: no counterpart command")
 
+    def test_missing_plugin_files_rule_fails(self):
+        # Commands must not read plugin files from another version (0.15.1, C23).
+        for rel in (".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md"):
+            path = self.repo / rel
+            text = path.read_text(encoding="utf-8")
+            start = text.index("Plugin files:")
+            end = text.index("\n\n", start) + 2
+            path.write_text(text[:start] + text[end:], encoding="utf-8")
+        self.assert_error_containing("review-requirements.prompt.md: missing the plugin-files rule")
+
+    def test_claude_command_without_plugin_root_variable_diverges(self):
+        path = self.repo / ".claude/commands/setup-claude-instructions.md"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("`${CLAUDE_PLUGIN_ROOT}/skills/", text)
+        path.write_text(text.replace("`${CLAUDE_PLUGIN_ROOT}/skills/", "`skills/"), encoding="utf-8")
+        self.assert_error_containing(".claude/commands/setup-claude-instructions.md has diverged from")
+
     def test_second_role_paragraph_is_not_allowed(self):
         # Only one leading role sentence is platform-specific; a second
         # "Act as" paragraph is behavioral drift.
@@ -121,8 +138,29 @@ class FreshContextCommandTest(ValidatorMutationTestCase):
         self.assert_error_containing("generate-tests.md: fresh-context command must set 'context: fork'")
 
     def test_wrong_claude_agent_fails(self):
-        self._edit(".claude/commands/review-code.md", "agent: code-reviewer", "agent: planner")
-        self.assert_error_containing("review-code.md: fresh-context command must set 'agent: code-reviewer'")
+        self._edit(
+            ".claude/commands/review-code.md",
+            "agent: production-engineering-standards:code-reviewer",
+            "agent: production-engineering-standards:planner",
+        )
+        self.assert_error_containing(
+            "review-code.md: fresh-context command must set 'agent: production-engineering-standards:code-reviewer'"
+        )
+
+    def test_bare_claude_agent_fails(self):
+        # A bare agent name runs the fork as general-purpose (0.15.1, C24).
+        self._edit(".claude/commands/create-plan.md", "agent: production-engineering-standards:planner", "agent: planner")
+        self.assert_error_containing(
+            "create-plan.md: fresh-context command must set 'agent: production-engineering-standards:planner'"
+        )
+
+    def test_renamed_plugin_fails(self):
+        self._edit(
+            ".claude/.claude-plugin/plugin.json",
+            '"name": "production-engineering-standards"',
+            '"name": "renamed-plugin"',
+        )
+        self.assert_error_containing("plugin.json: name must be 'production-engineering-standards'")
 
     def test_inline_command_may_not_fork(self):
         self._edit(".claude/commands/capture-requirements.md", "\n---\n", "\ncontext: fork\n---\n")

@@ -1,11 +1,13 @@
 ---
 description: "Review evidence for safe production rollout and recovery."
 context: fork
-agent: production-readiness-reviewer
+agent: production-engineering-standards:production-readiness-reviewer
 background: false
 ---
 
 Act as a production-readiness reviewer.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `production-readiness` and relevant domain skills. Distinguish verified evidence, missing evidence, assumptions, and residual risk.
 

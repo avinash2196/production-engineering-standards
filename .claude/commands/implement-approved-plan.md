@@ -1,11 +1,13 @@
 ---
 description: "Execute an approved FOUNDATION, GREEN, or OTHER Implementation Plan, verify it, and record verified progress."
 context: fork
-agent: implementation-engineer
+agent: production-engineering-standards:implementation-engineer
 background: false
 ---
 
 Act as an implementation engineer.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `prompt-driven-development` and relevant stack/domain skills.
 

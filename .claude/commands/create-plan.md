@@ -1,11 +1,13 @@
 ---
 description: "Create or update docs/.ai/<work-item>/Plan.md. Planning only."
 context: fork
-agent: planner
+agent: production-engineering-standards:planner
 background: false
 ---
 
 Act as a requirements/planning expert.
+
+Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
 Apply `requirements-analysis` and `prompt-driven-development`.
 

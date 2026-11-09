@@ -1310,5 +1310,37 @@ class Release015ControlsTest(unittest.TestCase):
             self.assertIn("start a new chat for each planning, execution, or review command", self._read(rel), rel)
 
 
+class Release0151ControlsTest(unittest.TestCase):
+    """0.15.1 fixes for C23 and C24 (docs/history/pdd-gap-fixes-2026-10-c.md)."""
+
+    def _read(self, rel):
+        return (ROOT / rel).read_text(encoding="utf-8")
+
+    def test_c24_forks_bind_namespaced_role_agent(self):
+        # 0.15.1: Claude Code names plugin agents `<plugin>:<agent>`; a bare
+        # name ran every fork as general-purpose. Copilot keeps the bare name.
+        plugin = validate_repository_module.PLUGIN_NAME
+        for command, agent in validate_repository_module.FRESH_CONTEXT_COMMANDS.items():
+            self.assertIn(f"\nagent: {plugin}:{agent}\n", self._read(f".claude/commands/{command}.md"), command)
+            self.assertIn(f'\nagent: "{agent}"\n', self._read(f".github/prompts/{command}.prompt.md"), command)
+
+    def test_c23_plugin_files_resolve_from_running_plugin(self):
+        # 0.15.1: commands read plugin files only from the running plugin,
+        # through `${CLAUDE_PLUGIN_ROOT}` in Claude Code, never from a cache.
+        rule = validate_repository_module.PLUGIN_FILES_RULE
+        claude_rule = rule.replace(
+            validate_repository_module.COPILOT_PLUGIN_ROOT_PHRASE,
+            validate_repository_module.CLAUDE_PLUGIN_ROOT_PHRASE,
+        )
+        for path in sorted((ROOT / ".github/prompts").glob("*.prompt.md")):
+            self.assertIn(rule, path.read_text(encoding="utf-8"), path.name)
+        for path in sorted((ROOT / ".claude/commands").glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn(claude_rule, text, path.name)
+            self.assertNotIn("`skills/", text, path.name)
+        for rel in ["README.md", "docs/getting-started.md"]:
+            self.assertIn("~/.claude/plugins/cache/", self._read(rel), rel)
+
+
 if __name__ == "__main__":
     unittest.main()
