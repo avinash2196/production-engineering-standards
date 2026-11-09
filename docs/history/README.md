@@ -8,5 +8,6 @@ Gap briefs record what real PDD runs showed about the plugin, and the fixes that
 | [pdd-gap-fixes-2026-10-b.md](pdd-gap-fixes-2026-10-b.md) | Closed | 0.14.0 |
 | [pdd-gap-fixes-2026-10-c.md](pdd-gap-fixes-2026-10-c.md) | Closed | 0.15.0 |
 | [pdd-gap-fixes-2026-11-d.md](pdd-gap-fixes-2026-11-d.md) | Decided, not applied (code quality, review, API conventions) | 0.16.0 |
+| [pdd-gap-fixes-2026-11-e.md](pdd-gap-fixes-2026-11-e.md) | Draft (v11 project reviews: C27–C30) | 0.16.0 (proposed) |
 
 Each finding is classified as **Plugin** (the plugin text was missing or unclear, so it gets a fix) or **Model** (the plugin already stated the rule and the model broke it, so there is no change). Project names in the briefs identify the evidence runs only. They are never plugin rules.
