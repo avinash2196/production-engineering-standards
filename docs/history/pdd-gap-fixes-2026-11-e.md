@@ -12,8 +12,8 @@ The main lesson is about evidence quality. Two of the three review files are the
 
 | ID | Source | Executor | Plugin | What it is |
 | --- | --- | --- | --- | --- |
-| S1 | `scribbing/plugin-review.md` (787 lines), 2026-10-31 and 11-02 | Claude Code, claude-haiku-4.5 | 0.14.0 (per `scribe-architecture/docs/handover.md`) | The session's self-review (scored 8/10). Little about the plugin. |
-| S2 | `Traffic/docs/PLUGIN-REVIEW.md` (1,017 lines) and `PLUGIN_REVIEW_UPDATE_SUMMARY.md` (176), 2026-11-01 to 11-04 | GitHub Copilot | 0.14.0 named, but not used (see "Out-of-plugin session") | Tooling wishes plus Copilot's own account of rule breaks. |
+| S1 | `scribbing/plugin-review.md` (787 lines), 2026-10-31 and 2026-11-02 | Claude Code, claude-haiku-4.5 | 0.14.0 (per `scribe-architecture/docs/handover.md`) | The session's self-review (scored 8/10). Little about the plugin. |
+| S2 | `Traffic/docs/PLUGIN-REVIEW.md` (1,017 lines) and `PLUGIN_REVIEW_UPDATE_SUMMARY.md` (176), 2026-11-01 to 2026-11-04 | GitHub Copilot | 0.14.0 named, but not used (see "Out-of-plugin session") | Tooling wishes plus Copilot's own account of rule breaks. |
 | S3 | `order-management-service/worktrees/oracle-persistence/docs/pdd-gap-fixes-2026-10-requirements-template.md`, 2026-10-02 | GitHub Copilot | 0.11.0 | Already consumed by batch A (0.12.0). Nothing new. |
 | S4 | `Traffic` git history and `docs/.ai/initial-build/` (untracked in git) | Copilot (history); `initial-build` executor not recorded | 0.14.0 | The evidence behind S2. |
 
