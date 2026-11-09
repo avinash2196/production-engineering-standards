@@ -32,8 +32,12 @@ Nothing covers file or method size, naming, reuse and shared code, comments, PR 
 | E4 | order-management `oracle-persistence` Final Review | Environment-variable naming mismatch reported between `docker-compose.yml` and `application.properties`. Later rejected as not real, but naming of configuration keys was reviewed only by chance. | NM3 |
 | E5 | 0.15.0 trial `recent-reservations` (C14) | Contract decisions (path, parameters, empty result, ordering) were chosen silently. Models know REST; the failure was an unreviewed choice, not ignorance. | AP1 |
 | E6 | User request, 2026-10-30 | File size, utilities folder, method naming, logging, comments, controller → service → DAO, PR size, multi-domain PRs, related changes only, HTTP verbs, path vs query vs body. | all *(user decision)* |
+| E7 | workspace-reservation `recent-reservations-v2` (RV2-M3 GREEN, 0.15.0 trial) | The new listing reads `store.findAll()` in `ReservationController`, and applies the 30-day window and the sort order there (`ReservationController.java:40-42`, `:113-124`). The repository has no reservation service (`service/` holds only `ReservationValidator`), so this follows its existing controller → store shape. The planner wrote it as exact code, the user approved it, and the Final Review checked the comparator but said nothing about layering. Second case after E3. | LY1, LY2; also the conflict between LY1 and design rule 3 (the existing repository wins) |
+| E8 | workspace-reservation `recent-reservations-v2` Final Review RV2-Q5, RV2-Q6 | `CLAUDE.md` was changed in the working tree (90 lines, regenerated from the template) although no Implementation Plan listed it. `worktrees/` is untracked and not ignored, so `git add -A` would commit a nested copy of the repository. | RV2; PR2 (diff against the file list) and PR4 (stage only the reviewed files) |
+| E9 | approval-service `initial-build` Final Review F5 | IP 003 says the dev password "is documented in README.md, part of the documentation update after M6". That update never happened, and the repository has no README, so a statement in an approved artifact went stale with the change. | RV3 |
+| E10 | scribe-contracts `protocol-v1-1` Final Review FR1 | Three files are CRLF in the working tree and LF in the index. `git -c core.autocrlf=false diff --stat` reports 1,118 insertions and 843 deletions, against 312 and 37 with the default setting. A line count can therefore be inflated by line endings alone. | RV1 (count changed lines from git's normalized diff); PR2 |
 
-Before applying, sweep the remaining Final Reviews and code-review outputs (approval-service, scribe, workspace-reservation) for more E rows. A rule with no E row other than E6 stays in only if the user keeps it at review.
+Sweep done (2026-11-09, read-only): the Final Reviews of approval-service `initial-build`, scribe-contracts `protocol-v1`, `protocol-v1-1` and `stub-coverage`, and workspace-reservation `reservation-events`, `recent-reservations-v2` and `test-case-stabilization`. Other findings in them are security, concurrency, test strength or process items, outside brief D's rules. Rules whose only evidence is E6: SZ1–SZ4, NM1, NM2, NM4, RU1–RU3, CM1, CM3, CM4, LG1, LG2, LG4, LG5, LY3, LY4, AP2–AP5, RV4. Decision 2 keeps them.
 
 ## Proposed rules
 
@@ -145,7 +149,7 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 | 4 | Release target | 0.16.0, with C20, lighter plans and brief E, so one trial tests the Implementation Plan changes together. |
 | 5 | `prepare-pr` | Stop 2 opens a draft PR by default. It runs after a pair's GREEN, or after a single OTHER, FOUNDATION or REFACTOR milestone (PR1). |
 
-The evidence sweep above (approval-service, scribe, workspace-reservation) is still to do before the rules are applied.
+The evidence sweep is done (E7–E10, 2026-11-09). E7 raises one open question for the 0.16.0 plan: when a repository's existing shape has no service layer, does LY1 (High) apply, or does design rule 3 let the existing convention win?
 
 ## Keep out of the plugin
 
