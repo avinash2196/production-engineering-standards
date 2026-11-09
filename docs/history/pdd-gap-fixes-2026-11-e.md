@@ -108,6 +108,25 @@ Never write your own requirements, Plan, Implementation Plan or approval in plac
 | 5 | C34–C36 (session hand-off, added 2026-11-09) | Accepted for 0.16.0. No hand-off or status file: the artifacts stay the only state between sessions. |
 | 6 | C37 (command inputs) | Accepted for 0.16.0 as the user split it: RED needs the requirements, Plan, contract and its Implementation Plan; GREEN needs only the Plan and its Implementation Plan, because the Implementation Plan already has all the changes. Planning commands also read the current repository. |
 
+## Lighter dry run (user decision, 2026-11-09)
+
+Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code always stays. The user approved it in the parent session with the words "yes this is good"; another session relayed it here.
+
+- **Two writes stay, by design:** the exact code in the Implementation Plan, which the user reviews, and execution applying exactly that code. The dry run is the extra pass, and most of the cost went there.
+- **RED dry run:** kept in full, but it runs only the new tests and proves they fail now and pass with the planned GREEN change (the B8 soundness proof).
+- **GREEN dry run:** compile, plus only the tests the milestone adds or affects, run once. The full suite runs once, at execution only.
+- **Everywhere:** no repeated dry-run runs, and no probes beyond the RED fail-and-pass proof.
+- **Why the dry run stays:** in brief B it caught a contract-defined name the runtime could not produce, and the B8 RED soundness proof depends on it.
+- **Cost evidence:** the GREEN planning step of trial 2 (`recent-reservations-v2`) cost $17, partly because it ran the full 117-test suite twice (C26). Its artifacts total 4,380 lines (RED plan 1,851, GREEN plan 1,294).
+
+### Proposals (not decided; for the user)
+
+| ID | Proposal |
+| --- | --- |
+| P1 | A small-change track. A change with no contract change and at most about 3 files gets one Implementation Plan with RED and GREEN sections, approved once and executed in two verified steps. |
+| P2 | A mechanical diff-vs-plan check that fails when the changed files or hunks do not match the approved Implementation Plan, plus a check that the RED tests fail first. |
+| P3 | Shorter skill text, because Model findings (C1, C14, C25, C26) show that longer rules get skipped. |
+
 ## Rules for this batch
 
 The same as batches A to C: fixes are project-neutral, only plugin gaps get a fix, structure over prose, the smallest wording that works, and every gap is checked against the latest `.github/` text before it is logged.
