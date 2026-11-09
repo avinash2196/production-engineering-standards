@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch E): findings from the v11 project reviews
 
-Status: draft for user review. Nothing here is applied. Proposed for 0.16.0, alongside C19, C20, lighter plans (carried from batch C) and brief D (code quality).
+Status: decisions recorded (user, 2026-11-09); see "Decisions". Nothing here is applied yet. Target 0.16.0, alongside C19, C20, lighter plans (carried from batch C) and brief D (code quality).
 
 ## Why this brief
 
@@ -39,7 +39,7 @@ Everything below followed from that, so none of it is evidence about the plugin'
 | ID | Phase | Finding | Kind | Fix |
 | --- | --- | --- | --- | --- |
 | C27 | After approval and Final Review (S2, Traffic `vehicle_number` and "Review Case" defects, 2026-11-04) | The plugin has no shape for fixing a defect found after a work item's Plan is approved or its Final Review is done. Every code change needs a milestone-specific Implementation Plan, but nothing says what a small fix looks like: a new work item, an amendment milestone (D4), or something lighter. The session's stated reason for skipping PDD was that "Writing Implementation Plan for a 1-line fix seemed inefficient". That session was out of plugin, but the reasoning applies to a proper run too, and C18 shows how heavy a small change gets today. Checked against `main`: no skill, prompt or template mentions a defect or fix path; the only guidance is the instruction templates' "small changes may use a very small Implementation Plan". | Plugin | With 0.16.0 lighter plans: a fix is its own work item with one milestone (`Decomposition: one milestone`), short requirements (the defect, the expected behavior, how to reproduce), and an Implementation Plan that is the C20 Review Summary plus the exact diff and the verification command. It still needs the user's approval. Reject S2's "Critical: auto-approved", which conflicts with D1. |
-| C28 | Starting new work (Traffic, 2026-11-01) | A new chat has no step that makes it look for an existing work item. The Copilot session started a second plan beside `initial-build`, which had Pending milestones. The folder was untracked, but it was on disk. The generated instruction file is the only text a new chat always loads, and it names the `docs/.ai/<work-item>/` layout but does not say to check for open work items. Seen once, in an out-of-plugin session. | Plugin (Watch — seen once) | One line in both instruction templates: before starting new work, list `docs/.ai/*/Plan.md` files with Pending milestones and ask the user which work item this is. Decide after a second case. B5 still holds: commands do not check for the instruction file. |
+| C28 | Starting new work (Traffic, 2026-11-01) | A new chat has no step that makes it look for an existing work item. The Copilot session started a second plan beside `initial-build`, which had Pending milestones. The folder was untracked, but it was on disk. The generated instruction file is the only text a new chat always loads, and it names the `docs/.ai/<work-item>/` layout but does not say to check for open work items. Seen once, in an out-of-plugin session. | Plugin (seen once; applied by user decision, 2026-11-09) | One line in both instruction templates: before starting new work, list `docs/.ai/*/Plan.md` files with Pending milestones and ask the user which work item this is. It is the "Continuing work" row of C29's routing table. B5 still holds: commands do not check for the instruction file. |
 | C29 | Adoption (Traffic, 2026-11-01) | A session told only to "follow PDD" can imitate it without the plugin: it writes its own instruction file and Plan, and none of the plugin's rules apply. Copilot users are the most exposed, because their commands run inline (C19) and a new chat starts from the instruction file alone. README Quickstart says to generate the instruction file "once", but not that it must come from the setup command and never be written by hand, nor that each phase starts with a command and the work-item name. | Plugin (instruction templates and docs) | A **Command Routing** section in the fixed part of both instruction templates (see "C29 draft" below): which command each kind of request goes to, and a no-deadlock rule for requests no command covers. README Quickstart and `docs/getting-started.md`: the instruction file must come from the setup command and never be written by hand, and every phase starts with a PES command and the work-item name; a chat asked to "use PDD" without them improvises. |
 | C30 | GREEN execution (S1, scribe `local-env-v1` M4, 2026-11-02) | The main session handed a `check.bat` scope fix to a `general-purpose` agent with its own brief instead of running `implement-approved-plan`. Same pattern as C25 (main conversation doing role work). This run used 0.14.0, before fresh-context forks, so it does not count as the post-C24 repeat that C25 is watching for. | Model | No change. C25 stays on Watch. |
 
@@ -65,7 +65,7 @@ A new fixed section in `application-claude-instructions.md` and `application-cop
 
 Never write your own requirements, Plan, Implementation Plan or approval in place of a command's artifact. Never create status or summary files; progress and verification live only in `Plan.md` Execution Status. Any change to code, tests, configuration or dependencies still needs an approved Implementation Plan, so route it through a one-milestone work item.
 
-**Limits.** This is guidance, not enforcement. It would likely have stopped the Traffic drift, but not a model that ignores the file. The C28 row of the routing table stays on Watch: it is applied only if the user accepts it at brief review.
+**Limits.** This is guidance, not enforcement. It would likely have stopped the Traffic drift, but not a model that ignores the file. The C28 row is applied although C28 was seen only once (user decision, 2026-11-09): it is one line, and the Traffic drift shows the cost of missing it.
 
 **Files (when applied).** Both instruction templates (new fixed section); README Quickstart and `docs/getting-started.md`; validator and tests: both templates contain the section, and every command it names exists in `.github/prompts/` and `.claude/commands/`. Because the table names `prepare-pr`, apply brief D in the same release or first, or drop that row.
 
@@ -89,6 +89,14 @@ Never write your own requirements, Plan, Implementation Plan or approval in plac
 | Audit, checkpoint and rollback commands, `.approvals/` folder (S2) | D1 records approval in the artifact; git holds history. |
 | Prerequisite scripts, troubleshooting guide, glossary, Mermaid diagrams, `.fixtures/` folder (S1, S2) | Project documentation and conventions, not plugin rules. |
 | `lint-docs` check for summary files (S2) | `tooling/` validates this repository only and cannot see application repositories. C29's template sentence covers the intent. |
+
+## Decisions (user, 2026-11-09)
+
+| # | Question | Decision |
+| --- | --- | --- |
+| 1 | C27 and C29 | Accepted as drafted. |
+| 2 | C28 | Applied now, as the "Continuing work" row of C29's routing table, without waiting for a second case. |
+| 3 | Brief letter | This brief keeps E. The planned roadmap and multi-pass brief takes the next letter. |
 
 ## Rules for this batch
 
