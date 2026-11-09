@@ -40,8 +40,34 @@ Everything below followed from that, so none of it is evidence about the plugin'
 | --- | --- | --- | --- | --- |
 | C27 | After approval and Final Review (S2, Traffic `vehicle_number` and "Review Case" defects, 2026-11-04) | The plugin has no shape for fixing a defect found after a work item's Plan is approved or its Final Review is done. Every code change needs a milestone-specific Implementation Plan, but nothing says what a small fix looks like: a new work item, an amendment milestone (D4), or something lighter. The session's stated reason for skipping PDD was that "Writing Implementation Plan for a 1-line fix seemed inefficient". That session was out of plugin, but the reasoning applies to a proper run too, and C18 shows how heavy a small change gets today. Checked against `main`: no skill, prompt or template mentions a defect or fix path; the only guidance is the instruction templates' "small changes may use a very small Implementation Plan". | Plugin | With 0.16.0 lighter plans: a fix is its own work item with one milestone (`Decomposition: one milestone`), short requirements (the defect, the expected behavior, how to reproduce), and an Implementation Plan that is the C20 Review Summary plus the exact diff and the verification command. It still needs the user's approval. Reject S2's "Critical: auto-approved", which conflicts with D1. |
 | C28 | Starting new work (Traffic, 2026-11-01) | A new chat has no step that makes it look for an existing work item. The Copilot session started a second plan beside `initial-build`, which had Pending milestones. The folder was untracked, but it was on disk. The generated instruction file is the only text a new chat always loads, and it names the `docs/.ai/<work-item>/` layout but does not say to check for open work items. Seen once, in an out-of-plugin session. | Plugin (Watch — seen once) | One line in both instruction templates: before starting new work, list `docs/.ai/*/Plan.md` files with Pending milestones and ask the user which work item this is. Decide after a second case. B5 still holds: commands do not check for the instruction file. |
-| C29 | Adoption (Traffic, 2026-11-01) | A session told only to "follow PDD" can imitate it without the plugin: it writes its own instruction file and Plan, and none of the plugin's rules apply. Copilot users are the most exposed, because their commands run inline (C19) and a new chat starts from the instruction file alone. README Quickstart says to generate the instruction file "once", but not that it must come from the setup command and never be written by hand, nor that each phase starts with a command and the work-item name. | Plugin (docs) | README Quickstart and `docs/getting-started.md`: say that the instruction file must come from the setup command, and that every phase starts with a PES command and the work-item name; a chat asked to "use PDD" without them improvises. Add the same sentence on progress to both instruction templates: status and verification live only in `Plan.md` Execution Status; do not create separate summary or status files. |
+| C29 | Adoption (Traffic, 2026-11-01) | A session told only to "follow PDD" can imitate it without the plugin: it writes its own instruction file and Plan, and none of the plugin's rules apply. Copilot users are the most exposed, because their commands run inline (C19) and a new chat starts from the instruction file alone. README Quickstart says to generate the instruction file "once", but not that it must come from the setup command and never be written by hand, nor that each phase starts with a command and the work-item name. | Plugin (instruction templates and docs) | A **Command Routing** section in the fixed part of both instruction templates (see "C29 draft" below): which command each kind of request goes to, and a no-deadlock rule for requests no command covers. README Quickstart and `docs/getting-started.md`: the instruction file must come from the setup command and never be written by hand, and every phase starts with a PES command and the work-item name; a chat asked to "use PDD" without them improvises. |
 | C30 | GREEN execution (S1, scribe `local-env-v1` M4, 2026-11-02) | The main session handed a `check.bat` scope fix to a `general-purpose` agent with its own brief instead of running `implement-approved-plan`. Same pattern as C25 (main conversation doing role work). This run used 0.14.0, before fresh-context forks, so it does not count as the post-C24 repeat that C25 is watching for. | Model | No change. C25 stays on Watch. |
+
+## C29 draft: Command Routing (user decision, 2026-11-09)
+
+A new fixed section in `application-claude-instructions.md` and `application-copilot-instructions.md`. Because it is fixed, the setup command copies it verbatim and a hand-edited file is the only way to lose it. This is the instruction file pointing to the commands; B5 still holds (commands do not check for the instruction file), so nothing deadlocks at bootstrap.
+
+**Routing.** Use the plugin's commands for PDD work, with the work-item name:
+
+| The request is | Route |
+| --- | --- |
+| New work, or a change to behavior | `capture-requirements <work-item>`, then each report's `Next:` line. |
+| Continuing work | First list `docs/.ai/*/Plan.md` files with Pending milestones and ask which work item this is (C28). Then run the command for that work item's next step. |
+| A defect in finished work | A fix work item with one milestone (C27): `capture-requirements` with the defect, the expected behavior and how to reproduce it. |
+| Review, readiness, architecture | `review-code`, `review-production-readiness`, `review-architecture`. |
+| Commit and PR | `prepare-pr` (brief D). Until it exists, only when the user asks. |
+
+**No deadlock.** When no command covers the request, say so, name the closest command, and ask. Without a command you may only:
+
+- answer questions and investigate read-only;
+- edit documentation outside executable artifacts;
+- run commands the user asks for.
+
+Never write your own requirements, Plan, Implementation Plan or approval in place of a command's artifact. Never create status or summary files; progress and verification live only in `Plan.md` Execution Status. Any change to code, tests, configuration or dependencies still needs an approved Implementation Plan, so route it through a one-milestone work item.
+
+**Limits.** This is guidance, not enforcement. It would likely have stopped the Traffic drift, but not a model that ignores the file. The C28 row of the routing table stays on Watch: it is applied only if the user accepts it at brief review.
+
+**Files (when applied).** Both instruction templates (new fixed section); README Quickstart and `docs/getting-started.md`; validator and tests: both templates contain the section, and every command it names exists in `.github/prompts/` and `.claude/commands/`. Because the table names `prepare-pr`, apply brief D in the same release or first, or drop that row.
 
 ## Evidence for items already open
 
