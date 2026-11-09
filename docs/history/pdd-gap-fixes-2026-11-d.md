@@ -151,6 +151,8 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 
 The evidence sweep is done (E7–E10, 2026-11-09). E7 raises one open question for the 0.16.0 plan: when a repository's existing shape has no service layer, does LY1 (High) apply, or does design rule 3 let the existing convention win?
 
+**Decision (user, 2026-11-09, 0.16.0 plan Q1 and Q10):** the existing shape wins. LY1 is High only where the repository already has a service layer. Where it has none and new business logic would land in a controller, the planner raises it as a decision at Plan review (Medium) and does not add a service layer on its own. SZ1 (file size) does not apply to test files; SZ2–SZ4 do.
+
 ## Keep out of the plugin
 
 - Formatter and linter configuration (line length, import order, brace style). These belong to the project's tooling.
