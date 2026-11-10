@@ -42,6 +42,13 @@ Everything below followed from that, so none of it is evidence about the plugin'
 | C28 | Starting new work (Traffic, 2026-11-01) | A new chat has no step that makes it look for an existing work item. The Copilot session started a second plan beside `initial-build`, which had Pending milestones. The folder was untracked, but it was on disk. The generated instruction file is the only text a new chat always loads, and it names the `docs/.ai/<work-item>/` layout but does not say to check for open work items. Seen once, in an out-of-plugin session. | Plugin (seen once; applied by user decision, 2026-11-09) | One line in both instruction templates: before starting new work, list `docs/.ai/*/Plan.md` files with Pending milestones and ask the user which work item this is. It is the "Continuing work" row of C29's routing table. B5 still holds: commands do not check for the instruction file. |
 | C29 | Adoption (Traffic, 2026-11-01) | A session told only to "follow PDD" can imitate it without the plugin: it writes its own instruction file and Plan, and none of the plugin's rules apply. Copilot users are the most exposed, because their commands run inline (C19) and a new chat starts from the instruction file alone. README Quickstart says to generate the instruction file "once", but not that it must come from the setup command and never be written by hand, nor that each phase starts with a command and the work-item name. | Plugin (instruction templates and docs) | A **Command Routing** section in the fixed part of both instruction templates (see "C29 draft" below): which command each kind of request goes to, and a no-deadlock rule for requests no command covers. README Quickstart and `docs/getting-started.md`: the instruction file must come from the setup command and never be written by hand, and every phase starts with a PES command and the work-item name; a chat asked to "use PDD" without them improvises. |
 | C30 | GREEN execution (S1, scribe `local-env-v1` M4, 2026-11-02) | The main session handed a `check.bat` scope fix to a `general-purpose` agent with its own brief instead of running `implement-approved-plan`. Same pattern as C25 (main conversation doing role work). This run used 0.14.0, before fresh-context forks, so it does not count as the post-C24 repeat that C25 is watching for. | Model | No change. C25 stays on Watch. |
+| C31 | Requirements capture (approval-service `initial-build` F1, F2, F4, F15; `recent-reservations-v2` Clarification Log; user request, 2026-11-09) | Capture asks only when it finds a technical ambiguity, and asks "the minimum" questions. Nothing makes it ask why the work exists, who the actors are and what each may do, or which business rules apply. In approval-service nearly every requirement is `[User: Qn — recommended]`. The identity case rule was never asked, which became F1 (High, self-approval), and actors for metrics (F2) and data durability (F4) were never asked either. `recent-reservations-v2` asked 21 questions, none about who uses the list or why. | Plugin | A **Business Intent** pass in `requirements-analysis`, asked first in the same round: the problem and why now, actors and permissions, outcome, business rules and invariants (including identity and equality), and concrete scenarios including failures. Ask every unanswered intent point; technical questions keep the minimum rule. The requirements template gains `## Business Context` and `## Scenarios`. A 7th Operational Characteristic: **data durability and retention**. `review-requirements` reports intent gaps as Blocking. |
+| C32 | Clarification answers delegated with "use recommended" (approval-service F15) | No option was marked as recommended, so the model chose every answer, and the user approved the artifact as a whole without confirming any single choice. | Plugin | When options are offered, mark one as recommended with its reason. "Use recommended" is recorded only after one list-back confirmation, in which actor, permission, identity and data-loss items are marked. |
+| C33 | Requirements consistency (workspace-reservation RE-Q2, FR-1) | `docs/requirements.md:41` ("inclusive end") contradicts `:68` (half-open overlap). Two work items saw it, and both left it open. | Plugin | The Provenance Check gains one line: no two statements contradict each other, including product-level statements this work item relies on. |
+| C34 | Answers to a forked command's questions (0.15.0 trial, C25; user discussion, 2026-11-09) | Approvals are written into the artifact (D1), and requirements answers go in the Clarification Log. When a fork of `create-plan`, `create-api-contract` or `create-implementation-plan` stops with questions, Fresh Context says only "the user answers there". A fresh rerun cannot see that answer. In the trial, the main conversation edited the Implementation Plans itself after the OQ-1 and OQ-G1 answers, and once passed about 2,500 characters of its own briefing into the command. | Plugin | The rerun takes the user's answers, quoted, after the work item. The command records each one in the artifact under its question ID with the user's name and date. An answer never lives only in the conversation. |
+| C35 | Artifacts not committed (v11, 2026-11-09) | `docs/.ai/` is untracked in approval-service, workspace-reservation (`recent-reservations-v2`) and Traffic, and the workspace-reservation worktree holds its own copy. A new worktree, clone or session cannot see the artifacts. Execution Status records no commit, so a later session cannot separate a milestone's diff from unplanned changes (brief D E8). | Plugin | `prepare-pr` commits `docs/.ai/<work-item>/` together with the milestone. After the commit, Execution Status records the commit hash. Every command, planning included, compares the repository with what `Plan.md` records as done, and stops and reports uncommitted or unplanned changes instead of building on them (user discussion, 2026-11-09). |
+| C36 | Final Review findings with no follow-up (approval-service `initial-build`) | The Final Review's User Decision is blank, so a new session cannot tell whether F1 (High) was accepted or is still open. C28's check lists only Pending milestones. | Plugin | The C29 "Continuing work" row also lists Final Reviews whose User Decision is empty. An accepted finding becomes a C27 fix work item. |
+| C37 | Command inputs (user discussion, 2026-11-09; `.github/prompts/implement-approved-plan.prompt.md:22`, `refactor-code.prompt.md:22`) | Every execution command reads "the authoritative requirements, Plan, and applicable API/external contract" (or "the authoritative artifacts"), although an approved FOUNDATION, GREEN, OTHER or REFACTOR Implementation Plan already holds the exact code, the commands and the expected evidence, and any difference stops execution. Re-reading requirements and the contract cannot change what these commands do, and costs context in every fork. | Plugin | One input table in `prompt-driven-development` Fresh Context; each command's Read list matches it. Planning commands and RED read requirements, the Plan, the contract and the repository. RED keeps them because it re-checks that each assertion matches the approved requirement or contract (`generate-tests`, test-engineer). GREEN, FOUNDATION, OTHER and REFACTOR read only `Plan.md` (status and predecessor evidence), their own Implementation Plan and the repository. `create-implementation-plan` reads earlier Implementation Plans' Review Summary and Carried-Forward Decisions, and their exact code only for files it touches. Reviews read everything. Every command reads the current repository. |
 
 ## C29 draft: Command Routing (user decision, 2026-11-09)
 
@@ -75,6 +82,7 @@ Never write your own requirements, Plan, Implementation Plan or approval in plac
 | --- | --- |
 | G1 (no reviewed home for architecture) | Traffic `initial-build` produced its own `Architecture-Proposal.md` (decisions AP-D01–AP-D06, approved 2026-10-24) before the Plan, and the Plan cites it as an approved source. The model invented the artifact the plugin lacks. Strong input for the G1 fix shape. |
 | G3 (decomposition for multi-part work) | S1 F1: `platform-libs-v1` has five libraries and about 39 requirements, and the session asked whether to split per library or per layer. |
+| H4 follow-up (drop the `security` planning trigger; batch-B review) | approval-service F14(a): `security` was not applied while planning M3 and M4, which own authentication, and this contributed to F1 (High). **Closed (user, 2026-11-09): keep the trigger; no change.** |
 | C18 and C20 (plan weight and cost) | Traffic `initial-build` has 21 milestones. S1 reports about $445 for one week across the scribe workspace (self-reported, several work items). |
 
 ## Rejected (S1 and S2 recommendations)
@@ -97,6 +105,48 @@ Never write your own requirements, Plan, Implementation Plan or approval in plac
 | 1 | C27 and C29 | Accepted as drafted. |
 | 2 | C28 | Applied now, as the "Continuing work" row of C29's routing table, without waiting for a second case. |
 | 3 | Brief letter | This brief keeps E. The planned roadmap and multi-pass brief takes the next letter. |
+| 4 | C31–C33 (requirements capture, added 2026-11-09) | Accepted for 0.16.0, with the recommended answers to plan questions Q2–Q4: business-intent questions are exempt from "minimum", data durability and retention is a 7th characteristic, and delegated answers need one list-back confirmation. |
+| 5 | C34–C36 (session hand-off, added 2026-11-09) | Accepted for 0.16.0. No hand-off or status file: the artifacts stay the only state between sessions. |
+| 6 | C37 (command inputs) | Accepted for 0.16.0 as the user split it: RED needs the requirements, Plan, contract and its Implementation Plan; GREEN needs only the Plan and its Implementation Plan, because the Implementation Plan already has all the changes. Planning commands also read the current repository. |
+
+## Lighter dry run (user decision, 2026-11-09)
+
+Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code always stays. The user approved it in the parent session with the words "yes this is good"; another session relayed it here.
+
+- **Two writes stay, by design:** the exact code in the Implementation Plan, which the user reviews, and execution applying exactly that code. The dry run is the extra pass, and most of the cost went there.
+- **RED dry run:** kept in full, but it runs only the new tests and proves they fail now and pass with the planned GREEN change (the B8 soundness proof).
+- **GREEN dry run:** compile, plus only the tests the milestone adds or affects, run once. The full suite runs once, at execution only.
+- **Everywhere:** no repeated dry-run runs, and no probes beyond the RED fail-and-pass proof.
+- **Why the dry run stays:** in brief B it caught a contract-defined name the runtime could not produce, and the B8 RED soundness proof depends on it.
+- **Cost evidence:** the GREEN planning step of trial 2 (`recent-reservations-v2`) cost $17, partly because it ran the full 117-test suite twice (C26). Its artifacts total 4,380 lines (RED plan 1,851, GREEN plan 1,294).
+
+### Proposals (P1–P3 accepted for 0.16.0 by the user, 2026-11-09; P4 and model tiering not decided)
+
+| ID | Proposal |
+| --- | --- |
+| P1 | A small-change track. A change with no contract change and at most about 3 files gets one Implementation Plan with RED and GREEN sections, approved once and executed in two verified steps. |
+| P2 | A mechanical diff-vs-plan check that fails when the changed files or hunks do not match the approved Implementation Plan, plus a check that the RED tests fail first. |
+| P3 | Shorter skill text, because Model findings (C1, C14, C25, C26) show that longer rules get skipped. |
+| P4 | Test output. Verification commands write their output to a log file, and the command reads and records only the summary and the failing tests, never the full log. A long run goes to the background with a completion notice, with no polling. The gate still waits for the recorded result. (Copilot CLI background support not checked.) |
+| T1 | Model tiering (not decided): planning and review agents keep the strongest model; execution agents, which apply exact code, run on a mid-tier model (not Haiku, after the C19 false claim). |
+
+### Test scope per step (user decision, 2026-11-09; was P5)
+
+Run tests scoped to the change in every step, and the full suite once per milestone that changes production or build code. Extends the lighter dry run to execution and review.
+
+| Step | Tests run |
+| --- | --- |
+| RED dry run | Compile everything; new tests only (fail now, pass with the planned GREEN code) |
+| RED execution | Compile everything; new tests only, each failing for the intended reason; plus tests that use any shared test file the milestone changes |
+| GREEN dry run | Compile; new and affected tests, once |
+| GREEN execution | Full suite once; a second run only for tests that touch stored state or override configuration (L2) |
+| FOUNDATION, OTHER | Build and the checks the plan names; the full suite once if production or build files change |
+| REFACTOR | Full suite once after the change; the baseline is the recorded GREEN run unless the commit changed since |
+| `prepare-pr` | Runs the full suite once unless `Plan.md` records a full run at the same commit hash as the diff (C35). It may run on work done outside a PDD milestone, which has no recorded run (user, 2026-11-09). |
+| Final Review | Reruns only when the commit differs from the last recorded full run |
+| CI (project) | The project's CI runs the full suite on the PR; named at requirements as the verification gate, never invented |
+
+Affected tests are listed in the Implementation Plan with how they were found (changed packages, tests referencing changed classes, tests the contract names) and approved with it. A change outside that list is a plan difference and stops execution. A known flaky test follows Pre-existing Failures.
 
 ## Rules for this batch
 
