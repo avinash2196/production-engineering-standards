@@ -18,3 +18,10 @@ Evaluate:
 
 Read `references/capability-boundaries.md` when abstracting external infrastructure capabilities.
 
+## Dependency Direction
+
+| ID | Rule | Severity |
+| --- | --- | --- |
+| LY4 | Dependencies point inward. Nothing in the domain depends on the web or persistence layer. | Medium |
+
+Severities follow `code-quality`; the stack skills hold LY1–LY3.
