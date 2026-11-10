@@ -126,6 +126,25 @@ Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code alwa
 | P1 | A small-change track. A change with no contract change and at most about 3 files gets one Implementation Plan with RED and GREEN sections, approved once and executed in two verified steps. |
 | P2 | A mechanical diff-vs-plan check that fails when the changed files or hunks do not match the approved Implementation Plan, plus a check that the RED tests fail first. |
 | P3 | Shorter skill text, because Model findings (C1, C14, C25, C26) show that longer rules get skipped. |
+| P4 | Test output. Verification commands write their output to a log file, and the command reads and records only the summary and the failing tests, never the full log. A long run goes to the background with a completion notice, with no polling. The gate still waits for the recorded result. (Copilot CLI background support not checked.) |
+
+### Test scope per step (user decision, 2026-11-09; was P5)
+
+Run tests scoped to the change in every step, and the full suite once per milestone that changes production or build code. Extends the lighter dry run to execution and review.
+
+| Step | Tests run |
+| --- | --- |
+| RED dry run | Compile everything; new tests only (fail now, pass with the planned GREEN code) |
+| RED execution | Compile everything; new tests only, each failing for the intended reason; plus tests that use any shared test file the milestone changes |
+| GREEN dry run | Compile; new and affected tests, once |
+| GREEN execution | Full suite once; a second run only for tests that touch stored state or override configuration (L2) |
+| FOUNDATION, OTHER | Build and the checks the plan names; the full suite once if production or build files change |
+| REFACTOR | Full suite once after the change; the baseline is the recorded GREEN run unless the commit changed since |
+| `prepare-pr` | Runs the full suite once unless `Plan.md` records a full run at the same commit hash as the diff (C35). It may run on work done outside a PDD milestone, which has no recorded run (user, 2026-11-09). |
+| Final Review | Reruns only when the commit differs from the last recorded full run |
+| CI (project) | The project's CI runs the full suite on the PR; named at requirements as the verification gate, never invented |
+
+Affected tests are listed in the Implementation Plan with how they were found (changed packages, tests referencing changed classes, tests the contract names) and approved with it. A change outside that list is a plan difference and stops execution. A known flaky test follows Pre-existing Failures.
 
 ## Rules for this batch
 
