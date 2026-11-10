@@ -119,7 +119,7 @@ Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code alwa
 - **Why the dry run stays:** in brief B it caught a contract-defined name the runtime could not produce, and the B8 RED soundness proof depends on it.
 - **Cost evidence:** the GREEN planning step of trial 2 (`recent-reservations-v2`) cost $17, partly because it ran the full 117-test suite twice (C26). Its artifacts total 4,380 lines (RED plan 1,851, GREEN plan 1,294).
 
-### Proposals (not decided; for the user)
+### Proposals (P1–P3 accepted for 0.16.0 by the user, 2026-11-09; P4 and model tiering not decided)
 
 | ID | Proposal |
 | --- | --- |
@@ -127,6 +127,7 @@ Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code alwa
 | P2 | A mechanical diff-vs-plan check that fails when the changed files or hunks do not match the approved Implementation Plan, plus a check that the RED tests fail first. |
 | P3 | Shorter skill text, because Model findings (C1, C14, C25, C26) show that longer rules get skipped. |
 | P4 | Test output. Verification commands write their output to a log file, and the command reads and records only the summary and the failing tests, never the full log. A long run goes to the background with a completion notice, with no polling. The gate still waits for the recorded result. (Copilot CLI background support not checked.) |
+| T1 | Model tiering (not decided): planning and review agents keep the strongest model; execution agents, which apply exact code, run on a mid-tier model (not Haiku, after the C19 false claim). |
 
 ### Test scope per step (user decision, 2026-11-09; was P5)
 
