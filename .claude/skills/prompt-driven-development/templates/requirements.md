@@ -23,11 +23,19 @@ Awaiting human review. This artifact does not authorize a Plan, contract, Implem
 
 <!-- State which product-level statements this work item changes or makes out of date, each with its source. A statement this work item contradicts or replaces is recorded as changed only after the user confirmed it (`Derived … confirmed Qn`); never record it as still in force without confirmation. Omit this section when there is no product-level `docs/requirements.md`. -->
 
+## Business Context
+
+<!-- `requirements-analysis` Business Intent: the problem and why now, the actors and what each may and may not do, the business outcome and how it is seen, and the business rules and invariants (including identity and equality). Each item with its source label. -->
+
 ## Repository-Confirmed Facts
 
 <!-- Only facts established by inspection during this capture, each with `[Repo: <path>:<line>]`. No `Derived` items here — a confirmed derived consequence goes under Requirements. Existing tests and behavior are facts, not requirements. -->
 
 ## Requirements
+
+## Scenarios
+
+<!-- Concrete examples of the main flows, including what must happen when something goes wrong. Each with its source label and the acceptance criteria it maps to. -->
 
 ## Operational Characteristics
 
@@ -68,4 +76,7 @@ Awaiting human review. This artifact does not authorize a Plan, contract, Implem
 - `Left to` items: <list>
 - `Repo` citations verified against the current repository during this capture: <list>
 - Requirements without an acceptance criterion: <none, or list>
+- Scenarios without an acceptance criterion: <none, or list>
+- Statements that contradict each other, including product-level statements this work item relies on: <none, or list>
+- Answers taken from a recommended option, each with its confirming `Qn`: <none, or list>
 - No statement about this artifact as a whole (for example "nothing was inferred") is made unless it was checked.

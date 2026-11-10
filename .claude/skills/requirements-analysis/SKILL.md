@@ -32,6 +32,25 @@ When writing or updating a requirements artifact:
 - **Revise the whole artifact.** When updating an existing artifact, apply the requested changes, then re-read every section and table and resolve each statement the change contradicts. Moving an item means removing it from its old section. Re-derive the Provenance Check; never restate the previous one.
 - **Other work items are context, not templates.** Do not copy another work item's structure, wording, citations, or closing statements. Re-verify any fact taken from another work item against the current repository before recording it.
 - **Check provenance before finalizing.** Confirm that every item has a source, every derived consequence was confirmed, every repository citation was verified against the current repository during this capture, and that no statement about the artifact as a whole (for example "nothing was inferred") is made unless it was checked.
+- **Check consistency before finalizing.** No two statements contradict each other, including product-level statements this work item relies on. Report each contradiction as a material unresolved decision.
+
+## Business Intent
+
+Ask about the business before the technical scope, in the same single round. For each point below that the brief, the repository, and the product-level `docs/requirements.md` do not answer, ask:
+
+- **Problem:** what problem this solves, and why now.
+- **Actors:** who uses or is affected by it, which roles exist, and what each may and may not do.
+- **Outcome:** the business outcome, and how the user will know it worked.
+- **Business rules:** the rules and invariants that must always hold, including identity and equality (for example whether names or codes compare without regard to case, and their canonical form) and limits.
+- **Scenarios:** concrete examples of the main flows, including what must happen when something goes wrong.
+- **Out of scope:** what the user does not want this work item to do.
+
+Rules:
+
+- Every unanswered Business Intent point is material, so the minimum-question rule never drops one. Technical and scope questions keep the minimum rule.
+- Ask about needs, not solutions.
+- Record each answer under Business Context or Scenarios, with its source label. Each scenario maps to at least one acceptance criterion.
+- A requirements review reports each unanswered point in the Blocking group (Presenting Clarification Questions).
 
 ## Material Clarification Gate
 
@@ -75,6 +94,7 @@ When the requirements do not state them and neither the repository nor the produ
 - **Consistency and concurrency:** which operations must never conflict, duplicate, or be lost, and where eventual consistency is acceptable.
 - **Dependency failure:** expected behavior when a downstream system is slow or unavailable, and whether the service must run locally or in CI without it (which decides whether local adapters are needed).
 - **Observability:** what must be visible in production — logs, metrics, traces, alerts — and any existing monitoring stack to use.
+- **Data durability and retention:** which data must never be lost, how long it is kept, and how it is recovered after a loss (for example backup and restore).
 
 Rules:
 
@@ -89,8 +109,10 @@ Rules:
 
 Present questions in two groups so the user can see what actually blocks planning:
 
-1. **Blocking — must be answered before planning:** material unresolved decisions, including deployment topology and consistency/concurrency. Keep this group to the minimum the current work item needs.
+1. **Blocking — must be answered before planning:** material unresolved decisions, including unanswered Business Intent points, deployment topology and consistency/concurrency. Keep this group to the minimum the current work item needs.
 2. **Answer or mark not required:** applicable operational characteristics that are not blocking. For each, state that "not required for this work item" is a valid answer and will be recorded explicitly as not required.
+
+When a question offers options, mark one as recommended and give its reason. When the user answers "use recommended" (or delegates the choice in other words), list each chosen option back once and ask for confirmation, marking every option that decides actors, permissions, identity, or data loss. Record those answers only after that confirmation, labelled `[Derived from recommended option — confirmed Qn]`.
 
 Number questions continuously across both groups so answers can reference them. Numbering continues across every clarification round and every review of the same work item — never restart at 1 — and each question is recorded with its answer in the requirements artifact's Clarification Log, so every `[User: Qn]` label is traceable.
 
