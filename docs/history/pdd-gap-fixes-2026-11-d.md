@@ -148,6 +148,7 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 | 3 | SZ and NM severity | Medium everywhere. |
 | 4 | Release target | 0.16.0, with C20, lighter plans and brief E, so one trial tests the Implementation Plan changes together. |
 | 5 | `prepare-pr` | Stop 2 opens a draft PR by default. It runs after a pair's GREEN, or after a single OTHER, FOUNDATION or REFACTOR milestone (PR1). |
+| 6 | `prepare-pr` outside PDD (2026-11-09) | Two modes. **Work-item mode** (`prepare-pr <work-item>`) is PR1–PR6 as written. **Branch mode** (`prepare-pr` with no work item, for work done outside a PDD milestone) diffs the branch against its base, skips the Implementation Plan file-list and contract checks, scores unrelated changes Medium (RV2 outside PDD), runs the full suite once because no run is recorded, and still only recommends fixes (PR3). PR1's "never after a RED milestone alone" still applies in work-item mode. |
 
 The evidence sweep is done (E7–E10, 2026-11-09). E7 raises one open question for the 0.16.0 plan: when a repository's existing shape has no service layer, does LY1 (High) apply, or does design rule 3 let the existing convention win?
 
