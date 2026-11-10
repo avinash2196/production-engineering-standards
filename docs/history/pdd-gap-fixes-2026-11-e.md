@@ -82,6 +82,7 @@ Never write your own requirements, Plan, Implementation Plan or approval in plac
 | --- | --- |
 | G1 (no reviewed home for architecture) | Traffic `initial-build` produced its own `Architecture-Proposal.md` (decisions AP-D01–AP-D06, approved 2026-10-24) before the Plan, and the Plan cites it as an approved source. The model invented the artifact the plugin lacks. Strong input for the G1 fix shape. |
 | G3 (decomposition for multi-part work) | S1 F1: `platform-libs-v1` has five libraries and about 39 requirements, and the session asked whether to split per library or per layer. |
+| H4 follow-up (drop the `security` planning trigger; batch-B review) | approval-service F14(a): `security` was not applied while planning M3 and M4, which own authentication, and this contributed to F1 (High). **Closed (user, 2026-11-09): keep the trigger; no change.** |
 | C18 and C20 (plan weight and cost) | Traffic `initial-build` has 21 milestones. S1 reports about $445 for one week across the scribe workspace (self-reported, several work items). |
 
 ## Rejected (S1 and S2 recommendations)
