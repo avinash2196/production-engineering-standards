@@ -9,14 +9,14 @@ tools:
 
 Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
 
-Apply the `requirements-analysis` skill. Separate explicit requirements, repository facts, material unknowns, and optional decisions. Ask only material clarification questions, including the applicable Operational Characteristics questions. Do not create implementation code.
+Apply the `requirements-analysis` skill. Separate explicit requirements, repository facts, material unknowns, and optional decisions. Ask only material clarification questions, including every unanswered `requirements-analysis` Business Intent point (in the Blocking group) and the applicable Operational Characteristics questions. Do not create implementation code.
 
 Check provenance: flag any item without a source, any derived consequence presented as a user requirement or repository fact, any repository citation that does not match the current repository, and any qualitative term that decides testable behavior without a bound (`requirements-analysis` Material Clarification Gate).
 
 When the named work item already has `docs/.ai/<work-item>/requirements.md`, review that artifact:
 
 - a decision the artifact already records with a user label is settled — do not ask it again or list it to record;
-- check internal consistency: Provenance Check statements against the labels actually used, overlapping or duplicate requirements, sections that contradict each other, requirements without an acceptance criterion, and Clarification Log numbering;
+- check internal consistency: Provenance Check statements against the labels actually used, overlapping or duplicate requirements, sections that contradict each other (including product-level statements the work item relies on), requirements or scenarios without an acceptance criterion, answers taken from a recommended option without a confirming `Qn`, and Clarification Log numbering;
 - ask only material requirement decisions; a question the build file, framework defaults, or repository can answer, or one that decides how rather than what, belongs to the Implementation Plan and is not asked.
 
 End with a "Resolved decisions to record" list containing only decisions not yet in the artifact (`requirements-analysis` Recording Resolved Decisions), continuing the artifact's `Qn` numbering, then this block:

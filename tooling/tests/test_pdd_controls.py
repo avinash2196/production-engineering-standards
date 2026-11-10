@@ -1007,6 +1007,33 @@ class PddControlsTest(unittest.TestCase):
             for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md"]:
                 self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
 
+    def test_requirements_capture_asks_business_intent(self):
+        # 0.16.0, brief E C31-C33: business intent first, durability asked,
+        # delegated answers confirmed, contradictions checked.
+        for tree in [".github", ".claude"]:
+            ra = (ROOT / tree / "skills/requirements-analysis/SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("## Business Intent", ra, tree)
+            for point in ["**Problem:**", "**Actors:**", "**Outcome:**", "**Business rules:**", "**Scenarios:**", "**Out of scope:**"]:
+                self.assertIn(point, ra, tree)
+            self.assertIn("identity and equality", ra, tree)
+            self.assertIn("the minimum-question rule never drops one", ra, tree)
+            self.assertIn("**Data durability and retention:**", ra, tree)
+            self.assertIn("list each chosen option back once", ra, tree)
+            self.assertIn("No two statements contradict each other", ra, tree)
+            template = (ROOT / tree / "skills/prompt-driven-development/templates/requirements.md").read_text(encoding="utf-8")
+            for section in ["## Business Context", "## Scenarios"]:
+                self.assertIn(section, template, tree)
+            self.assertIn("Statements that contradict each other", template, tree)
+            self.assertIn("Answers taken from a recommended option", template, tree)
+        for rel in [".github/prompts/capture-requirements.prompt.md", ".claude/commands/capture-requirements.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Business Intent questions first", text, rel)
+            self.assertIn("Business Context, Scenarios", text, rel)
+        for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md"]:
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertIn("Business Intent point (in the Blocking group)", text, rel)
+            self.assertIn("without a confirming `Qn`", text, rel)
+
     def test_fallback_is_chosen_by_dependency_role(self):
         for tree in [".github", ".claude"]:
             base = ROOT / tree / "skills/resilience-and-degradation"
