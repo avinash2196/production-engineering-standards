@@ -120,7 +120,7 @@ Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code alwa
 - **Why the dry run stays:** in brief B it caught a contract-defined name the runtime could not produce, and the B8 RED soundness proof depends on it.
 - **Cost evidence:** the GREEN planning step of trial 2 (`recent-reservations-v2`) cost $17, partly because it ran the full 117-test suite twice (C26). Its artifacts total 4,380 lines (RED plan 1,851, GREEN plan 1,294).
 
-### Proposals (P1–P3 accepted for 0.16.0 by the user, 2026-11-09; P4 and model tiering not decided)
+### Proposals (P1–P4 accepted for 0.16.0; T1 rejected; user, 2026-11-09 and 2026-11-10)
 
 | ID | Proposal |
 | --- | --- |
@@ -128,7 +128,17 @@ Amends the 0.16.0 "lighter plans" item carried from batch C. The exact code alwa
 | P2 | A mechanical diff-vs-plan check that fails when the changed files or hunks do not match the approved Implementation Plan, plus a check that the RED tests fail first. |
 | P3 | Shorter skill text, because Model findings (C1, C14, C25, C26) show that longer rules get skipped. |
 | P4 | Test output. Verification commands write their output to a log file, and the command reads and records only the summary and the failing tests, never the full log. A long run goes to the background with a completion notice, with no polling. The gate still waits for the recorded result. (Copilot CLI background support not checked.) |
-| T1 | Model tiering (not decided): planning and review agents keep the strongest model; execution agents, which apply exact code, run on a mid-tier model (not Haiku, after the C19 false claim). |
+
+Answers (user, 2026-11-10):
+
+| Question | Answer |
+| --- | --- |
+| P1: do test files count toward the "about 3 files" limit? | No. Only production and build files count. |
+| P2: hook script language | Python, like the validator. When Python is missing, the hook prints a clear message and allows the edit; the `prepare-pr` diff check still catches it. |
+| P2: how the hook finds the active Implementation Plan | It infers it from `docs/.ai/*/Plan.md`: the one milestone whose Implementation Plan is approved and not yet executed. When none or more than one qualifies, the hook does nothing, and only `prepare-pr` checks. |
+| P3: how much to cut | Largest skills first, with the same rules: measure each skill's size as loaded in a fork, trim without dropping any rule a test checks, and report sizes before and after. No fixed cap. |
+| P4 | Accepted for 0.16.0. |
+| T1 | Model tiering: execution agents on a mid-tier model. **Rejected (user, 2026-11-10):** the plugin does not dictate which model runs; that stays the user's choice. |
 
 ### Test scope per step (user decision, 2026-11-09; was P5)
 
