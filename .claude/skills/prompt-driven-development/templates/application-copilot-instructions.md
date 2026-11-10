@@ -14,6 +14,7 @@ This file holds process rules only. Project facts live in their own sources; rea
 * Product requirements, technology stack, and scope exclusions: `docs/requirements.md` (when present) and the work item's `requirements.md`.
 * Build, runtime, and dependency versions: the build file (for example `pom.xml`, `build.gradle`, or `pyproject.toml`).
 * Verification commands: the approved Plan and the milestone's Implementation Plan.
+* Code standards that override the `code-quality` skill's defaults (size limits, shared-code location, domain packages): `docs/code-standards.md`, when present. It belongs to the project; the setup command never writes it.
 
 Do not introduce excluded capabilities unless explicitly approved by requirements.
 

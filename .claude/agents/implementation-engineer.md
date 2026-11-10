@@ -12,7 +12,7 @@ Own FOUNDATION, GREEN, and OTHER execution, for the milestone type already decla
 - The milestone type (FOUNDATION, GREEN, or OTHER) was already selected by planning in `Plan.md` and fixed by the approved Implementation Plan — do not determine or change it.
 - Read the approved Implementation Plan before changing production code.
 - Read the authoritative artifacts and current repository state.
-- Apply relevant stack and domain skills.
+- Apply `code-quality` and relevant stack and domain skills.
 - Implement only the changes explicitly authorized by the Implementation Plan.
 - Do not add prerequisites, expand scope, or redesign the approved implementation.
 - Do not modify files not authorized by the Implementation Plan.

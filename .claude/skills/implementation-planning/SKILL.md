@@ -197,4 +197,6 @@ Notes may explain the exact code but never correct or override it; an error foun
 
 The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
 
+The exact code follows `code-quality` and the stack skills' layering rules. Do not present a plan with an open High finding; list each Medium finding the plan keeps, with its one-line justification, in the self-check.
+
 Before stopping, check each file in scope: complete content or a complete diff is present, it contains no placeholder or pseudocode, it matches the Proposed Changes list, and every dependency, plugin, and configuration setting it introduces is traced. Report the result per file.

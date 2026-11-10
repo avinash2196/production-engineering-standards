@@ -750,6 +750,39 @@ def validate_pdd_contract(root: Path, errors: list[str]) -> None:
                 )
 
 
+# 0.16.0 (brief D): review rule IDs are defined once, in their owning skill.
+# LY1-LY3 are defined in each stack skill, in that stack's terms.
+RULE_ID_ROW = re.compile(r"^\| ((?:SZ|NM|RU|CM|LG|LY|AP|RV)\d+) \|", re.MULTILINE)
+RULE_ID_SHARED = {
+    "LY1": {"java-spring-boot", "python-fastapi"},
+    "LY2": {"java-spring-boot", "python-fastapi"},
+    "LY3": {"java-spring-boot", "python-fastapi"},
+}
+CODE_QUALITY_AGENTS = ("planner", "implementation-engineer", "refactoring-engineer", "code-reviewer")
+
+
+def validate_review_rule_ids(root: Path, errors: list[str]) -> None:
+    skill_root = root / ".github/skills"
+    if not (skill_root / "code-quality/SKILL.md").exists():
+        errors.append(".github/skills/code-quality/SKILL.md: missing (brief D)")
+    defined: dict[str, list[str]] = {}
+    for skill_file in sorted(skill_root.glob("*/SKILL.md")):
+        for rule_id in RULE_ID_ROW.findall(skill_file.read_text(encoding="utf-8")):
+            defined.setdefault(rule_id, []).append(skill_file.parent.name)
+    for rule_id, skills in sorted(defined.items()):
+        allowed = RULE_ID_SHARED.get(rule_id)
+        if allowed is not None:
+            if len(skills) != len(set(skills)) or set(skills) != allowed:
+                errors.append(f"rule {rule_id}: must be defined once in each of {sorted(allowed)}, found in {skills}")
+        elif len(skills) > 1:
+            errors.append(f"rule {rule_id}: defined more than once, in {skills}")
+    for agent in CODE_QUALITY_AGENTS:
+        rel = f".github/agents/{agent}.agent.md"
+        path = root / rel
+        if path.exists() and "`code-quality`" not in path.read_text(encoding="utf-8"):
+            errors.append(f"{rel}: must apply `code-quality` (brief D)")
+
+
 VALIDATORS = [
     validate_required_structure,
     validate_no_legacy_top_level_taxonomy,
@@ -768,6 +801,7 @@ VALIDATORS = [
     validate_oracle_skill,
     validate_pdd_contract,
     validate_no_code_change_bypass,
+    validate_review_rule_ids,
 ]
 
 

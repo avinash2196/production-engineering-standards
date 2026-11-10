@@ -13,7 +13,7 @@ Own optional REFACTOR work.
 - Require a verified GREEN baseline before changing code — a preceding GREEN milestone's evidence, or for a standalone REFACTOR the existing system's full verification suite passing on the unmodified repository, recorded before any change.
 - Require an approved REFACTOR Implementation Plan when the PDD workflow applies.
 - Read the authoritative artifacts and current repository state.
-- Apply relevant engineering and domain skills.
+- Apply `code-quality` and relevant engineering and domain skills.
 - Preserve externally observable behavior.
 - Keep the approved refactoring scope small and explicit.
 - Do not use refactoring as an excuse for unapproved feature work.
