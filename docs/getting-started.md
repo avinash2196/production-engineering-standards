@@ -85,6 +85,8 @@ When the standards are installed as a Claude Code plugin, the command is `/produ
 
 The file is loaded into every session in the repository, so the PDD rules — the workflow, no code change without approval, clarification before assumption — apply even when no PDD command is used. It holds process rules and pointers only. The command copies the template verbatim, asks no questions, and writes only that one file, so it works for a new project before any code exists.
 
+Always generate the file with the setup command; never write it by hand. A hand-written file lacks the fixed sections, including Command Routing, which sends each kind of request to its command, lists open work items before new work starts, and routes a defect in finished work to a fix work item.
+
 Rerun it whenever the template changes. When it replaces an existing file, it lists every project-specific line it dropped and where that information belongs.
 
 The commands are built on these templates, which remain the reference:
@@ -173,6 +175,8 @@ For a new application or a change whose requirements are not yet captured (after
 
 For an existing application with already-approved requirements, start from the earliest artifact that needs to change.
 
+Start every phase with its command and the work-item name. A chat asked only to "use PDD" improvises its own requirements and plans, and none of the plugin's rules apply to them. For a defect in finished work, or a Final Review finding you accepted, start a fix work item: `/capture-requirements <fix-work-item>` with the defect, the expected behavior, and how to reproduce it (`prompt-driven-development` Fix Work Items).
+
 ## 6. Behavior-Changing Milestone Flow
 
 Choose each milestone's type by the kind of change, not by whether the project is new (`prompt-driven-development` Milestone Types): behavior changes are always RED then GREEN; a new or changed external contract is CONTRACT; a missing prerequisite for RED is FOUNDATION; behavior-preserving cleanup of production code is REFACTOR — after GREEN, or standalone from the existing system's verified GREEN baseline; an approved change with no production behavior change — test-only fixes, characterization tests, or replacing infrastructure under unchanged behavior — is OTHER. A new project normally needs CONTRACT, FOUNDATION (only when its build or test infrastructure is missing), RED, and GREEN; an enhancement uses what its requirements call for.
@@ -230,7 +234,7 @@ For an optional REFACTOR milestone (only when justified):
 3. `/refactor-code`
 4. verify the system remains GREEN
 
-Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After every milestone for the feature is complete, proceed to Final Review.
+Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After each GREEN milestone, and after each single FOUNDATION, OTHER, or REFACTOR milestone, run `/prepare-pr <work-item>`. It reviews the diff against the executed plans, runs the full suite once unless a full run is recorded for the current commit, and drafts the commit message and PR body; it writes nothing. When you are satisfied, say go: `/prepare-pr <work-item> go <digest>` commits exactly the reviewed files with `docs/.ai/<work-item>/`, records the commit in `Plan.md`, and opens a draft pull request. It never merges. Run `/prepare-pr` with no work item for work done outside PDD. After every milestone for the feature is complete, proceed to Final Review.
 
 The important control is not the command names.
 
@@ -263,6 +267,8 @@ Possible milestone boundaries include:
 - infrastructure/configuration
 
 A cohesive change (e.g. a new read-only endpoint with one new field and one query) uses one RED milestone / GREEN milestone pair, even though it touches several layers — none of them carries a separate engineering decision, so the layers are not a reason to split. The Plan records `Decomposition: one pair`.
+
+A small change (no contract change, at most about 3 production or build files; test files do not count, e.g. a one-line defect fix and its test) may record `Decomposition: one pair, one plan`: the RED and GREEN milestones stay separate in `Plan.md`, but one Implementation Plan holds both parts and is approved once. `generate-tests` runs its RED part, then `implement-approved-plan` its GREEN part.
 
 A larger change (e.g. a new resource with persistence, validation rules, computed fields, and an HTTP API, where one Implementation Plan would be too large to review) states its reason (`Split: size`) and is typically decomposed into several sequential RED/GREEN milestone pairs — a separate RED milestone and GREEN milestone for each independently testable architectural layer, rather than one feature-wide pair. There is no containing milestone per layer; each layer simply contributes its own RED and GREEN milestones to the sequence — this is the common case for a layered application:
 

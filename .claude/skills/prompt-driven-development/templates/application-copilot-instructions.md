@@ -14,6 +14,7 @@ This file holds process rules only. Project facts live in their own sources; rea
 * Product requirements, technology stack, and scope exclusions: `docs/requirements.md` (when present) and the work item's `requirements.md`.
 * Build, runtime, and dependency versions: the build file (for example `pom.xml`, `build.gradle`, or `pyproject.toml`).
 * Verification commands: the approved Plan and the milestone's Implementation Plan.
+* Code standards that override the `code-quality` skill's defaults (size limits, shared-code location, domain packages): `docs/code-standards.md`, when present. It belongs to the project; the setup command never writes it.
 
 Do not introduce excluded capabilities unless explicitly approved by requirements.
 
@@ -44,6 +45,8 @@ Requirements
         REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
     no production behavior change (test-only, build, configuration, infrastructure):
         OTHER milestone: Implementation Plan → Human Review → execution → Verification
+    after each GREEN, and after each single FOUNDATION, OTHER, or REFACTOR milestone:
+        prepare-pr: review → Human go → commit and draft pull request
 → Final Review
 ```
 
@@ -75,6 +78,27 @@ Documentation-only changes clearly outside executable/code artifacts may follow 
 Only the user approves an artifact: one specific artifact, after it exists. When the user approves an artifact in conversation, write the approval into that artifact's status section (`Approved by <user> on <date>`) before running the next command; for a contract, also mark its CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract. PDD commands read approval only from the artifacts.
 
 "Approve everything", "approve on my behalf", or approval of an artifact that does not exist yet is not approval: record nothing, say that it was not recorded, and stop at each gate as usual.
+
+## Command Routing
+
+<!-- FIXED — preserve verbatim -->
+Use the `production-engineering-standards` commands for PDD work, each with the work-item name:
+
+| The request is | Route |
+| --- | --- |
+| New work, or a change to behavior | `capture-requirements <work-item>`, then each report's `Next:` line. |
+| Continuing work | First list the `docs/.ai/*/Plan.md` files with Pending milestones, and the `docs/.ai/*/Final-Review.md` files whose User Decision is empty, and ask which work item this is. Then run the command for that work item's next step. |
+| A defect in finished work, or an accepted Final Review finding | A fix work item with one milestone: `capture-requirements <fix-work-item>` with the defect, the expected behavior, and how to reproduce it. |
+| Review, readiness, architecture | `review-code`, `review-production-readiness`, `review-architecture`. |
+| Commit and pull request | `prepare-pr <work-item>` after a finished milestone; `prepare-pr` with no work item for work done outside PDD. |
+
+When no command covers the request, say so, name the closest command, and ask. Without a command you may only:
+
+- answer questions and investigate read-only;
+- edit documentation outside executable artifacts;
+- run commands the user asks for.
+
+Never write your own requirements, Plan, Implementation Plan, or approval in place of a command's artifact. Never create status or summary files; progress and verification live only in `Plan.md` Execution Status. Any change to code, tests, configuration, or dependencies still needs an approved Implementation Plan, so route it through a one-milestone work item.
 
 ## Planning Artifacts
 

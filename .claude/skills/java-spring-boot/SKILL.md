@@ -15,3 +15,12 @@ description: Use for Java/Spring Boot design, implementation, review, testing, t
 - Validate production configuration rather than relying on local defaults.
 - Test database-specific behavior against the real target database when semantics matter.
 
+## Layering
+
+Severities follow `code-quality`. Where the repository has no service layer (for example controller → repository), its existing shape wins: LY1 is High only where a service layer exists. When new business logic would otherwise land in a controller, raise it as a decision at Plan review (Medium); do not add a service layer on your own.
+
+| ID | Rule | Severity |
+| --- | --- | --- |
+| LY1 | Controller → service → repository. A `@RestController` handles HTTP only: binding, validation, and mapping to the response. It never calls a repository. | High |
+| LY2 | Business rules, side effects (publishing events, calling other services), and `@Transactional` boundaries belong in the service. | Medium |
+| LY3 | A service takes no HTTP or web types (`HttpServletRequest`, `ResponseEntity`, request DTOs bound to the web layer). A repository returns domain or persistence types, not response DTOs. | High |

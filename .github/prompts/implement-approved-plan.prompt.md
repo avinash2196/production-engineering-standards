@@ -17,11 +17,15 @@ Work item: operate only on the work-item folder the user names (`prompt-driven-d
 
 Before changing any file, confirm the Implementation Plan is approved in its Human Review status (`prompt-driven-development` Approval Status). If no approval is recorded, ask and stop. After verified execution, update that same status.
 
-Read:
+Read only (`prompt-driven-development` Fresh Context):
 
-- the authoritative requirements, Plan, and applicable API/external contract;
+- `Plan.md`: its status and the predecessor evidence;
 - the current repository state;
-- the approved Implementation Plan (FOUNDATION, GREEN, or OTHER).
+- the approved Implementation Plan (FOUNDATION, GREEN, or OTHER), or the GREEN part of a paired plan whose RED part is recorded as executed.
+
+The approved Implementation Plan holds the exact code, the commands, and the expected evidence; do not read the requirements or the contract to decide anything it does not say. Any difference stops execution.
+
+Run the tests `prompt-driven-development` Test Scope and Output names for this milestone type: for GREEN, the full suite once, and a second run only for tests that touch persistent state or override configuration. Write output to a log file and record its summary and failing tests.
 
 First read which milestone type the approved Implementation Plan declares (FOUNDATION, GREEN, or OTHER), and follow only that branch. Do not decide the milestone type yourself — it was already decided in `Plan.md` and fixed by the approved Implementation Plan. Do not treat a GREEN Implementation Plan as needing FOUNDATION first, and do not decide mid-execution that setup is needed; if that turns out to be true, stop (see below) rather than acting on it.
 

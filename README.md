@@ -29,6 +29,8 @@ Requirements
         REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
     no production behavior change (test-only, build, configuration, infrastructure):
         OTHER milestone: Implementation Plan → Human Review → execution → Verification
+    after each GREEN, and after each single FOUNDATION, OTHER, or REFACTOR milestone:
+        prepare-pr: review → Human go → commit and draft pull request
 → Final Review
 ```
 
@@ -60,14 +62,14 @@ copilot plugin marketplace add avinash2196/production-engineering-standards
 copilot plugin install production-engineering-standards@pes-marketplace
 ```
 
-Then, inside your application repository, generate the instruction file once:
+Then, inside your application repository, generate the instruction file once. It must come from the setup command; never write it by hand, or the plugin's rules are not in it:
 
 ```text
 /setup-claude-instructions     Claude Code → CLAUDE.md
 /setup-copilot-instructions    Copilot     → .github/copilot-instructions.md
 ```
 
-Next, run one work item end to end. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command takes the work-item name, and each one stops for your review:
+Next, run one work item end to end. Start every phase with a command and the work-item name; a chat asked only to "use PDD" improvises its own files and none of the plugin's rules apply. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command stops for your review:
 
 ```text
 /capture-requirements order-cancellation    → docs/.ai/order-cancellation/requirements.md
@@ -76,10 +78,12 @@ Next, run one work item end to end. In Claude Code, the installed commands carry
 /create-implementation-plan order-cancellation   one plan for the next milestone
 /generate-tests order-cancellation          RED milestone: failing tests only
 /implement-approved-plan order-cancellation FOUNDATION, GREEN, or OTHER milestone
+/prepare-pr order-cancellation              after GREEN (or a single FOUNDATION, OTHER, or REFACTOR):
+                                            review; on your go, commit and open a draft PR
 /review-code order-cancellation             Final Review → Final-Review.md
 ```
 
-Repeat `create-implementation-plan` and the matching execution command for each milestone in `Plan.md`. Each report ends with a `Next:` line naming the step that follows. In Copilot, run each command after `capture-requirements` in a new chat. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
+Repeat `create-implementation-plan`, the matching execution command, and `prepare-pr` for each milestone in `Plan.md`. `prepare-pr` without a work item reviews work done outside PDD on the current branch. Each report ends with a `Next:` line naming the step that follows. In Copilot, run each command after `capture-requirements` in a new chat. Approve each artifact when you are satisfied with it. The approval is written into the artifact before work continues. See [Getting Started](docs/getting-started.md) for the full flow.
 
 ## Current Limitations
 
@@ -89,7 +93,7 @@ This is a 0.x release. Rules and templates may still change between minor versio
 - **Contracts.** The contract template covers HTTP, message or stream (for example WebSocket or events), and RPC interfaces. Only the HTTP form has been used in a full run so far.
 - **Approvals.** Only you approve, one artifact at a time, and the approval is written into the artifact. Delegated or blanket approval ("approve everything on my behalf") is not accepted.
 - **Fresh context.** In Claude Code, commands that work from artifacts run in a fresh context with their role agent (`context: fork`, bound to the namespaced agent such as `production-engineering-standards:planner`; drop-in use falls back to `general-purpose`). In Copilot they run inline in the main conversation, because Copilot CLI subagents cannot yet write files. In Copilot, start a new chat for each planning, execution, or review command. In both tools, start a new chat after the requirements are approved and after each executed milestone, so a long work item never runs in one growing conversation.
-- **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail. Review every artifact before you approve it.
+- **Guidance, not enforcement.** Commands rely on the model following the written rules. Only the checks in `tooling/` can fail, plus one Claude Code hook: while exactly one approved Implementation Plan is not yet executed, an Edit or Write to a file outside its Files in Scope (and outside `docs/.ai/`) is blocked. The hook needs Python on the machine; without it, it warns and allows the edit. It does not see edits made through shell commands, and Copilot has no hook, so `prepare-pr` checks the diff against the plan in both tools. Review every artifact before you approve it.
 
 Known gaps and how they were found are recorded in [docs/history](docs/history/).
 
@@ -118,6 +122,7 @@ Known gaps and how they were found are recorded in [docs/history](docs/history/)
   agents/                  Same responsibility-focused agents, Claude Code format
   skills/                  Same domain knowledge, Claude Code format
   commands/                Same workflow entry points, Claude Code format
+  hooks/                   Plugin hook: blocks an edit outside the active Implementation Plan (plugin use only)
 
 tooling/
   scripts/                 Dependency-free validators
@@ -274,6 +279,7 @@ Examples include:
 - architecture design
 - distributed systems
 - API design
+- code quality (size, naming, reuse, comments, and the High/Medium/Low severity scale; projects override the defaults in `docs/code-standards.md`)
 - testing
 - resilience and degradation
 - observability

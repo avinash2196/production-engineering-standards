@@ -24,47 +24,36 @@ Before planning:
 - read the product-level `docs/requirements.md` when it exists, as read-only context;
 - list every document read, with its approval status, under Authoritative References.
 
-Prefer repository evidence over assumed structure or previously proposed implementation. Repository-state claims such as "clean working tree" must come from actual inspection, not assumption.
+Prefer repository evidence over assumed structure or previously proposed implementation; never plan from an assumed project state. Repository-state claims such as "clean working tree" must come from actual inspection, not assumption.
 
 Causal claims — why something happens, fails, or behaves a certain way (for example why a test is flaky, or how a library behaves at startup) — must cite the code, requirement, or observed output that establishes them. Label an explanation that has not been established that way as a hypothesis; a plausible but unchecked explanation is not evidence.
 
-Do not plan from an assumed project state.
-
-A material ambiguity may remain unresolved while no milestone yet depends on a concrete decision about it. Before creating an Implementation Plan for a milestone whose FOUNDATION, RED, GREEN, REFACTOR, or OTHER work actually depends on resolving that ambiguity, resolve it through the existing PDD clarification/human-review mechanisms rather than carrying it forward unresolved into typed code, test assertions, or configuration. Examples of such ambiguity include field representation, nullability, identifier semantics, precision, validation behavior, persistence representation, or external contract behavior — these examples are illustrative only and do not themselves introduce new requirements. Do not force premature resolution of such decisions during Requirements Capture.
+A material ambiguity may stay open while no milestone depends on it. Before planning a milestone whose work does depend on it (for example field representation, nullability, identifier semantics, precision, validation, persistence representation, or contract behavior — illustrations, not requirements), resolve it through PDD clarification and human review instead of carrying it into typed code, test assertions, or configuration. Do not force such decisions early during Requirements Capture.
 
 If the repository materially conflicts with authoritative artifacts or predecessor evidence, stop and surface the conflict for human review. If repository evidence contradicts the milestone type `Plan.md` recorded for this milestone (for example, `Plan.md` records this milestone as RED but a genuine prerequisite is actually missing, or records a FOUNDATION milestone that the repository shows is no longer needed), do not silently plan a different milestone type — stop and report the mismatch back to planning for a `Plan.md` update and re-approval.
 
 ## Implementation Plan Content
 
-Include:
-
-- milestone, including its milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER);
-- authoritative artifact references;
-- predecessor evidence;
-- current repository state relevant to the milestone;
-- exact files/components in scope;
-- files to create;
-- files to modify;
-- ordered proposed changes;
-- concrete proposed tests or production code;
-- relevant method, class, interface, schema, or configuration signatures;
-- exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
-- explicit Acceptance / Completion Criteria for this specific milestone — what must be true for this FOUNDATION, RED, GREEN, REFACTOR, or OTHER milestone to be considered complete;
-- verification commands that demonstrate those criteria;
-- expected FOUNDATION, RED, GREEN, REFACTOR, or OTHER evidence;
-- carried-forward decisions from earlier approved Implementation Plans;
-- pre-authorized contingencies, if any;
-- rollback or recovery where relevant, reversing only this milestone's changes — never repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work;
-- risks;
-- explicit exclusions.
+Follow `prompt-driven-development` `templates/Implementation-Plan.md`. It holds the milestone and its type; the Review Summary directly under the type; authoritative references and predecessor evidence; the relevant repository state; the files to create, modify, and delete; ordered proposed changes with the method, class, interface, schema, or configuration signatures they touch; the exact code (Exact Code); explicit Acceptance / Completion Criteria for this specific milestone; the verification commands that demonstrate them; the affected existing tests and how they were found (`prompt-driven-development` Test Scope and Output); the expected evidence; carried-forward decisions; pre-authorized contingencies, if any; risks; and explicit exclusions. Rollback or recovery, where relevant, reverses only this milestone's changes — never repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work.
 
 Acceptance / Completion Criteria and verification are distinct: the criteria state what must be true for the milestone to be complete; verification commands and expected evidence demonstrate whether the approved changes actually satisfied those criteria. Verification does not replace stating the criteria explicitly. Do not invent or modify Acceptance / Completion Criteria during execution — that belongs to planning.
 
 Expected evidence stated in the Implementation Plan is a prediction, not proof — label it Expected / Predicted — Not Yet Verified. Treat it as verified only when: (1) the milestone has actually been executed; (2) the stated verification commands/checks have actually been run; and (3) the resulting evidence supports the expected outcome. Running a verification command is not sufficient by itself if it fails or produces evidence that contradicts the expected outcome.
 
-The Implementation Plan must contain enough implementation detail for a human to review the proposed change before repository code is modified. Proposed changes must be exact (e.g. the specific file and the specific change to make), not a restated intent such as "implement the feature" or "add test infrastructure."
+Proposed changes are exact (the specific file and the specific change), never a restated intent such as "implement the feature" or "add test infrastructure". Do not apply them while planning, and do not approve the plan on behalf of a human reviewer.
 
-Proposed code may be included inside the Implementation Plan. Do not apply the proposed changes while planning.
+## Review Summary
+
+Directly under Milestone Type, at most about 8 lines: the behavior change (or "tests only", or "none"); the requirements covered; the files created, modified, and deleted; the tests added and what they prove; the verification command and its expected result; and the items that need the reviewer's attention (or "none"). Write it last. It adds no decision. Before stopping, confirm that each line matches the detailed sections.
+
+## Plan Size
+
+Keep the exact before and after code in full; trim everything around it.
+
+- A section with nothing to say is one line, `None.`: Carried-Forward Decisions, Risks, Pre-authorized Contingencies, Rollback / Recovery.
+- Current Repository State lists only the facts the exact code depends on, each with `path:line`. No inventory.
+- The Planning-Time Dry Run records each command and its result, not a narrative.
+- Add no section beyond the template unless the milestone needs it, and say why in one line.
 
 ## Milestone Type Boundaries
 
@@ -94,7 +83,7 @@ If the milestone approved for this Implementation Plan is a RED milestone with n
 - a new test that would pass at RED because an earlier milestone already delivers its behavior means the Plan's traceability is wrong (Plan Content Rule 8): stop and return to planning instead of planning a passing test;
 - a test for preserved existing behavior may be included only when the Plan's traceability assigns that preserved row to this RED milestone (Owning "none — preserved", Verifying this milestone); it is expected to pass at RED, is listed in Expected Evidence as a preserved-behavior test, and is never RED evidence for any requirement. Every requirement this milestone verifies still needs a test that fails at RED;
 - do not propose production implementation.
-- In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
+- in statically typed languages, a compilation failure caused directly by an intentionally absent approved production type, method, or signature is valid RED evidence (`prompt-driven-development` Milestone Controls); unrelated build or environment failures are not. Do not create production-source scaffolding merely to make RED tests compile.
 
 When `Plan.md` names an existing failing test as this milestone's RED evidence:
 
@@ -131,9 +120,6 @@ For database work, include data migration, compatibility, deployment ordering, a
 
 For distributed changes, include idempotency, concurrency, retries, and partial failure where relevant to the approved scope.
 
-Do not implement while creating the Implementation Plan.
-Do not approve the Implementation Plan on behalf of a human reviewer.
-
 ## Dependency and Version Selection
 
 When an Implementation Plan introduces or changes a dependency, framework, plugin, or tool version:
@@ -146,7 +132,7 @@ When an Implementation Plan introduces or changes a dependency, framework, plugi
 
 ## Carried-Forward Decisions
 
-Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. List the ones this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
+Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. Read each earlier plan's Review Summary and Carried-Forward Decisions, and its exact code only for files this milestone touches. List the decisions this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
 
 ## No Added Scope or Process
 
@@ -162,7 +148,7 @@ Acceptance criteria that limit which files may change always exclude the milesto
 
 ## Repeatable, Isolated Verification
 
-When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
+When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run those tests a second time without cleaning between runs (only those tests, not the whole suite), and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
 
 Verification must not silently depend on a shared resource being available. Prefer dynamically allocated resources unless the approved artifacts explicitly require a fixed one.
 
@@ -172,8 +158,8 @@ Before presenting an Implementation Plan for review, apply its exact code in a d
 
 - For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. For RED whose evidence is an existing failing test, apply the probe and confirm that test passes with it. The stub or probe never enters the repository.
 - Cover every artifact type the milestone introduces or changes — build files, configuration, runtime or infrastructure definitions — not only dependencies; use each tool's own validation (for example resolving dependencies, or a configuration file's validate or dry-run mode).
-- Keep the dry run proportional: run each verification command once — repeat runs only where Repeatable, Isolated Verification requires them — and add no mutation testing beyond the RED fail-and-pass proof unless the requirements ask for it. The full suite's repeatability is shown at execution.
-- Record each command verbatim with its trimmed real output, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
+- Keep the dry run proportional (`prompt-driven-development` Test Scope and Output). RED: compile everything and run only the new tests, proving they fail now and pass with the planned GREEN change (in a paired plan, the GREEN part's exact code; otherwise the probe). GREEN, FOUNDATION, OTHER, and REFACTOR: compile and run the new and affected tests once. The full suite runs once, at execution only. No repeated runs and no probes beyond the RED fail-and-pass proof, unless the requirements ask for them.
+- Record each command verbatim with its result, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
 - Never modify the repository during a dry run, create nothing outside a temporary location, list anything created, and delete the disposable copy afterward.
 - If a dry run cannot be performed, state why in the plan. "The repository must not be modified" is not a reason — the dry run runs outside it.
 
@@ -196,5 +182,7 @@ Every dependency, plugin, and configuration setting the exact code introduces mu
 Notes may explain the exact code but never correct or override it; an error found in the code is fixed in the code before the plan is presented. A planned deletion is listed under Files to Delete and removes the file — never a replacement with placeholder content.
 
 The Proposed Changes list and the code must match exactly: every change the code makes is named in Proposed Changes, and every change named there appears in the code. A change that appears only in the code, or only in the list, is a defect.
+
+The exact code follows `code-quality` and the stack skills' layering rules. Do not present a plan with an open High finding; list each Medium finding the plan keeps, with its one-line justification, in the self-check.
 
 Before stopping, check each file in scope: complete content or a complete diff is present, it contains no placeholder or pseudocode, it matches the Proposed Changes list, and every dependency, plugin, and configuration setting it introduces is traced. Report the result per file.

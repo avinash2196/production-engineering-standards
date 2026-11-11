@@ -68,6 +68,7 @@ REQUIRED_PDD_OPERATIONS = [
     "implement-approved-plan",
     "refactor-code",
     "review-code",
+    "prepare-pr",
 ]
 
 COMMAND_ENVIRONMENTS = {
@@ -273,6 +274,7 @@ FRESH_CONTEXT_COMMANDS = {
     "review-code": "code-reviewer",
     "review-production-readiness": "production-readiness-reviewer",
     "review-architecture": "architecture-reviewer",
+    "prepare-pr": "code-reviewer",
 }
 
 
@@ -750,6 +752,114 @@ def validate_pdd_contract(root: Path, errors: list[str]) -> None:
                 )
 
 
+# 0.16.0 (brief D): review rule IDs are defined once, in their owning skill.
+# LY1-LY3 are defined in each stack skill, in that stack's terms.
+RULE_ID_ROW = re.compile(r"^\| ((?:SZ|NM|RU|CM|LG|LY|AP|RV)\d+) \|", re.MULTILINE)
+RULE_ID_SHARED = {
+    "LY1": {"java-spring-boot", "python-fastapi"},
+    "LY2": {"java-spring-boot", "python-fastapi"},
+    "LY3": {"java-spring-boot", "python-fastapi"},
+}
+CODE_QUALITY_AGENTS = ("planner", "implementation-engineer", "refactoring-engineer", "code-reviewer")
+
+
+# Claude Code loads plugin hooks from <plugin root>/hooks/hooks.json. Every
+# hook command must run a script shipped in that folder through
+# ${CLAUDE_PLUGIN_ROOT}, so the hook works from any install location.
+PLUGIN_HOOKS_FILE = f"{PLUGIN_ROOT}/hooks/hooks.json"
+HOOK_SCRIPT_REF = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/hooks/([A-Za-z0-9_.-]+)")
+
+
+def validate_plugin_hooks(root: Path, errors: list[str]) -> None:
+    data = _load_json(root, PLUGIN_HOOKS_FILE, errors)
+    if data is None:
+        return
+    events = data.get("hooks")
+    if not isinstance(events, dict) or not events:
+        errors.append(f"{PLUGIN_HOOKS_FILE}: missing 'hooks' object")
+        return
+    guarded = False
+    for event, groups in events.items():
+        for group in groups if isinstance(groups, list) else []:
+            for hook in group.get("hooks", []):
+                command = hook.get("command", "")
+                scripts = HOOK_SCRIPT_REF.findall(command)
+                if hook.get("type") != "command" or not scripts:
+                    errors.append(
+                        f"{PLUGIN_HOOKS_FILE}: {event} hook must be a command that runs "
+                        "a script through ${CLAUDE_PLUGIN_ROOT}/hooks/"
+                    )
+                for script in scripts:
+                    if not (root / PLUGIN_ROOT / "hooks" / script).is_file():
+                        errors.append(f"{PLUGIN_HOOKS_FILE}: hook script {script} does not exist")
+                if event == "PreToolUse" and "plan_scope_guard.py" in scripts:
+                    matcher = set(group.get("matcher", "").split("|"))
+                    missing = {"Edit", "Write", "MultiEdit", "NotebookEdit"} - matcher
+                    if missing:
+                        errors.append(
+                            f"{PLUGIN_HOOKS_FILE}: plan scope guard matcher misses {sorted(missing)}"
+                        )
+                    guarded = True
+    if not guarded:
+        errors.append(f"{PLUGIN_HOOKS_FILE}: no PreToolUse hook runs plan_scope_guard.py")
+
+
+# The fixed Command Routing section (brief E C29) is the only text a new chat
+# always loads that points requests at the commands. Every command it names
+# must exist in both tools, and it must list open Final Reviews (C36).
+ROUTING_TEMPLATES = [
+    f"{tree}/skills/prompt-driven-development/templates/application-{tool}-instructions.md"
+    for tree in (".github", ".claude")
+    for tool in ("claude", "copilot")
+]
+ROUTING_COMMAND = re.compile(r"`([a-z][a-z-]+)(?: [^`]*)?`")
+
+
+def validate_command_routing(root: Path, errors: list[str]) -> None:
+    for rel in ROUTING_TEMPLATES:
+        path = root / rel
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        match = re.search(r"^## Command Routing\n(.*?)(?=^## )", text, re.MULTILINE | re.DOTALL)
+        if not match:
+            errors.append(f"{rel}: missing '## Command Routing' section")
+            continue
+        section = match.group(1)
+        if "<!-- FIXED — preserve verbatim -->" not in section:
+            errors.append(f"{rel}: Command Routing must be marked FIXED")
+        if "Final-Review.md" not in section:
+            errors.append(f"{rel}: Command Routing must list Final Reviews awaiting a user decision")
+        for name in sorted(set(ROUTING_COMMAND.findall(section))):
+            if "-" not in name or name == "production-engineering-standards":
+                continue
+            for env_rel, pattern in COMMAND_ENVIRONMENTS.items():
+                if not (root / env_rel / pattern.format(name=name)).is_file():
+                    errors.append(f"{rel}: Command Routing names `{name}`, missing from {env_rel}/")
+
+
+def validate_review_rule_ids(root: Path, errors: list[str]) -> None:
+    skill_root = root / ".github/skills"
+    if not (skill_root / "code-quality/SKILL.md").exists():
+        errors.append(".github/skills/code-quality/SKILL.md: missing (brief D)")
+    defined: dict[str, list[str]] = {}
+    for skill_file in sorted(skill_root.glob("*/SKILL.md")):
+        for rule_id in RULE_ID_ROW.findall(skill_file.read_text(encoding="utf-8")):
+            defined.setdefault(rule_id, []).append(skill_file.parent.name)
+    for rule_id, skills in sorted(defined.items()):
+        allowed = RULE_ID_SHARED.get(rule_id)
+        if allowed is not None:
+            if len(skills) != len(set(skills)) or set(skills) != allowed:
+                errors.append(f"rule {rule_id}: must be defined once in each of {sorted(allowed)}, found in {skills}")
+        elif len(skills) > 1:
+            errors.append(f"rule {rule_id}: defined more than once, in {skills}")
+    for agent in CODE_QUALITY_AGENTS:
+        rel = f".github/agents/{agent}.agent.md"
+        path = root / rel
+        if path.exists() and "`code-quality`" not in path.read_text(encoding="utf-8"):
+            errors.append(f"{rel}: must apply `code-quality` (brief D)")
+
+
 VALIDATORS = [
     validate_required_structure,
     validate_no_legacy_top_level_taxonomy,
@@ -768,6 +878,9 @@ VALIDATORS = [
     validate_oracle_skill,
     validate_pdd_contract,
     validate_no_code_change_bypass,
+    validate_review_rule_ids,
+    validate_plugin_hooks,
+    validate_command_routing,
 ]
 
 

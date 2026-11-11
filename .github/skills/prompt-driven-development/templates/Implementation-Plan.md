@@ -1,6 +1,6 @@
 # Implementation Plan
 
-<!-- Template guidance — remove every template comment from the finished artifact. -->
+<!-- Template guidance — remove every template comment from the finished artifact. Add no section beyond this template unless the milestone needs it, and then say why in one line (`implementation-planning` Plan Size). -->
 
 ## Milestone
 
@@ -12,19 +12,31 @@ FOUNDATION | RED | GREEN | REFACTOR | OTHER
 
 For RED whose evidence is an existing failing test: name the test, record its current failure, and list no files to change.
 
-For standalone REFACTOR: record the full verification suite passing on the unmodified repository as the GREEN baseline, and the existing tests that cover the code being restructured. -->
+For standalone REFACTOR: record the full verification suite passing on the unmodified repository as the GREEN baseline, and the existing tests that cover the code being restructured.
+
+For a paired plan (`Decomposition: one pair, one plan`): name both milestones, for example `RED RR-M2 + GREEN RR-M3`. Files in Scope, Proposed Changes, Proposed Code / Tests, Acceptance / Completion Criteria and Verification each have a `RED` part and a `GREEN` part. -->
+
+## Review Summary
+
+<!-- At most about 8 lines, written last, adding no decision (`implementation-planning` Review Summary):
+- Behavior change: <what changes, or "tests only", or "none">
+- Requirements covered: <IDs>
+- Files: created <list>; modified <list>; deleted <list>
+- Tests added: <tests> — they prove <behavior>
+- Verification: <command> — expected <result>
+- Needs attention: <items, or "none"> -->
 
 ## Authoritative References
 
 ## Carried-Forward Decisions
 
-<!-- List decisions from earlier approved Implementation Plans that this milestone relies on, citing the Implementation Plan that approved each. Do not reopen them; a change requires explicit user approval recorded here with its reason. -->
+<!-- List decisions from earlier approved Implementation Plans that this milestone relies on, citing the Implementation Plan that approved each, or write `None.` Do not reopen them; a change requires explicit user approval recorded here with its reason. -->
 
 ## Preconditions / Predecessor Evidence
 
 ## Current Repository State
 
-<!-- Describe the relevant current implementation, tests, configuration, repository structure, and completed predecessor work. -->
+<!-- Only the facts the exact code depends on, each with `path:line`. No inventory of the repository. -->
 
 ## Files in Scope
 
@@ -58,7 +70,11 @@ Criteria limiting which files may change exclude this milestone's own Execution 
 
 ### Commands
 
-<!-- When tests touch persistent state or override configuration, include a second run of the verification commands without cleaning between runs. -->
+<!-- Write each command's output to a log file and record only its summary and failing tests (`prompt-driven-development` Test Scope and Output). When tests touch persistent state or override configuration, add a second run of only those tests, without cleaning between runs. -->
+
+### Affected Tests
+
+<!-- The existing tests this milestone affects and how they were found (tests in the changed packages, tests that reference changed classes, tests the contract names), or `None.` Approved with the plan; a changed file this list does not cover is a plan difference. -->
 
 ### Expected Evidence
 
@@ -68,22 +84,24 @@ Criteria limiting which files may change exclude this milestone's own Execution 
 
 ### Planning-Time Dry Run
 
-<!-- The result of applying this plan's exact code in a disposable copy outside the repository and running the verification commands there (`implementation-planning` Planning-Time Dry Run): each command as run, with its trimmed real output. This is not milestone evidence. If a dry run was not performed, state why. -->
+<!-- The result of applying this plan's exact code in a disposable copy outside the repository (`implementation-planning` Planning-Time Dry Run): each command as run and its result, not a narrative. This is not milestone evidence. If a dry run was not performed, state why. -->
 
 ## Risks
 
+<!-- Risks specific to this milestone, or `None.` -->
+
 ## Pre-authorized Contingencies
 
-<!-- Optional. Each entry: exact observable trigger, exact file, exact change. Anything not listed returns to planning. A contingency may never remove, loosen, or weaken a test assertion or an Acceptance / Completion Criterion. -->
+<!-- `None.` when there are none. Each entry: exact observable trigger, exact file, exact change. Anything not listed returns to planning. A contingency may never remove, loosen, or weaken a test assertion or an Acceptance / Completion Criterion. -->
 
 ## Rollback / Recovery
 
-<!-- Include only when relevant. Reverse only this milestone's changes, file by file; never use repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work. -->
+<!-- `None.` when not relevant. Reverse only this milestone's changes, file by file; never use repository-wide reset, clean, or checkout operations that could remove unrelated or uncommitted work. -->
 
 ## Explicitly Out of Scope
 
 ## Human Review
 
-<!-- The only status field in this artifact. Only the user approves; see `prompt-driven-development` Approval Status. On approval: `Status: Approved by <name> on <date>`. After verified execution: `Status: Executed — see Plan.md`. If execution stops at a blocker: `Status: Execution stopped at a blocker — see Plan.md. Re-approval required before execution.` -->
+<!-- The only status field in this artifact. Only the user approves; see `prompt-driven-development` Approval Status. On approval: `Status: Approved by <name> on <date>`. After verified execution: `Status: Executed — see Plan.md`. A paired plan after RED only: `Status: RED executed — see Plan.md; GREEN approved, not yet executed`. If execution stops at a blocker: `Status: Execution stopped at a blocker — see Plan.md. Re-approval required before execution.` -->
 
 Status: Awaiting human approval

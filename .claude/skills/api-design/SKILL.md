@@ -13,6 +13,18 @@ description: Use when creating or changing HTTP/API contracts, DTOs, validation,
 - Make pagination, idempotency, retryability, and concurrency semantics explicit where relevant.
 - Avoid leaking persistence entities directly as public API contracts.
 
+## HTTP Conventions
+
+Severities follow `code-quality`.
+
+| ID | Rule | Severity |
+| --- | --- | --- |
+| AP1 | The repository's existing API conventions win. Record any deviation from them, or from these defaults, in the API/external contract for review. | Medium |
+| AP2 | GET reads with no side effects. POST creates or runs a non-idempotent action. PUT replaces the whole resource and is idempotent. PATCH updates part of it. DELETE removes and is idempotent. | High |
+| AP3 | Paths are plural nouns, not verbs (`/reservations`, not `/getReservations`). An action that does not fit CRUD is a sub-resource (`POST /reservations/{id}/cancellation`). One casing style. No more than about two nesting levels. | Medium |
+| AP4 | The path identifies a resource (`/reservations/{id}`). The query holds optional filtering, sorting, and paging for a collection. The body holds the data being created or changed. No personal or sensitive data in the path or query, because both end up in logs. | High for sensitive data; else Medium |
+| AP5 | Status codes: 200; 201 with `Location` on create; 204 with no body; 400 invalid input; 404 not found; 409 conflict (422 only if the repository already uses it). One error shape everywhere. | Medium |
+
 ## Contract Completeness
 
 An API/external contract is complete only when it answers each question below for every operation where the question applies. Tests are written directly from the contract, so an unanswered question becomes a guess in the tests.

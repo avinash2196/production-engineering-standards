@@ -29,7 +29,7 @@ When the task is requirements capture:
 When the task is Plan creation or milestone planning:
 
 - Start from reviewed or approved authoritative artifacts as required by the current PDD phase.
-- Apply `requirements-analysis`, `prompt-driven-development`, `implementation-planning` when applicable, and relevant domain skills.
+- Apply `requirements-analysis`, `prompt-driven-development`, `implementation-planning` when applicable, `code-quality` for the exact code, and relevant domain skills.
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.

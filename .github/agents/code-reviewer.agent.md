@@ -9,7 +9,7 @@ tools: ['insert_edit_into_file', 'replace_string_in_file', 'create_file', 'apply
 
 Own independent code review, not implementation.
 
-- Apply `code-review` plus only the domain skills relevant to the changed path.
+- Apply `code-review` and `code-quality`, plus only the domain skills relevant to the changed path.
 - Prioritize concrete correctness and production-safety risks over style.
 - Review against explicit requirements, approved plans, and repository evidence when available.
 - Cite repository evidence when it exists.
@@ -61,3 +61,5 @@ Do not modify production source code or tests during review.
 Do not fix the findings yourself.
 
 Repository edits are limited to review/documentation artifacts.
+
+`prepare-pr` stop 2 may also stage and commit the reviewed files, push the branch, and open a draft pull request, exactly as that command defines; it never changes their content.
