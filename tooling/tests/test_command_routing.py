@@ -6,6 +6,22 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+
+PDD_PARTS = ["SKILL.md", "milestone-types.md", "plan-rules.md", "execution.md", "final-review.md"]
+
+
+def pdd_text(tree: str) -> str:
+    """The whole prompt-driven-development skill: the core SKILL.md and its parts (0.16.1)."""
+    base = ROOT / tree / "skills/prompt-driven-development"
+    return "\n".join((base / name).read_text(encoding="utf-8") for name in PDD_PARTS)
+
+
+def read_any(rel: str) -> str:
+    if rel.endswith("skills/prompt-driven-development/SKILL.md"):
+        return pdd_text(rel.split("/skills/")[0])
+    return (ROOT / rel).read_text(encoding="utf-8")
+
+
 TREES = [".github", ".claude"]
 TEMPLATES = [
     f"{tree}/skills/prompt-driven-development/templates/application-{tool}-instructions.md"
@@ -15,7 +31,7 @@ TEMPLATES = [
 
 
 def read(rel: str) -> str:
-    return (ROOT / rel).read_text(encoding="utf-8")
+    return read_any(rel)
 
 
 def routing(rel: str) -> str:
@@ -60,7 +76,7 @@ class CommandRoutingTest(unittest.TestCase):
 class FixWorkItemTest(unittest.TestCase):
     def test_pdd_skill_defines_fix_work_items(self):
         for tree in TREES:
-            pdd = read(f"{tree}/skills/prompt-driven-development/SKILL.md")
+            pdd = pdd_text(tree)
             self.assertIn("### Fix Work Items", pdd, tree)
             self.assertIn("the defect, the expected behavior, and how to reproduce it", pdd, tree)
             self.assertIn("RED still proves the defect first", pdd, tree)

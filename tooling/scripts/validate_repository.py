@@ -726,7 +726,12 @@ def validate_pdd_contract(root: Path, errors: list[str]) -> None:
     if pdd_skill.is_file():
         # Normalize spacing around "/" so "API / External Contract" and
         # "API/External Contract" both satisfy the same required-token check.
-        text = re.sub(r"\s*/\s*", "/", pdd_skill.read_text(encoding="utf-8"))
+        whole = "\n".join(
+            p.read_text(encoding="utf-8")
+            for p in [pdd_skill, *(pdd_skill.parent / part for part in PDD_PARTS)]
+            if p.is_file()
+        )
+        text = re.sub(r"\s*/\s*", "/", whole)
         for token in [
             "Requirements",
             "Plan",
@@ -750,6 +755,54 @@ def validate_pdd_contract(root: Path, errors: list[str]) -> None:
                     f"{requirements_skill.relative_to(root)}: "
                     f"missing clarification control: {token}"
                 )
+
+
+# 0.16.1 (brief F S7): the PDD skill is a core SKILL.md plus part files read on
+# demand. Every part exists in the Parts table, every section heading lives in
+# exactly one file, and each command names the parts it reads up front.
+PDD_SKILL_DIR = ".github/skills/prompt-driven-development"
+PDD_PARTS = ["milestone-types.md", "plan-rules.md", "execution.md", "final-review.md"]
+PDD_PART_LOADS = {
+    "create-plan": {"milestone-types.md", "plan-rules.md"},
+    "create-api-contract": {"plan-rules.md"},
+    "create-implementation-plan": {"milestone-types.md", "execution.md"},
+    "generate-tests": {"milestone-types.md", "execution.md"},
+    "implement-approved-plan": {"execution.md"},
+    "refactor-code": {"execution.md"},
+    "prepare-pr": {"execution.md"},
+    "review-code": set(PDD_PARTS),
+    "review-production-readiness": set(PDD_PARTS),
+}
+SECTION_HEADING = re.compile(r"^#{2,3} .+$", re.MULTILINE)
+
+
+def validate_pdd_skill_parts(root: Path, errors: list[str]) -> None:
+    skill_dir = root / PDD_SKILL_DIR
+    core_path = skill_dir / "SKILL.md"
+    if not core_path.is_file():
+        return
+    core = core_path.read_text(encoding="utf-8")
+    seen: dict[str, str] = {}
+    for name in ["SKILL.md", *PDD_PARTS]:
+        path = skill_dir / name
+        if not path.is_file():
+            errors.append(f"{PDD_SKILL_DIR}/{name}: missing PDD skill part")
+            continue
+        if name != "SKILL.md" and f"| `{name}` |" not in core:
+            errors.append(f"{PDD_SKILL_DIR}/SKILL.md: Parts table does not list {name}")
+        for heading in SECTION_HEADING.findall(path.read_text(encoding="utf-8")):
+            if heading in seen:
+                errors.append(f"{PDD_SKILL_DIR}: section '{heading}' is in both {seen[heading]} and {name}")
+            seen[heading] = name
+    for op, parts in PDD_PART_LOADS.items():
+        for env_rel, pattern in COMMAND_ENVIRONMENTS.items():
+            path = root / env_rel / pattern.format(name=op)
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            for part in sorted(parts):
+                if f"`{part}`" not in text:
+                    errors.append(f"{env_rel}/{pattern.format(name=op)}: must apply prompt-driven-development {part}")
 
 
 # 0.16.0 (brief D): review rule IDs are defined once, in their owning skill.
@@ -881,6 +934,7 @@ VALIDATORS = [
     validate_review_rule_ids,
     validate_plugin_hooks,
     validate_command_routing,
+    validate_pdd_skill_parts,
 ]
 
 

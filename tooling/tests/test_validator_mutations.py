@@ -457,6 +457,19 @@ class PluginHooksTest(ValidatorMutationTestCase):
         )
         self.assert_error_containing("Command Routing must list Final Reviews")
 
+    def test_missing_pdd_part_fails(self):
+        (self.repo / ".github/skills/prompt-driven-development/plan-rules.md").unlink()
+        self.assert_error_containing("plan-rules.md: missing PDD skill part")
+
+    def test_section_in_two_pdd_files_fails(self):
+        path = self.repo / ".github/skills/prompt-driven-development/final-review.md"
+        path.write_text(path.read_text(encoding="utf-8") + "\n## Plan Progress\n", encoding="utf-8")
+        self.assert_error_containing("section '## Plan Progress' is in both")
+
+    def test_command_without_its_pdd_part_fails(self):
+        self._replace(".claude/commands/implement-approved-plan.md", "with its `execution.md`, ", "")
+        self.assert_error_containing("must apply prompt-driven-development execution.md")
+
     def test_prepare_pr_without_fork_fails(self):
         self._replace(".claude/commands/prepare-pr.md", "context: fork\n", "")
         self.assert_error_containing("prepare-pr")

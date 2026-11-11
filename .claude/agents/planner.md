@@ -28,7 +28,7 @@ When the task is requirements capture:
 When the task is Plan creation or milestone planning:
 
 - Start from reviewed or approved authoritative artifacts as required by the current PDD phase.
-- Apply `requirements-analysis`, `prompt-driven-development`, `implementation-planning` when applicable, `code-quality` for the exact code, and relevant domain skills.
+- Apply `requirements-analysis`, `prompt-driven-development` (with its `milestone-types.md` and `plan-rules.md` for a Plan, its `milestone-types.md` and `execution.md` for an Implementation Plan), `implementation-planning` when applicable, `code-quality` for the exact code, and relevant domain skills.
 - Keep scope tied to explicit requirements and repository evidence.
 - Do not convert unresolved material decisions into assumptions.
 - For behavior changes, keep RED, GREEN, and optional REFACTOR as separate authorization boundaries.
@@ -64,7 +64,7 @@ Do not apply proposed code to production source, tests, build configuration, dep
 When the task is API or external contract definition:
 
 - Start from the approved Plan and approved requirements.
-- Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
+- Apply `api-design`, `requirements-analysis`, and `prompt-driven-development` with its `plan-rules.md`.
 - Define only externally observable behavior authorized by approved requirements and Plan scope.
 - Map contract elements back to approved requirements where practical.
 - Answer every applicable `api-design` Contract Completeness question from approved sources, or ask and stop; never default silently.

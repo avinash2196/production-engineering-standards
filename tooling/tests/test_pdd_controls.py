@@ -5,6 +5,21 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 
+PDD_PARTS = ["SKILL.md", "milestone-types.md", "plan-rules.md", "execution.md", "final-review.md"]
+
+
+def pdd_text(tree: str) -> str:
+    """The whole prompt-driven-development skill: the core SKILL.md and its parts (0.16.1)."""
+    base = ROOT / tree / "skills/prompt-driven-development"
+    return "\n".join((base / name).read_text(encoding="utf-8") for name in PDD_PARTS)
+
+
+def read_any(rel: str) -> str:
+    if rel.endswith("skills/prompt-driven-development/SKILL.md"):
+        return pdd_text(rel.split("/skills/")[0])
+    return (ROOT / rel).read_text(encoding="utf-8")
+
+
 _SCRIPT_PATH = ROOT / "tooling" / "scripts" / "validate_repository.py"
 _spec = importlib.util.spec_from_file_location("validate_repository", _SCRIPT_PATH)
 validate_repository_module = importlib.util.module_from_spec(_spec)
@@ -27,9 +42,7 @@ class PddControlsTest(unittest.TestCase):
             self.assertTrue((ROOT / ".github/prompts" / name).is_file(), name)
 
     def test_pdd_skill_preserves_authorization_boundaries(self):
-        raw = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        raw = pdd_text(".github")
         # Normalize spacing around "/" so "API / External Contract" and
         # "API/External Contract" both satisfy the same token check.
         text = re.sub(r"\s*/\s*", "/", raw)
@@ -49,9 +62,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("separate authorization boundaries", text)
 
     def test_pdd_skill_has_adaptive_milestone_decomposition(self):
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
 
         self.assertIn("Adaptive Milestone Decomposition", text)
         self.assertIn("one pair per class or file", text)
@@ -62,9 +73,7 @@ class PddControlsTest(unittest.TestCase):
         # the surrounding prose won't break this. Deliberately does not
         # assert on the illustrative Milestone 1/2/3/4 example text in
         # getting-started.md, only on the skill's own rule statements.
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
 
         # complex requirements decompose into independently reviewable milestones
         self.assertIn("independently reviewable implementation milestones", text)
@@ -89,9 +98,7 @@ class PddControlsTest(unittest.TestCase):
         # core invariants (conditional not mandatory; missing production
         # symbols are not a setup trigger; setup still requires an approved
         # Implementation Plan), not the exact prose.
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
 
         self.assertIn("Conditional SETUP / FOUNDATION", text)
         # setup is conditional, not a default/mandatory milestone
@@ -117,9 +124,7 @@ class PddControlsTest(unittest.TestCase):
         # REFACTOR are each their own milestone (not phases of a containing
         # milestone), and a single Implementation Plan authorizes exactly
         # one of them.
-        skill_text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        skill_text = pdd_text(".github")
         self.assertIn(
             "FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone",
             skill_text,
@@ -153,9 +158,7 @@ class PddControlsTest(unittest.TestCase):
         )
 
     def test_foundation_remains_conditional_not_mandatory(self):
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
         self.assertIn("FOUNDATION is conditional", text)
         self.assertIn("most sequences proceed directly to a RED milestone", text)
 
@@ -206,9 +209,7 @@ class PddControlsTest(unittest.TestCase):
     def test_final_review_has_no_trivial_executable_code_exception(self):
         # Conflict 2: Final Review previously carved out a trivial
         # typo/formatting exception to the no-bypass rule — removed.
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
         self.assertNotIn("only exception is a trivial", text.lower())
         self.assertIn("There is no trivial-change exception for executable artifacts", text)
 
@@ -217,9 +218,7 @@ class PddControlsTest(unittest.TestCase):
     # Criteria as their own explicit concept.
 
     def test_same_workflow_applies_to_new_and_existing_repositories(self):
-        text = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        text = pdd_text(".github")
         self.assertIn(
             "Apply this same current-state-driven decision to both new "
             "and existing repositories",
@@ -343,7 +342,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn(
                 "Do not mechanically create one milestone per class",
                 text,
@@ -383,7 +382,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/Plan.md",
         ]
         for rel in runtime_files:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             found = [m for m in exhaustive_markers if m in text]
             self.assertEqual(
                 found,
@@ -393,7 +392,7 @@ class PddControlsTest(unittest.TestCase):
 
     def test_pdd_skill_forbids_red_production_scaffolding(self):
         skill_texts = "\n".join(
-            (ROOT / rel).read_text(encoding="utf-8")
+            read_any(rel)
             for rel in [
                 ".github/skills/prompt-driven-development/SKILL.md",
                 ".github/skills/implementation-planning/SKILL.md",
@@ -437,7 +436,7 @@ class PddControlsTest(unittest.TestCase):
         canonical = m._normalize_control_block(m.CANONICAL_NO_CODE_CHANGE_BLOCK)
 
         for rel in m.NO_CODE_CHANGE_REQUIRED_FILES:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             block = m._extract_control_block(text, m.NO_CODE_CHANGE_CONTROL_ID)
             self.assertIsNotNone(block, f"{rel}: missing PDD-CONTROL block")
             self.assertEqual(
@@ -518,7 +517,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
             "README.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn(
                 "optional FOUNDATION milestone: Implementation Plan → "
                 "Human Review → execution → Verification",
@@ -550,7 +549,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn(
                 "Each Implementation Plan defines HOW one approved "
                 "milestone will change the repository.",
@@ -613,7 +612,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/generate-tests.prompt.md",
             ".github/prompts/refactor-code.prompt.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn(
                 "do not invent, weaken, reinterpret, or modify",
                 text,
@@ -623,9 +622,7 @@ class PddControlsTest(unittest.TestCase):
     # --- Contract-as-milestone and Plan Content Rules pass.
 
     def test_contract_is_first_milestone_before_foundation(self):
-        skill = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("CONTRACT milestone when applicable", skill)
         self.assertIn("always the first milestone after Plan approval", skill)
         self.assertIn("so it has no Implementation Plan", skill)
@@ -633,7 +630,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn(
                 "record a CONTRACT milestone as the first milestone after Plan approval",
                 text,
@@ -641,9 +638,7 @@ class PddControlsTest(unittest.TestCase):
             self.assertNotIn("positioned before the first Implementation Plan", text)
 
     def test_pdd_skill_defines_plan_content_rules(self):
-        skill = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("## Plan Content Rules", skill)
         for token in [
             "Each milestone has exactly one predecessor",
@@ -664,7 +659,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
             ".github/skills/prompt-driven-development/templates/application-copilot-instructions.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("single source of truth for the complete development", text, rel)
 
     def test_plan_template_has_traceability_and_linear_order(self):
@@ -680,7 +675,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("check the Plan against each Plan Content Rule", text)
             self.assertIn("this command stays project-neutral", text)
 
@@ -689,13 +684,13 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("A CONTRACT milestone has no Implementation Plan", text)
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("executes the CONTRACT milestone recorded in the approved", text)
 
     # --- API contract completeness pass.
@@ -732,7 +727,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("Contract Completeness question", text)
             self.assertIn("this command stays project-neutral", text)
             self.assertIn("check the contract with evidence", text)
@@ -746,23 +741,21 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("treat it as a revision, not a fresh draft", text, rel)
             self.assertIn("compare against the previous version", text, rel)
         for rel in [
             ".github/prompts/create-api-contract.prompt.md",
             ".claude/commands/create-api-contract.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("record each answered clarification in Decisions Resolved", text)
             self.assertIn("exactly one row per `api-design` Contract Completeness question", text)
 
     # --- Projected prerequisite coverage and version selection pass.
 
     def test_plan_rules_require_prerequisite_coverage_for_every_red(self):
-        skill = (
-            ROOT / ".github/skills/prompt-driven-development/SKILL.md"
-        ).read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("Prerequisite coverage for every RED milestone", skill)
         self.assertIn("projected after all of its predecessor milestones complete", skill)
         self.assertIn("Record which RED milestones each FOUNDATION milestone serves", skill)
@@ -770,7 +763,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-plan.prompt.md",
             ".claude/commands/create-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("not only the current state", text)
             self.assertNotIn("determine whether the current repository state is sufficient to begin RED", text)
 
@@ -781,7 +774,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/skills/implementation-planning/SKILL.md",
             ".github/prompts/create-implementation-plan.prompt.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertNotIn("the following RED milestone", text, rel)
 
     def test_dependency_versions_must_be_supported_not_cache_convenient(self):
@@ -795,7 +788,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("Dependency and Version Selection", text)
 
     # --- Carry-forward, contingencies, file scope, repeatable verification pass.
@@ -812,7 +805,7 @@ class PddControlsTest(unittest.TestCase):
             ".github/prompts/create-implementation-plan.prompt.md",
             ".claude/commands/create-implementation-plan.md",
         ]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("read every previously approved Implementation Plan", text)
 
     def test_contingencies_are_exact_and_reported(self):
@@ -828,7 +821,7 @@ class PddControlsTest(unittest.TestCase):
                 f".github/prompts/{cmd}.prompt.md",
                 f".claude/commands/{cmd}.md",
             ]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("whether its trigger occurred and whether it was applied", text, rel)
                 self.assertIn("a pass that is not repeatable is not verified", text, rel)
 
@@ -861,7 +854,7 @@ class PddControlsTest(unittest.TestCase):
             ".claude/agents/planner.md",
         ]
         for rel in files:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertNotIn("pseudocode, or patch-level", text, rel)
             self.assertNotIn("code snippets or patch-level", text, rel)
             self.assertIn("complete unified diff covering every changed line", text, rel)
@@ -875,7 +868,7 @@ class PddControlsTest(unittest.TestCase):
                 f".github/prompts/{cmd}.prompt.md",
                 f".claude/commands/{cmd}.md",
             ]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("Apply the code exactly as the approved Implementation Plan writes it", text, rel)
 
     # --- No-weakening, labels, binding FOUNDATION decisions, path patterns pass.
@@ -887,22 +880,22 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("A contingency may never remove, loosen, or weaken a test assertion", template)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
             for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("Never remove, loosen, or weaken a test assertion", text, rel)
 
     def test_artifact_labels_must_not_collide(self):
-        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("must not reuse a label already defined by an approved artifact it references", skill)
         for cmd in ["create-plan", "create-api-contract", "create-implementation-plan"]:
             for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("reuses a label already defined by an approved artifact", text, rel)
 
     def test_foundation_lists_binding_decisions(self):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("every choice that binds the RED milestones this FOUNDATION serves", skill)
         for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("binds the RED milestones it serves", text, rel)
 
     def test_path_patterns_match_only_intended_paths(self):
@@ -913,7 +906,7 @@ class PddControlsTest(unittest.TestCase):
     # --- safe rollback, RED expectations, and Final Review artifact pass.
 
     def test_execution_requires_user_approval(self):
-        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("### Approval Status", skill)
         self.assertIn("the AI never approves its own artifact", skill)
         self.assertIn("Never infer approval from a commit message", skill)
@@ -921,11 +914,11 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("The only status field in this artifact", template)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
             for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("confirm the Implementation Plan is approved", text, rel)
         for agent in ["test-engineer", "implementation-engineer", "refactoring-engineer"]:
             for rel in [f".github/agents/{agent}.agent.md", f".claude/agents/{agent}.md"]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("confirm the Implementation Plan is approved", text, rel)
 
     def test_resolved_decisions_are_recorded_before_planning(self):
@@ -933,11 +926,11 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("## Recording Resolved Decisions", skill)
         self.assertIn("never to conversation history", skill)
         for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("Resolved decisions to record", text, rel)
 
     def test_absence_requirements_are_exclusions(self):
-        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("A requirement that states an absence", skill)
         self.assertIn("appears in that RED milestone's scope", skill)
 
@@ -948,7 +941,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("must come from actual inspection", skill)
         self.assertIn("must not silently depend on a shared resource", skill)
         for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("traces every dependency, plugin, and configuration setting", text, rel)
 
     def test_red_expectations_and_contract_coverage(self):
@@ -959,15 +952,15 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("verify it at least once through the real transport", testing)
 
     def test_final_review_is_written_to_an_artifact(self):
-        skill = (ROOT / ".github/skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+        skill = pdd_text(".github")
         self.assertIn("docs/.ai/<work-item>/Final-Review.md", skill)
         for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("docs/.ai/<work-item>/Final-Review.md", text, rel)
 
     def test_every_work_item_has_its_own_folder(self):
         for tree in [".github", ".claude"]:
-            skill = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            skill = pdd_text(tree)
             self.assertIn("## Work-Item Folders", skill, tree)
             self.assertIn("named explicitly by the user", skill, tree)
             self.assertIn("never edit it", skill, tree)
@@ -982,7 +975,7 @@ class PddControlsTest(unittest.TestCase):
             "refactor-code",
         ]:
             for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md"]:
-                text = (ROOT / rel).read_text(encoding="utf-8")
+                text = read_any(rel)
                 self.assertIn("If no work item is named, ask and stop.", text, rel)
 
     def test_no_repository_wide_fixed_artifact_paths(self):
@@ -1005,7 +998,7 @@ class PddControlsTest(unittest.TestCase):
         }
         for op, phrase in expected.items():
             for rel in [f".github/prompts/{op}.prompt.md", f".claude/commands/{op}.md"]:
-                self.assertIn(phrase, (ROOT / rel).read_text(encoding="utf-8"), rel)
+                self.assertIn(phrase, read_any(rel), rel)
 
     def test_requirements_capture_asks_business_intent(self):
         # 0.16.0, brief E C31-C33: business intent first, durability asked,
@@ -1026,11 +1019,11 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("Statements that contradict each other", template, tree)
             self.assertIn("Answers taken from a recommended option", template, tree)
         for rel in [".github/prompts/capture-requirements.prompt.md", ".claude/commands/capture-requirements.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("Business Intent questions first", text, rel)
             self.assertIn("Business Context, Scenarios", text, rel)
         for rel in [".github/prompts/review-requirements.prompt.md", ".claude/commands/review-requirements.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("Business Intent point (in the Blocking group)", text, rel)
             self.assertIn("without a confirming `Qn`", text, rel)
 
@@ -1052,7 +1045,7 @@ class PddControlsTest(unittest.TestCase):
             self.assertIn("## Presenting Clarification Questions", ra, tree)
             self.assertIn("Blocking — must be answered before planning", ra, tree)
             self.assertIn("Answer or mark not required", ra, tree)
-            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            pdd = pdd_text(tree)
             self.assertIn("Only the user updates `docs/requirements.md`", pdd, tree)
             self.assertIn("each product-level statement now out of date", pdd, tree)
 
@@ -1069,7 +1062,7 @@ class PddControlsTest(unittest.TestCase):
             ).read_text(encoding="utf-8")
             self.assertIn("### Planning-Time Dry Run", template, tree)
         for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("report the dry-run result", text, rel)
 
     def test_causal_claims_require_evidence(self):
@@ -1077,7 +1070,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("Causal claims", skill)
         self.assertIn("Label an explanation that has not been established that way as a hypothesis", skill)
         for rel in [".github/prompts/create-implementation-plan.prompt.md", ".claude/commands/create-implementation-plan.md"]:
-            self.assertIn("Cite evidence for every causal claim", (ROOT / rel).read_text(encoding="utf-8"), rel)
+            self.assertIn("Cite evidence for every causal claim", read_any(rel), rel)
 
     def test_negative_red_tests_must_not_pass_vacuously(self):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
@@ -1085,7 +1078,7 @@ class PddControlsTest(unittest.TestCase):
         testing = (ROOT / ".github/skills/testing/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("passes vacuously while the behavior under test is absent", testing)
         for rel in [".github/prompts/generate-tests.prompt.md", ".claude/commands/generate-tests.md"]:
-            self.assertIn("passes vacuously in RED", (ROOT / rel).read_text(encoding="utf-8"), rel)
+            self.assertIn("passes vacuously in RED", read_any(rel), rel)
 
     def test_pre_existing_failures_are_decided_at_planning_not_rerun(self):
         skill = (ROOT / ".github/skills/implementation-planning/SKILL.md").read_text(encoding="utf-8")
@@ -1096,7 +1089,7 @@ class PddControlsTest(unittest.TestCase):
         self.assertIn("fails intermittently on unchanged code is a finding", testing)
         for cmd in ["implement-approved-plan", "generate-tests", "refactor-code"]:
             for rel in [f".github/prompts/{cmd}.prompt.md", f".claude/commands/{cmd}.md"]:
-                self.assertIn("never rerun verification until it happens to pass", (ROOT / rel).read_text(encoding="utf-8"), rel)
+                self.assertIn("never rerun verification until it happens to pass", read_any(rel), rel)
 
     def test_final_review_has_template_origin_and_correction_rules(self):
         for tree in [".github", ".claude"]:
@@ -1111,11 +1104,11 @@ class PddControlsTest(unittest.TestCase):
             ]:
                 self.assertIn(heading, template, tree)
             self.assertIn("pre-existing / introduced", template, tree)
-            pdd = (ROOT / tree / "skills/prompt-driven-development/SKILL.md").read_text(encoding="utf-8")
+            pdd = pdd_text(tree)
             self.assertIn("Use `templates/Final-Review.md` for the structure", pdd, tree)
             self.assertIn("do not edit the approved artifact", pdd, tree)
         for rel in [".github/prompts/review-code.prompt.md", ".claude/commands/review-code.md"]:
-            text = (ROOT / rel).read_text(encoding="utf-8")
+            text = read_any(rel)
             self.assertIn("templates/Final-Review.md", text, rel)
             self.assertIn("mark each finding as pre-existing or introduced", text, rel)
 
@@ -1127,7 +1120,7 @@ class MilestoneSemanticsTest(unittest.TestCase):
     and no forced RED/GREEN in domain commands."""
 
     def _read(self, rel: str) -> str:
-        return (ROOT / rel).read_text(encoding="utf-8")
+        return read_any(rel)
 
     def test_no_milestone_enumeration_omits_other(self):
         # Every list of executable milestone types must include OTHER.
@@ -1212,7 +1205,7 @@ class Release015ControlsTest(unittest.TestCase):
     TEMPLATES = ".github/skills/prompt-driven-development/templates/"
 
     def _read(self, rel):
-        return (ROOT / rel).read_text(encoding="utf-8")
+        return read_any(rel)
 
     def test_d1_approval_is_read_only_from_the_artifact(self):
         skill = self._read(self.SKILL)
@@ -1341,7 +1334,7 @@ class Release0151ControlsTest(unittest.TestCase):
     """0.15.1 fixes for C23 and C24 (docs/history/pdd-gap-fixes-2026-10-c.md)."""
 
     def _read(self, rel):
-        return (ROOT / rel).read_text(encoding="utf-8")
+        return read_any(rel)
 
     def test_c24_forks_bind_namespaced_role_agent(self):
         # 0.15.1: Claude Code names plugin agents `<plugin>:<agent>`; a bare
