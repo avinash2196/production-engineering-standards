@@ -22,6 +22,8 @@ Inspect the repository before stating any repository fact or asking any question
 
 Ask the `requirements-analysis` Business Intent questions first, in the same round as any other clarification: every point the brief, the repository, and the product-level requirements do not answer. Record the answers in Business Context and Scenarios.
 
+For a fix work item (`prompt-driven-development` Fix Work Items), the requirements are the defect, the expected behavior, and how to reproduce it. The approved requirements of the work item that holds the defect answer the Business Intent points they cover; cite them as `[Artifact: …]` and ask only the rest.
+
 Before finalizing, apply the `requirements-analysis` Operational Characteristics check: ask the user about each applicable characteristic that neither the user nor repository evidence has answered, and stop until answered. Record only answers given by the user or established by the repository, including explicit "not required" answers the user confirms. Never answer a characteristic yourself.
 
 Before finalizing, ask the user to confirm every derived consequence, then apply the `requirements-analysis` provenance check: every item names its source, every repository citation was verified against the current repository during this capture, no two statements contradict each other, and nothing is copied from another work item's artifacts.

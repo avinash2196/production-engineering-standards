@@ -62,14 +62,14 @@ copilot plugin marketplace add avinash2196/production-engineering-standards
 copilot plugin install production-engineering-standards@pes-marketplace
 ```
 
-Then, inside your application repository, generate the instruction file once:
+Then, inside your application repository, generate the instruction file once. It must come from the setup command; never write it by hand, or the plugin's rules are not in it:
 
 ```text
 /setup-claude-instructions     Claude Code → CLAUDE.md
 /setup-copilot-instructions    Copilot     → .github/copilot-instructions.md
 ```
 
-Next, run one work item end to end. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command takes the work-item name, and each one stops for your review:
+Next, run one work item end to end. Start every phase with a command and the work-item name; a chat asked only to "use PDD" improvises its own files and none of the plugin's rules apply. In Claude Code, the installed commands carry the `/production-engineering-standards:` prefix, which is left out below. Each command stops for your review:
 
 ```text
 /capture-requirements order-cancellation    → docs/.ai/order-cancellation/requirements.md

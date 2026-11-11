@@ -85,6 +85,8 @@ When the standards are installed as a Claude Code plugin, the command is `/produ
 
 The file is loaded into every session in the repository, so the PDD rules — the workflow, no code change without approval, clarification before assumption — apply even when no PDD command is used. It holds process rules and pointers only. The command copies the template verbatim, asks no questions, and writes only that one file, so it works for a new project before any code exists.
 
+Always generate the file with the setup command; never write it by hand. A hand-written file lacks the fixed sections, including Command Routing, which sends each kind of request to its command, lists open work items before new work starts, and routes a defect in finished work to a fix work item.
+
 Rerun it whenever the template changes. When it replaces an existing file, it lists every project-specific line it dropped and where that information belongs.
 
 The commands are built on these templates, which remain the reference:
@@ -172,6 +174,8 @@ For a new application or a change whose requirements are not yet captured (after
 9. final code and production-readiness review as applicable
 
 For an existing application with already-approved requirements, start from the earliest artifact that needs to change.
+
+Start every phase with its command and the work-item name. A chat asked only to "use PDD" improvises its own requirements and plans, and none of the plugin's rules apply to them. For a defect in finished work, or a Final Review finding you accepted, start a fix work item: `/capture-requirements <fix-work-item>` with the defect, the expected behavior, and how to reproduce it (`prompt-driven-development` Fix Work Items).
 
 ## 6. Behavior-Changing Milestone Flow
 

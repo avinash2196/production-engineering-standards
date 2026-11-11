@@ -804,6 +804,40 @@ def validate_plugin_hooks(root: Path, errors: list[str]) -> None:
         errors.append(f"{PLUGIN_HOOKS_FILE}: no PreToolUse hook runs plan_scope_guard.py")
 
 
+# The fixed Command Routing section (brief E C29) is the only text a new chat
+# always loads that points requests at the commands. Every command it names
+# must exist in both tools, and it must list open Final Reviews (C36).
+ROUTING_TEMPLATES = [
+    f"{tree}/skills/prompt-driven-development/templates/application-{tool}-instructions.md"
+    for tree in (".github", ".claude")
+    for tool in ("claude", "copilot")
+]
+ROUTING_COMMAND = re.compile(r"`([a-z][a-z-]+)(?: [^`]*)?`")
+
+
+def validate_command_routing(root: Path, errors: list[str]) -> None:
+    for rel in ROUTING_TEMPLATES:
+        path = root / rel
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        match = re.search(r"^## Command Routing\n(.*?)(?=^## )", text, re.MULTILINE | re.DOTALL)
+        if not match:
+            errors.append(f"{rel}: missing '## Command Routing' section")
+            continue
+        section = match.group(1)
+        if "<!-- FIXED — preserve verbatim -->" not in section:
+            errors.append(f"{rel}: Command Routing must be marked FIXED")
+        if "Final-Review.md" not in section:
+            errors.append(f"{rel}: Command Routing must list Final Reviews awaiting a user decision")
+        for name in sorted(set(ROUTING_COMMAND.findall(section))):
+            if "-" not in name or name == "production-engineering-standards":
+                continue
+            for env_rel, pattern in COMMAND_ENVIRONMENTS.items():
+                if not (root / env_rel / pattern.format(name=name)).is_file():
+                    errors.append(f"{rel}: Command Routing names `{name}`, missing from {env_rel}/")
+
+
 def validate_review_rule_ids(root: Path, errors: list[str]) -> None:
     skill_root = root / ".github/skills"
     if not (skill_root / "code-quality/SKILL.md").exists():
@@ -846,6 +880,7 @@ VALIDATORS = [
     validate_no_code_change_bypass,
     validate_review_rule_ids,
     validate_plugin_hooks,
+    validate_command_routing,
 ]
 
 

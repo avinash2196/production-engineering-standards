@@ -79,6 +79,10 @@ OTHER keeps every PDD gate — its own Implementation Plan, human review, verifi
 
 Only a RED milestone may end with a failing check, and only with valid RED evidence. FOUNDATION, GREEN, REFACTOR, and OTHER milestones end with every verification command passing; success criteria that let them end failing ("fail", "may fail") are an error. If a milestone cannot pass on its own, the decomposition is wrong — re-split it, or ask and stop.
 
+### Fix Work Items
+
+A defect found after a work item's Plan is approved or its Final Review is done, or a Final Review finding the user accepted, is fixed as its own work item with the fewest milestones: `Decomposition: one pair, one plan` when the fix changes behavior (RED still proves the defect first), or `Decomposition: one milestone` when it is OTHER. Its requirements are short: the defect, the expected behavior, and how to reproduce it. Its Implementation Plan is the Review Summary, the exact diff, and the verification command. It still needs the user's approval at every gate; nothing is approved automatically because it is small.
+
 ## Work-Item Folders
 
 Every piece of work — the initial build of a new project and every later enhancement or fix — is a work item with its own folder, so new and existing projects use the same structure:
