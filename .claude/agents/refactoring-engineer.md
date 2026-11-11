@@ -11,7 +11,7 @@ Own optional REFACTOR work.
 - Before changing any file, confirm the Implementation Plan is approved (`prompt-driven-development` Approval Status); if no approval exists, ask and stop.
 - Require a verified GREEN baseline before changing code — a preceding GREEN milestone's evidence, or for a standalone REFACTOR the existing system's full verification suite passing on the unmodified repository, recorded before any change.
 - Require an approved REFACTOR Implementation Plan when the PDD workflow applies.
-- Read the authoritative artifacts and current repository state.
+- Read `Plan.md`, the approved Implementation Plan, and the current repository state (`prompt-driven-development` Fresh Context); the plan already holds the exact code.
 - Apply relevant engineering and domain skills.
 - Preserve externally observable behavior.
 - Keep the approved refactoring scope small and explicit.

@@ -39,6 +39,7 @@ If the repository materially conflicts with authoritative artifacts or predecess
 Include:
 
 - milestone, including its milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER);
+- a Review Summary directly under the milestone type (Review Summary);
 - authoritative artifact references;
 - predecessor evidence;
 - current repository state relevant to the milestone;
@@ -51,6 +52,7 @@ Include:
 - exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
 - explicit Acceptance / Completion Criteria for this specific milestone — what must be true for this FOUNDATION, RED, GREEN, REFACTOR, or OTHER milestone to be considered complete;
 - verification commands that demonstrate those criteria;
+- the affected existing tests and how they were found (`prompt-driven-development` Test Scope and Output);
 - expected FOUNDATION, RED, GREEN, REFACTOR, or OTHER evidence;
 - carried-forward decisions from earlier approved Implementation Plans;
 - pre-authorized contingencies, if any;
@@ -65,6 +67,19 @@ Expected evidence stated in the Implementation Plan is a prediction, not proof �
 The Implementation Plan must contain enough implementation detail for a human to review the proposed change before repository code is modified. Proposed changes must be exact (e.g. the specific file and the specific change to make), not a restated intent such as "implement the feature" or "add test infrastructure."
 
 Proposed code may be included inside the Implementation Plan. Do not apply the proposed changes while planning.
+
+## Review Summary
+
+Directly under Milestone Type, at most about 8 lines: the behavior change (or "tests only", or "none"); the requirements covered; the files created, modified, and deleted; the tests added and what they prove; the verification command and its expected result; and the items that need the reviewer's attention (or "none"). Write it last. It adds no decision. Before stopping, confirm that each line matches the detailed sections.
+
+## Plan Size
+
+Keep the exact before and after code in full; trim everything around it.
+
+- A section with nothing to say is one line, `None.`: Carried-Forward Decisions, Risks, Pre-authorized Contingencies, Rollback / Recovery.
+- Current Repository State lists only the facts the exact code depends on, each with `path:line`. No inventory.
+- The Planning-Time Dry Run records each command and its result, not a narrative.
+- Add no section beyond the template unless the milestone needs it, and say why in one line.
 
 ## Milestone Type Boundaries
 
@@ -146,7 +161,7 @@ When an Implementation Plan introduces or changes a dependency, framework, plugi
 
 ## Carried-Forward Decisions
 
-Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. List the ones this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
+Decisions recorded in earlier approved Implementation Plans are approved inputs to every later Implementation Plan. Read each earlier plan's Review Summary and Carried-Forward Decisions, and its exact code only for files this milestone touches. List the decisions this milestone relies on, cite the Implementation Plan that approved each, and do not reopen or silently change them. Changing one requires the user's explicit approval, recorded in the new Implementation Plan together with its reason.
 
 ## No Added Scope or Process
 
@@ -162,7 +177,7 @@ Acceptance criteria that limit which files may change always exclude the milesto
 
 ## Repeatable, Isolated Verification
 
-When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run the verification commands a second time without cleaning between runs, and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
+When tests touch persistent state (files, databases, caches, temporary directories) or override configuration, a single passing run is not sufficient evidence. Verification must show the result is repeatable and isolated: run those tests a second time without cleaning between runs (only those tests, not the whole suite), and have tests that override configuration assert the effective value actually in force, not only the outcome that depends on it.
 
 Verification must not silently depend on a shared resource being available. Prefer dynamically allocated resources unless the approved artifacts explicitly require a fixed one.
 
@@ -172,8 +187,8 @@ Before presenting an Implementation Plan for review, apply its exact code in a d
 
 - For RED, also show the tests are sound: compile them against a scratch-only stub of the approved signatures, or apply a scratch-only probe of the smallest production change, and confirm the new tests fail without the behavior and can pass with it. For RED whose evidence is an existing failing test, apply the probe and confirm that test passes with it. The stub or probe never enters the repository.
 - Cover every artifact type the milestone introduces or changes — build files, configuration, runtime or infrastructure definitions — not only dependencies; use each tool's own validation (for example resolving dependencies, or a configuration file's validate or dry-run mode).
-- Keep the dry run proportional: run each verification command once — repeat runs only where Repeatable, Isolated Verification requires them — and add no mutation testing beyond the RED fail-and-pass proof unless the requirements ask for it. The full suite's repeatability is shown at execution.
-- Record each command verbatim with its trimmed real output, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
+- Keep the dry run proportional (`prompt-driven-development` Test Scope and Output). RED: compile everything and run only the new tests, proving they fail now and pass with the planned GREEN change (in a paired plan, the GREEN part's exact code; otherwise the probe). GREEN, FOUNDATION, OTHER, and REFACTOR: compile and run the new and affected tests once. The full suite runs once, at execution only. No repeated runs and no probes beyond the RED fail-and-pass proof, unless the requirements ask for them.
+- Record each command verbatim with its result, labeled as a planning-time dry run that is not milestone evidence. The milestone's evidence comes only from execution after approval.
 - Never modify the repository during a dry run, create nothing outside a temporary location, list anything created, and delete the disposable copy afterward.
 - If a dry run cannot be performed, state why in the plan. "The repository must not be modified" is not a reason — the dry run runs outside it.
 

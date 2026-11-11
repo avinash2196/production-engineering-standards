@@ -1289,9 +1289,9 @@ class Release015ControlsTest(unittest.TestCase):
         self.assertIn("`Decomposition: one milestone`", skill)
         self.assertIn("Every review gate stays whatever the count", skill)
         self.assertNotIn("Do not default to one giant RED/GREEN pair", skill)
-        self.assertIn("Decomposition: one pair | one milestone | Split:", self._read(self.TEMPLATES + "Plan.md"))
+        self.assertIn("Decomposition: one pair | one pair, one plan | one milestone | Split:", self._read(self.TEMPLATES + "Plan.md"))
         for rel in [".github/prompts/create-plan.prompt.md", ".claude/commands/create-plan.md"]:
-            self.assertIn("Record the decomposition as `Decomposition: one pair`, `Decomposition: one milestone`, or `Split: <reason>`", self._read(rel), rel)
+            self.assertIn("Record the decomposition as `Decomposition: one pair`, `Decomposition: one pair, one plan` (no contract change and at most about 3 production or build files), `Decomposition: one milestone`, or `Split: <reason>`", self._read(rel), rel)
         for name in ["application-claude-instructions.md", "application-copilot-instructions.md"]:
             text = self._read(self.TEMPLATES + name)
             self.assertIn("a layer is a reason only when it carries its own engineering decision", text, name)

@@ -15,14 +15,15 @@ When a RED or GREEN milestone owns or verifies an authentication or authorizatio
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
-This command operates on one milestone already approved in `Plan.md`, identifying its recorded milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
+This command operates on one milestone already approved in `Plan.md` (or, when the Plan records `Decomposition: one pair, one plan`, its RED milestone and the GREEN milestone it pairs with, in one paired plan), identifying its recorded milestone type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER) — it does not decide or change the milestone type. A CONTRACT milestone has no Implementation Plan (its deliverable is the contract artifact); if asked to plan one, stop and say so.
 
 Before planning:
 
 1. read the approved Requirements, Plan, and applicable API/external contract, and confirm the Plan's Status records approval (`prompt-driven-development` Approval Status); if none is recorded, ask and stop. When the Plan records a CONTRACT milestone, also confirm the contract's Contract Review Status records approval and the CONTRACT row in `Plan.md` Execution Status is complete, and cite the approved contract as an authoritative predecessor;
 2. inspect the current repository structure and relevant current implementation;
 3. read current Plan execution status;
-3a. read every previously approved Implementation Plan and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
+3a. read every previously approved Implementation Plan's Review Summary and Carried-Forward Decisions, and its exact code only for files this milestone touches, and carry its decisions forward as approved inputs (`implementation-planning` Carried-Forward Decisions) — do not reopen them without explicit user approval;
+3b. when the arguments carry the user's answers to questions an earlier run stopped on, record each in the plan under its question ID (`prompt-driven-development` Fresh Context);
 4. verify predecessor milestone evidence and actual completed progress;
 5. verify the milestone type being planned matches what `Plan.md` records for this milestone;
 6. confirm the milestone's Execution Status is Pending and no approved, unexecuted Implementation Plan already exists for it; when an earlier Implementation Plan for it stopped at a blocker, read that plan and the blocker evidence, and plan from the revised, approved Plan;
@@ -32,7 +33,7 @@ List every document read, with its approval status, under Authoritative Referenc
 
 Create exactly one:
 
-`docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md`
+`docs/.ai/<work-item>/NNN_Implementation_Plan_<Milestone>.md` (a paired plan: `NNN_Implementation_Plan_<RED>_<GREEN>.md`)
 
 The Implementation Plan must reflect the actual current repository state and include:
 
@@ -83,7 +84,7 @@ Do not approve the Implementation Plan yourself.
 
 Apply the `implementation-planning` skill's Pre-authorized Contingencies (a dedicated section, exact trigger, file, and change only), File Scope and Plan Status, and Repeatable, Isolated Verification rules.
 
-Apply the `implementation-planning` skill's Planning-Time Dry Run and Pre-existing Failures rules: before stopping, report the dry-run result (or why none was run), and surface any failure found on the unmodified baseline as a question for the user instead of deciding how the criteria treat it. Cite evidence for every causal claim in the plan, and label an unestablished explanation as a hypothesis.
+Apply the `implementation-planning` skill's Review Summary and Plan Size rules, and list the affected tests (`prompt-driven-development` Test Scope and Output). Apply its Planning-Time Dry Run and Pre-existing Failures rules: before stopping, report the dry-run result (or why none was run), and surface any failure found on the unmodified baseline as a question for the user instead of deciding how the criteria treat it. Cite evidence for every causal claim in the plan, and label an unestablished explanation as a hypothesis.
 
 Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, matches the Proposed Changes list, and traces every dependency, plugin, and configuration setting it introduces.
 

@@ -31,7 +31,7 @@ The API/external contract is required when the work item creates or changes exte
 
 A CONTRACT milestone, when present, is always the first milestone after Plan approval. It precedes every FOUNDATION, RED, GREEN, REFACTOR, and OTHER milestone, because no repository-changing milestone may start before the externally observable behavior it depends on is approved. Its deliverable is the API/external contract artifact itself; it changes no executable artifact, so it has no Implementation Plan — the contract artifact is the human-reviewed deliverable.
 
-CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
+CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. The one exception is a paired plan (`Decomposition: one pair, one plan`, Adaptive Milestone Decomposition): one Implementation Plan for exactly one RED milestone and the GREEN milestone it pairs with. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
 
 A RED milestone is followed by a GREEN milestone, then an optional REFACTOR milestone, once per independently reviewable capability/layer. See "Adaptive Milestone Decomposition" below for how many such milestone sequences a given piece of work should use.
 
@@ -86,7 +86,7 @@ docs/.ai/<work-item>/
   requirements.md
   Plan.md
   <API/external contract>          (when a CONTRACT milestone exists)
-  NNN_Implementation_Plan_<Milestone>.md
+  NNN_Implementation_Plan_<Milestone>.md   (a paired plan: NNN_Implementation_Plan_<RED>_<GREEN>.md)
   Final-Review.md
 ```
 
@@ -170,7 +170,7 @@ Only the user approves an Implementation Plan; the AI never approves its own art
 
 Approval is read only from the artifact. Before any execution command changes a file, it confirms that the plan's Human Review status records approval; it never takes approval from the conversation, and this holds whether or not the command runs in a fresh context (Fresh Context). When the user approves in conversation, the main conversation writes the approval into the artifact's status (`Approved by <user> on <date>`) at the user's word, before the next command runs. No particular phrase is required: "go ahead" or "proceed" in reply to a request to approve that specific artifact is approval. An approval covers one specific artifact that already exists. "Approve everything", "approve on my behalf", or approval of an artifact not yet written is not approval: record nothing, tell the user it was not recorded, and stop at each gate as usual. No command, subagent, or external loop records an approval on its own. An Implementation Plan whose execution stopped at a blocker is not approved until the user re-approves it. Never infer approval from a commit message, from the artifact's existence, or from the plan appearing complete. If no approval is recorded, ask and stop.
 
-After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text.
+After verified execution, update that same Human Review status to executed, point to the evidence recorded in `Plan.md`, and leave no stale status text. A paired plan after RED only records `RED executed — see Plan.md; GREEN approved, not yet executed`; the GREEN step needs no new approval, and the plan becomes `Executed` after GREEN.
 
 The same rule applies to every artifact a command builds on: the requirements before a Plan, the Plan before a contract or Implementation Plan, the contract before the milestones that depend on it. Each records its approval in its own Status section, written there by the main conversation at the user's word; a contract's approval also marks its CONTRACT milestone complete in `Plan.md` Execution Status, pointing to the contract. Before working, a command reads its predecessor's recorded status and cites the artifact, never the conversation. A revised artifact returns to awaiting review. If no approval is recorded, ask and stop.
 
@@ -178,9 +178,45 @@ The same rule applies to every artifact a command builds on: the requirements be
 
 The artifacts carry all state between steps, so every command that works from artifacts runs in a fresh context with its role agent and no conversation history: `create-plan`, `create-api-contract`, and `create-implementation-plan` (planner); `generate-tests` (test-engineer); `implement-approved-plan` (implementation-engineer); `refactor-code` (refactoring-engineer); `review-code`, `review-production-readiness`, and `review-architecture` (the matching reviewer). Claude Code runs them with `context: fork`. Copilot runs them inline in the main conversation, because Copilot CLI subagents cannot yet write files with these agents' tool lists; there the command still reads state only from the artifacts and the repository and does not rely on earlier conversation. Commands that need back-and-forth with the user — `capture-requirements`, `review-requirements`, the setup commands, and `migrate-oracle-to-postgres` — run in the main conversation.
 
-A fresh-context command reads state only from the artifacts and the repository. Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
+A fresh-context command reads state only from the artifacts and the repository, and only the inputs it needs:
+
+| Command | Reads |
+| --- | --- |
+| `create-plan` | requirements, product-level requirements, repository |
+| `create-api-contract` | requirements, Plan, repository |
+| `create-implementation-plan` | requirements, Plan, contract, earlier Implementation Plans (Carried-Forward Decisions), repository |
+| `generate-tests` (RED) | requirements, Plan, contract, its Implementation Plan, repository |
+| `implement-approved-plan`, `refactor-code` | Plan (status and predecessor evidence), its Implementation Plan, repository |
+| `review-code`, `review-production-readiness`, `review-architecture` | every artifact of the work item, repository |
+
+RED reads the requirements and contract because it checks that each assertion matches them. FOUNDATION, GREEN, OTHER, and REFACTOR execution applies exact code that the approved Implementation Plan already holds, so it does not read them; a difference stops execution.
+
+**Answers to a command's questions are recorded in the artifact, never left in the conversation.** When the user answers questions a fresh-context command stopped on, the next run takes those answers quoted after the work item (for example `create-implementation-plan <work-item> answers: OQ-1 "…"`) and records each one in the artifact it writes, under its question ID, as `[User: <ID>, <date>]`. The main conversation does not edit the artifact itself.
+
+Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
 
 Every PDD command's report then closes with one `Next:` line naming the step that follows: the approval needed and the next command with its work item (for example `Next: approve Plan.md, then create-implementation-plan order-cancellation`), the answers needed, or `Next: none — work item closed`. In Copilot, run each fresh-context command above in a new chat. Copilot runs them inline, so a new chat is what keeps the earlier conversation out. Record any pending approval in the artifact before switching chats. In Claude Code these commands already run in a fresh context, but the main conversation still grows with every report and approval, so start a new chat after the requirements are approved and after each executed GREEN, OTHER, or REFACTOR milestone; the artifacts hold all the state. A `Next:` line that crosses one of these points ends with `(new chat)`.
+
+## Test Scope and Output
+
+Run tests scoped to the change, and the full suite once per milestone that changes production or build code.
+
+| Step | Tests run |
+| --- | --- |
+| RED dry run and RED execution | Compile everything; only the new tests, each failing for the intended reason; plus tests that use a shared test file the milestone changes |
+| GREEN, FOUNDATION, OTHER, REFACTOR dry run | Compile; the new and affected tests, once |
+| GREEN execution | The full suite once; a second run only for tests that touch persistent state or override configuration (`implementation-planning` Repeatable, Isolated Verification) |
+| FOUNDATION, OTHER execution | Build and the checks the plan names; the full suite once when production or build files change |
+| REFACTOR execution | The full suite once after the change; the baseline is the recorded GREEN run unless the repository changed since |
+| Final Review | Rerun only when no full run is recorded for the current repository state |
+
+The Implementation Plan lists the affected tests and how they were found (tests in the changed packages, tests that reference changed classes, tests the contract names); the user approves the list with the plan. A known flaky test follows `implementation-planning` Pre-existing Failures.
+
+Test output:
+
+- Write each verification command's output to a log file, and record only its summary (for example `Tests run`, `BUILD SUCCESS`) and the failing tests. Never copy the full log into the conversation or an artifact.
+- Run a long command in the background with a completion notice where the tool supports it. Do not poll.
+- The gate still waits: a milestone is complete only after the result is read and recorded in `Plan.md`.
 
 ## Plan Content Rules
 
@@ -235,7 +271,7 @@ Use as few milestones as keep each Implementation Plan reviewable as exact code.
 
 Every review gate stays whatever the count: requirements, Plan, contract when required, an Implementation Plan for each milestone, execution, and Final Review. Fewer milestones never merges RED and GREEN and never leaves a requirement without an owning milestone and a RED test that verifies it (Plan Content Rule 8).
 
-Split into more milestones only for a stated reason, and record the decision in the Plan as `Decomposition: one pair`, `Decomposition: one milestone` (work that is a single OTHER or standalone REFACTOR milestone), or `Split: <reason>` for each split, so the user approves it at Plan review. Valid reasons:
+Split into more milestones only for a stated reason, and record the decision in the Plan as `Decomposition: one pair`, `Decomposition: one pair, one plan` (below), `Decomposition: one milestone` (work that is a single OTHER or standalone REFACTOR milestone), or `Split: <reason>` for each split, so the user approves it at Plan review. Valid reasons:
 
 - **separate engineering decision:** a part carries a material design decision the user should review and approve on its own, such as a schema or query design, a business rule, or an API mapping. A layer counts when it carries such a decision;
 - **size:** one Implementation Plan would be too large to review well as exact code;
@@ -243,6 +279,8 @@ Split into more milestones only for a stated reason, and record the decision in 
 - **different risk:** a part, such as a data migration or a security change, needs its own gate;
 - **ordering:** one part must be verified before the next can be planned;
 - **different verification setup:** a part needs its own test infrastructure.
+
+**One pair, one plan (small changes).** When the pair changes no API/external contract and touches at most about 3 production or build files (test files do not count), the Plan may record `Decomposition: one pair, one plan`. The RED and GREEN milestones stay separate in `Plan.md`, each with its own Execution Status, but one Implementation Plan holds both, with a RED part and a GREEN part. The user approves it once. Execution runs in two verified steps: `generate-tests` applies the RED part and records valid RED; then `implement-approved-plan` applies the GREEN part. RED evidence is still required before any production change.
 
 Never split mechanically: not one pair per class or file, and not one pair per layer by habit. A layer with no material decision of its own, such as a pass-through controller or a one-line mapping, stays in the milestone that needs it.
 
@@ -318,7 +356,7 @@ If verification fails or does not demonstrate the intended milestone evidence, d
 
 Execution Status values are `Pending`, `Waiting — <named input> from <who>`, `Blocked — <reason>`, and completed with evidence. `Waiting` records that an approved milestone cannot start or continue until the user supplies a named input or performs a named action (for example images, a deployment, or credentials the user enters). The Plan stays valid and the milestone resumes on the same approved Implementation Plan once the input exists; only `Blocked` needs replanning.
 
-Evidence is each command as actually run with its trimmed real output, stored in `Plan.md` below the Execution Status table (or in a file it links) — never a statement that output was recorded elsewhere. Each Execution Status row stays on one line and points to its evidence. Any difference between a planned and an executed command (arguments, port, profile, order) is listed as a deviation with its reason. Every process the executor started (servers, containers, background jobs) is stopped before reporting, and the report says so.
+Evidence is each command as actually run with its trimmed real output (its summary and failing tests, never the full log; Test Scope and Output), stored in `Plan.md` below the Execution Status table (or in a file it links) — never a statement that output was recorded elsewhere. Each Execution Status row stays on one line and points to its evidence. Any difference between a planned and an executed command (arguments, port, profile, order) is listed as a deviation with its reason. Every process the executor started (servers, containers, background jobs) is stopped before reporting, and the report says so.
 
 Completing a milestone does not authorize the next milestone. Each subsequent repository-changing milestone requires its own approved Implementation Plan and Human Review.
 
