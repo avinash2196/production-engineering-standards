@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch F): large work, several work items, smaller skills
 
-Status: draft (2026-11-10). Nothing decided, nothing applied. Target 0.17.0, on a `release/0.17.0` branch like 0.16.0.
+Status: Q1–Q6 answered (user, 2026-11-10); nothing applied. S7 (skill split) ships first as 0.16.1 with no rule changes; S1–S6 target 0.17.0 on a `release/0.17.0` branch like 0.16.0. The change plan for each needs the user's approval before any file changes.
 
 ## Why this brief
 
@@ -48,16 +48,16 @@ Nothing turns one large request into several work items, records their order, or
 
 ## Open questions
 
-Asked one at a time; each answer is recorded here before anything is drafted further.
+Asked one at a time; each answer is recorded here.
 
 | Q | Question | Answer |
 | --- | --- | --- |
-| Q1 | Where is the parallel work: several services in one repository, one repository per service, or both? | |
-| Q2 | Strategy artifact: a new command (`create-strategy`) with its own folder, or a mode of `capture-requirements`? | |
-| Q3 | Architecture decisions (S5): inside the strategy artifact, or a separate `Architecture.md` reviewed with it? | |
-| Q4 | Size check (S1): what makes a brief "too large" — a list of split reasons only, or also a number (for example more than about 15 requirements)? | |
-| Q5 | When may a dependent work item start: after its predecessor's Final Review, or after its predecessor's contract is approved? | |
-| Q6 | Skill split (S7): in 0.17.0 together with S1–S6, or first, as its own release? | |
+| Q1 | Where is the parallel work: several services in one repository, one repository per service, or both? | Both (user, 2026-11-10). The strategy names a repository for each work item. |
+| Q2 | Strategy artifact: a new command (`create-strategy`) with its own folder, or a mode of `capture-requirements`? | A new `create-strategy` command with its own folder, approved before any work item's requirements (user, 2026-11-10). |
+| Q3 | Architecture decisions (S5): inside the strategy artifact, or a separate `Architecture.md` reviewed with it? | Inside `Strategy.md`: one artifact, one review (user, 2026-11-10). |
+| Q4 | Size check (S1): what makes a brief "too large" — a list of split reasons only, or also a number (for example more than about 15 requirements)? | Both: a named reason (separate services, libraries, repositories, or independently deliverable capabilities) or more than about 15 requirements (user, 2026-11-10). |
+| Q5 | When may a dependent work item start: after its predecessor's Final Review, or after its predecessor's contract is approved? | When its input is approved: a consumer starts once the contract it depends on is approved; a dependency on another work item's code waits for that work item's Final Review (user, 2026-11-10). |
+| Q6 | Skill split (S7): in 0.17.0 together with S1–S6, or first, as its own release? | First, as 0.16.1, with no rule changes, so projects save tokens now; S1–S6 follow in 0.17.0 (user, 2026-11-10). |
 
 ## Not in this batch
 
