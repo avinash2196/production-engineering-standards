@@ -441,6 +441,22 @@ class PluginHooksTest(ValidatorMutationTestCase):
         self._replace(".claude/hooks/hooks.json", "Edit|Write|MultiEdit", "Edit|MultiEdit")
         self.assert_error_containing("plan scope guard matcher misses ['Write']")
 
+    def test_routing_to_missing_command_fails(self):
+        self._replace(
+            ".github/skills/prompt-driven-development/templates/application-claude-instructions.md",
+            "`review-architecture`",
+            "`review-everything`",
+        )
+        self.assert_error_containing("Command Routing names `review-everything`")
+
+    def test_routing_without_final_reviews_fails(self):
+        self._replace(
+            ".claude/skills/prompt-driven-development/templates/application-copilot-instructions.md",
+            "`docs/.ai/*/Final-Review.md`",
+            "`docs/.ai/*/Review.md`",
+        )
+        self.assert_error_containing("Command Routing must list Final Reviews")
+
     def test_prepare_pr_without_fork_fails(self):
         self._replace(".claude/commands/prepare-pr.md", "context: fork\n", "")
         self.assert_error_containing("prepare-pr")
