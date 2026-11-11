@@ -61,7 +61,7 @@ Asked one at a time; each answer is recorded here.
 
 ## 0.16.1 change plan: split the PDD skill (S7)
 
-Status: approved by the user on 2026-11-10. Answers (user, 2026-11-10): one skill with part files, not separate skills; Final Review commands load every part.
+Status: approved by the user on 2026-11-10; applied for 0.16.1 (measured words loaded: core 2,651; `create-plan` 6,100; `create-api-contract` 4,022; `create-implementation-plan` and `generate-tests` 6,062; execution and `prepare-pr` 3,984; Final Reviews 7,799, against 7,514 for every command before). Answers (user, 2026-11-10): one skill with part files, not separate skills; Final Review commands load every part.
 
 **Goal.** Each command loads only the parts of `prompt-driven-development` it needs. No rule is added, removed or reworded: sections move between files unchanged, apart from the links between them.
 

@@ -11,7 +11,7 @@ tools:
 
 Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
 
-Apply `testing`, `prompt-driven-development`, and relevant domain skills.
+Apply `testing`, `prompt-driven-development` with its `milestone-types.md` and `execution.md`, and relevant domain skills.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 

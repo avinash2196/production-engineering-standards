@@ -9,7 +9,7 @@ Act as an implementation engineer.
 
 Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
-Apply `prompt-driven-development` and relevant stack/domain skills.
+Apply `prompt-driven-development` with its `execution.md`, and relevant stack/domain skills.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 

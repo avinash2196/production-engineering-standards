@@ -9,7 +9,7 @@ Act as a code reviewer.
 
 Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
-Apply `code-review`, `code-quality`, and only relevant domain skills. This command reviews, commits, and opens a pull request. It never changes source, tests, configuration, or any other executable file: a finding's fix is a recommendation, made through PDD (an amended or new Implementation Plan, RED before GREEN when behavior changes) or, in branch mode, by the user. Severities are High, Medium, and Low (`code-review` RV6).
+Apply `code-review`, `code-quality`, `prompt-driven-development` with its `execution.md`, and only relevant domain skills. This command reviews, commits, and opens a pull request. It never changes source, tests, configuration, or any other executable file: a finding's fix is a recommendation, made through PDD (an amended or new Implementation Plan, RED before GREEN when behavior changes) or, in branch mode, by the user. Severities are High, Medium, and Low (`code-review` RV6).
 
 **Modes.**
 

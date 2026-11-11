@@ -9,7 +9,7 @@ Act as an implementation planner.
 
 Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
-Apply `implementation-planning`, `prompt-driven-development`, and relevant domain skills.
+Apply `implementation-planning`, `prompt-driven-development` with its `milestone-types.md` and `execution.md`, and relevant domain skills.
 
 When a RED or GREEN milestone owns or verifies an authentication or authorization requirement, apply `security`. The Implementation Plan's Risks section lists each identity, role, or ownership comparison and how it uses the same canonical form as authentication.
 

@@ -5,11 +5,27 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+
+PDD_PARTS = ["SKILL.md", "milestone-types.md", "plan-rules.md", "execution.md", "final-review.md"]
+
+
+def pdd_text(tree: str) -> str:
+    """The whole prompt-driven-development skill: the core SKILL.md and its parts (0.16.1)."""
+    base = ROOT / tree / "skills/prompt-driven-development"
+    return "\n".join((base / name).read_text(encoding="utf-8") for name in PDD_PARTS)
+
+
+def read_any(rel: str) -> str:
+    if rel.endswith("skills/prompt-driven-development/SKILL.md"):
+        return pdd_text(rel.split("/skills/")[0])
+    return (ROOT / rel).read_text(encoding="utf-8")
+
+
 TREES = [".github", ".claude"]
 
 
 def read(rel: str) -> str:
-    return (ROOT / rel).read_text(encoding="utf-8")
+    return read_any(rel)
 
 
 def command_pair(op: str) -> list[str]:
@@ -51,7 +67,7 @@ class ReviewSummaryAndPlanSizeTest(unittest.TestCase):
 class TestScopeAndOutputTest(unittest.TestCase):
     def test_pdd_skill_defines_scope_per_step_and_output(self):
         for tree in TREES:
-            pdd = read(f"{tree}/skills/prompt-driven-development/SKILL.md")
+            pdd = pdd_text(tree)
             self.assertIn("## Test Scope and Output", pdd, tree)
             self.assertIn("| GREEN execution | The full suite once;", pdd, tree)
             self.assertIn("| Final Review | Rerun only when no full run is recorded", pdd, tree)
@@ -77,7 +93,7 @@ class TestScopeAndOutputTest(unittest.TestCase):
 class PairedPlanTest(unittest.TestCase):
     def test_paired_plan_is_the_one_exception(self):
         for tree in TREES:
-            pdd = read(f"{tree}/skills/prompt-driven-development/SKILL.md")
+            pdd = pdd_text(tree)
             self.assertIn("A single Implementation Plan authorizes exactly one milestone", pdd, tree)
             self.assertIn("The one exception is a paired plan", pdd, tree)
             self.assertIn("**One pair, one plan (small changes).**", pdd, tree)
@@ -97,7 +113,7 @@ class PairedPlanTest(unittest.TestCase):
 class InputsAndAnswersTest(unittest.TestCase):
     def test_fresh_context_input_table(self):
         for tree in TREES:
-            pdd = read(f"{tree}/skills/prompt-driven-development/SKILL.md")
+            pdd = pdd_text(tree)
             self.assertIn("and only the inputs it needs:", pdd, tree)
             self.assertIn("| `generate-tests` (RED) | requirements, Plan, contract, its Implementation Plan, repository |", pdd, tree)
             self.assertIn("| `implement-approved-plan`, `refactor-code` | Plan (status and predecessor evidence), its Implementation Plan, repository |", pdd, tree)
@@ -117,7 +133,7 @@ class InputsAndAnswersTest(unittest.TestCase):
 
     def test_answers_are_recorded_in_the_artifact(self):
         for tree in TREES:
-            pdd = read(f"{tree}/skills/prompt-driven-development/SKILL.md")
+            pdd = pdd_text(tree)
             self.assertIn("Answers to a command's questions are recorded in the artifact", pdd, tree)
             self.assertIn("The main conversation does not edit the artifact itself.", pdd, tree)
         for op in ["create-plan", "create-api-contract", "create-implementation-plan"]:

@@ -10,7 +10,7 @@ tools:
 
 Plugin files: read this plugin's skills and templates only from the installed production-engineering-standards plugin running this command; never search plugin caches or read files from another installed version.
 
-Apply `requirements-analysis` and `prompt-driven-development`.
+Apply `requirements-analysis` and `prompt-driven-development` with its `milestone-types.md` and `plan-rules.md`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 

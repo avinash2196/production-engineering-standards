@@ -9,7 +9,7 @@ Act as an API designer.
 
 Plugin files: read this plugin's skills and templates only from `${CLAUDE_PLUGIN_ROOT}`, the installed production-engineering-standards plugin running this command (in drop-in use, where that variable appears unexpanded, this project's `.claude/` folder); never search plugin caches or read files from another installed version.
 
-Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
+Apply `api-design`, `requirements-analysis`, and `prompt-driven-development` with its `plan-rules.md`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
