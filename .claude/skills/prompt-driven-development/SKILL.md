@@ -33,9 +33,7 @@ The API/external contract is required when the work item creates or changes exte
 
 A CONTRACT milestone, when present, is always the first milestone after Plan approval. It precedes every FOUNDATION, RED, GREEN, REFACTOR, and OTHER milestone, because no repository-changing milestone may start before the externally observable behavior it depends on is approved. Its deliverable is the API/external contract artifact itself; it changes no executable artifact, so it has no Implementation Plan — the contract artifact is the human-reviewed deliverable.
 
-CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone — it never authorizes more than one milestone, and it never authorizes work for a different milestone. Each repository-changing milestone gets its own human-reviewed Implementation Plan. The one exception is a paired plan (`Decomposition: one pair, one plan`, Adaptive Milestone Decomposition): one Implementation Plan for exactly one RED milestone and the GREEN milestone it pairs with. Completing one milestone never authorizes the next milestone. FOUNDATION is conditional — see "Conditional SETUP / FOUNDATION" below — most sequences proceed directly to a RED milestone.
-
-A RED milestone is followed by a GREEN milestone, then an optional REFACTOR milestone, once per independently reviewable capability/layer. See "Adaptive Milestone Decomposition" below for how many such milestone sequences a given piece of work should use.
+CONTRACT, FOUNDATION, RED, GREEN, REFACTOR, and OTHER are each their own milestone, not phases nested inside a containing milestone. A single Implementation Plan authorizes exactly one milestone and no work for any other. The one exception is a paired plan (`Decomposition: one pair, one plan`, Adaptive Milestone Decomposition): one Implementation Plan for exactly one RED milestone and the GREEN milestone it pairs with. Completing one milestone never authorizes the next. FOUNDATION is conditional (Conditional SETUP / FOUNDATION); most sequences proceed directly to a RED milestone.
 
 ## Milestone Types
 
@@ -128,47 +126,23 @@ Self-checks show their evidence. A self-check that an artifact-creating command 
 
 Labels and identifiers an artifact introduces (requirement, constraint, decision, clarification, criterion, or contingency IDs) must not reuse a label already defined by an approved artifact it references; use a distinct prefix so every reference is unambiguous.
 
-Do not silently reconcile material contradictions between authoritative artifacts.
-
-If approved artifacts materially conflict:
-
-1. identify the conflict,
-2. stop the current workflow,
-3. surface it for human review,
-4. do not modify one artifact merely to make it match another.
+Do not silently reconcile material contradictions between authoritative artifacts. If approved artifacts materially conflict, identify the conflict, stop, and surface it for human review; never modify one artifact merely to make it match another.
 
 ## Implementation Plan
 
-Before creating an Implementation Plan:
+Before creating an Implementation Plan, read the approved Requirements, Plan, and applicable API/external contract, the Plan's execution status and predecessor evidence, and the current repository. Establish the milestone's actual baseline: prerequisites, the contracts or interfaces it depends on, relevant test entry points, and unresolved blockers. Do not plan from an assumed repository structure, or from the original Plan alone when earlier milestones have changed the codebase. This inspection is preparation, not a milestone; if it shows that code must change before the milestone's own work, that change needs its own approved Implementation Plan.
 
-1. read the approved Requirements, Plan, and applicable API/external contract;
-2. inspect the current repository structure and relevant implementation;
-3. read current Plan execution status and completed predecessor evidence;
-4. establish the actual current-state baseline for the authorized milestone, including prerequisites/dependencies, contracts or interfaces the milestone depends on, relevant test entry points, and any unresolved blockers.
+An Implementation Plan is a human-review artifact, not a task list. For the authorized milestone it contains:
 
-This inspection is preparation for planning, not a separate implementation milestone — it does not introduce a formal step before the RED milestone. If it discovers that repository code must change before the milestone's own work can proceed, that change still requires its own approved Implementation Plan; inspection alone never authorizes a change.
-
-Do not plan from an assumed repository structure or from the original Plan alone when earlier milestones have changed the codebase.
-
-An Implementation Plan is a human-review artifact, not merely a task list.
-
-For the authorized milestone, it must contain:
-
-- authoritative artifact references;
-- predecessor evidence;
-- current repository state relevant to the milestone;
-- exact files to create or modify;
-- ordered proposed changes;
-- concrete proposed tests or production changes;
-- relevant classes, methods, interfaces, signatures, structures, or configuration changes;
+- authoritative artifact references and predecessor evidence;
+- the current repository state relevant to the milestone;
+- the exact files to create, modify, or delete, and the ordered proposed changes, with the classes, methods, interfaces, signatures, structures, or configuration they touch;
 - exact code: the complete final content of every file to be created, and for every file to be modified either its complete final content or a complete unified diff covering every changed line with enough context to apply mechanically — never pseudocode, placeholders, ellipses, or partial fragments;
-- explicit Acceptance / Completion Criteria for the specific milestone — what must be true for it to be considered complete, distinct from the verification that demonstrates it;
+- explicit Acceptance / Completion Criteria for the specific milestone, distinct from the verification that demonstrates them;
 - verification commands and expected milestone evidence;
 - risks and explicit exclusions.
 
-The proposed code belongs inside the Implementation Plan so a human can review the intended change before repository implementation is modified.
-
-The planner may write proposed code in the Implementation Plan, but must not apply those proposed changes to production source, tests, build configuration, deployment configuration, or runtime configuration.
+The planner writes the proposed code in the Implementation Plan for review, and never applies it to production source, tests, or build, deployment, or runtime configuration.
 
 ### Approval Status
 
@@ -202,7 +176,7 @@ RED reads the requirements and contract because it checks that each assertion ma
 
 **Answers to a command's questions are recorded in the artifact, never left in the conversation.** When the user answers questions a fresh-context command stopped on, the next run takes those answers quoted after the work item (for example `create-implementation-plan <work-item> answers: OQ-1 "…"`) and records each one in the artifact it writes, under its question ID, as `[User: <ID>, <date>]`. The main conversation does not edit the artifact itself.
 
-Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
+Its report ends with exactly one of: what it wrote or executed, with its evidence; `Stopped — awaiting user: <questions, or the approval needed>`; or `Blocked — <reason>`. It holds nothing else: no recap of the steps taken and no restatement of the artifact. The main conversation relays the report; the user answers there, and any approval is recorded in the artifact (Approval Status) before the next command runs.
 
 Every PDD command's report then closes with one `Next:` line naming the step that follows: the approval needed and the next command with its work item (for example `Next: approve Plan.md, then create-implementation-plan order-cancellation`), the answers needed, or `Next: none — work item closed`. In Copilot, run each fresh-context command above in a new chat. Copilot runs them inline, so a new chat is what keeps the earlier conversation out. Record any pending approval in the artifact before switching chats. In Claude Code these commands already run in a fresh context, but the main conversation still grows with every report and approval, so start a new chat after the requirements are approved and after each executed GREEN, OTHER, or REFACTOR milestone; the artifacts hold all the state. A `Next:` line that crosses one of these points ends with `(new chat)`.
 
@@ -248,15 +222,7 @@ The Plan defines WHAT is delivered and in which milestone order. It does not def
 
 ## Plan Integrity
 
-Before approval, the Plan is a working proposal and may be revised freely in response to human review. Human approval makes it the current execution baseline: an authorization artifact and a living execution-status record that the AI never changes silently.
-
-- Do not rewrite the Plan to match implementation.
-- Do not change milestone definitions during milestone execution.
-- Do not expand scope because implementation reveals a technically useful improvement.
-- Update only execution/status information after the milestone's success criteria are actually verified.
-- Record actual verification evidence where appropriate.
-- Scope, milestone, architecture, or success-criteria changes require explicit replanning and human review.
-- Material unresolved decisions must be resolved before Plan approval.
+Before approval, the Plan is a working proposal and may be revised freely in response to human review. Human approval makes it the execution baseline: an authorization artifact and a living execution-status record that the AI never changes silently. Material unresolved decisions are resolved before approval. After approval, never rewrite the Plan to match implementation, change milestone definitions during execution, or expand scope for a technically useful improvement; only execution status changes (Plan Progress). Scope, milestone, architecture, or success-criteria changes need explicit replanning and human review.
 
 If execution reveals that the approved Plan itself must change, stop for replanning and human review. Replanning is allowed at any point, including after implementation has started; the control is human approval, not immutability. When a blocker materially invalidates approved scope, milestone order, architecture, assumptions, or acceptance criteria:
 
@@ -294,124 +260,62 @@ Split into more milestones only for a stated reason, and record the decision in 
 
 Never split mechanically: not one pair per class or file, and not one pair per layer by habit. A layer with no material decision of its own, such as a pass-through controller or a one-line mapping, stays in the milestone that needs it.
 
-Boundaries may include persistence, business behavior, API behavior, integration, or another independently testable capability. See `docs/getting-started.md` for fuller illustrative examples — this skill states the rule, not an exhaustive catalog of boundaries.
+Boundaries may be persistence, business behavior, API behavior, integration, or another independently testable capability; `docs/getting-started.md` has fuller examples. When a stated reason to split applies to complex requirements that span multiple independently testable architectural layers, use layer-wise implementation milestones — a RED milestone and GREEN milestone (and optional REFACTOR milestone) for each layer — rather than one feature-wide pair, for example Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN. There is no containing "capability milestone" that owns these as internal phases: each has its own Implementation Plan and Human Review, and before each layer's RED milestone, decide whether a FOUNDATION milestone is needed (Conditional SETUP / FOUNDATION). Layer-wise decomposition is not a mandatory architectural template: when capability, workflow, domain aggregate, integration boundary, migration step, or concurrency concern is the better boundary, use it.
 
-When a stated reason to split applies to complex requirements that span multiple independently testable architectural layers, create separate layer-wise implementation milestones — a separate RED milestone and GREEN milestone (and optional REFACTOR milestone) for each layer — rather than one feature-wide RED/GREEN pair. In a typical layered application, this may result in separate milestone sequences for persistence/data access, domain/service behavior, API/controller behavior, and cross-layer integration — for example: Persistence RED → Persistence GREEN → Service RED → Service GREEN → API RED → API GREEN. There is no containing "capability milestone" that owns these as internal phases — each is its own milestone with its own Implementation Plan and Human Review before execution. Before the RED milestone for each layer, determine whether a preceding FOUNDATION milestone is required — see "Conditional SETUP / FOUNDATION" below.
+The governing rule: use the fewest independently reviewable implementation milestones that keep each Implementation Plan reviewable, and give every in-scope requirement or cross-cutting concern (for example validation, error mapping, authorization, observability, or persistence behavior) one owning milestone in the Plan. One milestone may own several.
 
-Layer-wise decomposition is not a mandatory architectural template. If the system is better decomposed by capability, workflow, domain aggregate, integration boundary, migration step, concurrency concern, or another independently reviewable responsibility, use that boundary instead.
-
-The governing rule is: use the fewest independently reviewable implementation milestones that keep each Implementation Plan reviewable. When a stated reason to split applies and the complexity crosses architectural layers, prefer separate layer-wise milestones over one feature-wide cycle — but do not force layer boundaries onto an architecture that does not support them.
-
-When work is decomposed across milestones, every requirement or cross-cutting concern within approved scope — for example validation, error mapping, authorization, observability, or persistence behavior — must have an explicit owning milestone recorded in the Plan. Not every concern needs its own milestone; a single milestone may own several, but no approved concern may be left without an assigned owner across the decomposition.
-
-- Each repository-changing milestone gets its own Implementation Plan.
-- FOUNDATION (when required), RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries.
-- RED Implementation Plans propose test/check changes only.
-- RED execution writes tests/checks only and establishes valid RED evidence. In statically typed languages, RED may include a compilation failure when that failure is directly caused by an intentionally absent production type, method, or signature required by the approved behavior (for example, a test referencing `UserService` failing to compile because `UserService` does not exist yet). Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
+- FOUNDATION (when required), RED, GREEN, REFACTOR, and OTHER are each separate milestones and separate authorization boundaries, each with its own Implementation Plan. Neither a completed milestone nor a single end-to-end request authorizes the next.
+- RED Implementation Plans propose test/check changes only. RED execution writes tests/checks only and establishes valid RED evidence. In statically typed languages, a compilation failure caused directly by an intentionally absent production type, method, or signature the approved behavior requires (for example a test referencing `UserService` before `UserService` exists) is valid RED evidence. Do not create production-source scaffolding merely to make RED tests compile. Unrelated compilation, configuration, dependency, or environment failures are not valid RED evidence.
 - **Existing failing tests as RED evidence.** When `Plan.md` names an existing failing test as a RED milestone's evidence, RED execution changes no file: it runs that test, confirms it fails for the missing approved behavior and not for an unrelated reason, confirms each of its assertions expresses the approved requirement, and records that as RED evidence. If the test turns out to be wrong, stop and return to planning — the work is OTHER, not RED. That named test is this milestone's evidence, not a pre-existing failure outside its scope.
-- GREEN Implementation Plans start from valid RED evidence and propose the smallest production change needed to satisfy it.
-- GREEN execution implements only the approved production change.
-- REFACTOR is optional, behavior-preserving, and requires a verified GREEN baseline plus its own approved Implementation Plan. The baseline is a preceding GREEN milestone's verified evidence, or for a standalone REFACTOR the existing system's full verification suite passing on the unmodified repository (Standalone REFACTOR).
-- OTHER makes only approved changes with no production behavior change, records baseline evidence before changing anything, and is complete only when its after evidence and preserved tests pass (Milestone Types).
-- A completed milestone never implies approval of the next milestone.
-- A single end-to-end request does not remove these boundaries.
+- GREEN Implementation Plans start from valid RED evidence and propose the smallest production change that satisfies it; GREEN execution implements only that change.
+- REFACTOR is optional and behavior-preserving, and needs a verified GREEN baseline plus its own approved Implementation Plan: a preceding GREEN milestone's evidence, or for a standalone REFACTOR the full suite passing on the unmodified repository.
+- OTHER makes only approved changes with no production behavior change, records baseline evidence first, and is complete only when its after evidence and preserved tests pass (Milestone Types).
 
-When an approved milestone's change is intended to affect multiple files or multiple occurrences of a pattern, verify completeness before reporting that milestone's work as finished — for example, search for remaining occurrences of the prior pattern, rerun the relevant tests or build, or check each affected file; the verification method should match the nature of the change. Do not report a multi-location change complete solely because the edit operations were applied.
+When a milestone changes several files or every occurrence of a pattern, verify completeness before reporting it finished — search for remaining occurrences, rerun the relevant tests or build, or check each affected file. Applied edits alone are not evidence.
 
 ### Conditional SETUP / FOUNDATION
 
 SETUP/FOUNDATION exists only when executable prerequisites must be established before meaningful RED work can begin. It is conditional, never a default or mandatory milestone, and most work will not need one.
 
-Before starting a RED milestone, determine whether the current repository state is sufficient to begin RED:
+Before starting a RED milestone, determine whether the current repository state is sufficient to begin RED. If it is, proceed with the RED milestone, then the GREEN milestone, then an optional REFACTOR milestone. If executable prerequisites are genuinely missing, precede RED with a FOUNDATION milestone.
 
-- If yes, proceed directly with the RED milestone, then the GREEN milestone, then an optional REFACTOR milestone.
-- If no, because executable prerequisites are genuinely missing, precede it with a FOUNDATION milestone: FOUNDATION milestone → RED milestone → GREEN milestone → optional REFACTOR milestone.
+Apply this same current-state-driven decision to both new and existing repositories, inspected each time rather than assumed from the project's age. Do not assume a new project automatically requires FOUNDATION: its build and test infrastructure may already exist. Do not assume an existing project automatically has every prerequisite: it can still lack something a new RED milestone needs. At Plan time, apply the same test to the repository state projected after each RED milestone's predecessors complete (Plan Content Rule 11).
 
-Apply this same current-state-driven decision to both new and existing repositories — do not decide FOUNDATION from whether the project is labeled greenfield or brownfield. Do not assume a new project automatically requires FOUNDATION: if a new project's build/test infrastructure has already been set up, the RED milestone can often proceed directly. Do not assume an existing project automatically has every prerequisite: an established codebase can still be missing something a new RED milestone specifically needs. Determine FOUNDATION solely from whether the current repository state actually provides what the RED milestone needs — inspected each time, not assumed from the project's age. At Plan time, apply the same test to the repository state projected after each RED milestone's predecessors complete (Plan Content Rule 11), so that a prerequisite needed only by a later RED milestone is planned before it, not discovered when that RED milestone cannot compile.
+Valid FOUNDATION work: build or dependency setup; module or project structure the layer needs; test framework or infrastructure; required configuration; bootstrap needed before the layer is testable; a prerequisite contract or interface from an earlier architectural decision; a migration or framework prerequisite; or another executable prerequisite without which RED cannot meaningfully begin.
 
-Examples of valid SETUP/FOUNDATION work: required build/dependency setup; module or project structure required by the layer; test framework/infrastructure needed before tests can run; required configuration; infrastructure/bootstrap required before the layer is testable; a prerequisite contract/interface established by an earlier architectural decision; a migration/framework prerequisite; or another executable prerequisite without which RED cannot meaningfully begin.
+**Missing production symbols do not, by themselves, require SETUP.** A production class, service, repository, controller, method, or interface under test that does not exist yet is the expected RED condition, and creating it with real behavior is GREEN's job. Only missing infrastructure that prevents RED from testing the behavior at all is a SETUP trigger.
 
-**Missing production symbols do not, by themselves, require SETUP.** Do not create a FOUNDATION milestone merely because the production class, service, repository, controller, method, interface, or other implementation under test does not yet exist — that absence is itself the expected RED condition (a compilation failure caused by an intentionally absent approved production type, method, or signature is valid RED evidence, per RED execution above), and creating that type with real behavior is GREEN's job, not SETUP's. Distinguish:
-
-- missing behavior/type that RED is intended to drive — not a SETUP trigger, from
-- missing infrastructure/prerequisite that prevents RED from meaningfully testing the behavior at all — a genuine SETUP trigger.
-
-SETUP/FOUNDATION still requires the same authorization as any other code change. Every SETUP change to production source, test infrastructure, configuration, dependencies, build files, schema/migrations, scripts, or runtime/infrastructure artifacts requires its own approved SETUP/FOUNDATION Implementation Plan and human review before execution, exactly like RED, GREEN, REFACTOR, and OTHER:
-
-```
-SETUP/FOUNDATION Implementation Plan
-→ Human Review
-→ SETUP/FOUNDATION execution
-→ verification
-→ inspect current repository state
-→ RED Implementation Plan
-→ Human Review
-→ RED
-```
-
-Do not accept an instruction to "make whatever setup changes are necessary" as authorization — SETUP/FOUNDATION work requires its own approved Implementation Plan like any other code change.
-
-SETUP/FOUNDATION is not RED (it does not write tests) and is not GREEN (it does not implement approved behavior). Do not use GREEN to hide prerequisite work that should have been approved before RED. Do not treat FOUNDATION as a general-purpose coding milestone — its only purpose is to establish the minimum approved prerequisite necessary to make the RED milestones it serves executable, nothing more.
+SETUP/FOUNDATION needs the same authorization as any other code change: every change it makes to source, test infrastructure, configuration, dependencies, build files, schema or migrations, scripts, or runtime artifacts requires its own approved SETUP/FOUNDATION Implementation Plan and human review before execution, then verification and a fresh inspection of the repository before the RED Implementation Plan. An instruction to "make whatever setup changes are necessary" is not authorization. FOUNDATION writes no tests and implements no approved behavior: do not hide prerequisite work in GREEN, and do not use FOUNDATION as a general-purpose coding milestone. It establishes only the minimum prerequisite the RED milestones it serves need.
 
 ## Plan Progress
 
-After an approved milestone is successfully executed and verified:
-
-- update only the execution/status section of `Plan.md`;
-- record the completed milestone;
-- record actual verification evidence or concise notes where appropriate;
-- after `prepare-pr` commits the milestone, add `Committed as <hash>` to its row; changes only under `docs/.ai/` since that commit count as the same tested state;
-- do not rewrite requirements, milestone scope, architecture, exclusions, success criteria, or future milestones.
-
-If verification fails or does not demonstrate the intended milestone evidence, do not mark the milestone complete.
+After an approved milestone is executed and verified, update only the Execution Status section of `Plan.md`: record the completed milestone and its evidence, and never rewrite requirements, scope, architecture, exclusions, success criteria, or future milestones. After `prepare-pr` commits the milestone, add `Committed as <hash>` to its row; changes only under `docs/.ai/` since that commit count as the same tested state. If verification fails or does not show the intended evidence, the milestone is not complete.
 
 Execution Status values are `Pending`, `Waiting — <named input> from <who>`, `Blocked — <reason>`, and completed with evidence. `Waiting` records that an approved milestone cannot start or continue until the user supplies a named input or performs a named action (for example images, a deployment, or credentials the user enters). The Plan stays valid and the milestone resumes on the same approved Implementation Plan once the input exists; only `Blocked` needs replanning.
 
 Evidence is each command as actually run with its trimmed real output (its summary and failing tests, never the full log; Test Scope and Output), stored in `Plan.md` below the Execution Status table (or in a file it links) — never a statement that output was recorded elsewhere. Each Execution Status row stays on one line and points to its evidence. Any difference between a planned and an executed command (arguments, port, profile, order) is listed as a deviation with its reason. Every process the executor started (servers, containers, background jobs) is stopped before reporting, and the report says so.
 
-Completing a milestone does not authorize the next milestone. Each subsequent repository-changing milestone requires its own approved Implementation Plan and Human Review.
-
 ## Final Review Authority
 
-Final Review of a work item is performed only by `review-code` or `review-production-readiness`, when the user names the work item. Other reviews — for example `review-architecture` or `review-requirements` — are intermediate reviews and do not close the work item. Any review produces findings and recommendations only. A finding is not an authorized change.
-
-- Do not apply a Final Review finding directly to production code, tests, or configuration.
-- A finding that requires a change to source, tests, configuration, dependencies, schemas, migrations, scripts, or other executable artifacts must go through the normal authorization chain: update the relevant authoritative artifact if scope is affected, then a new or amended Implementation Plan, then RED before GREEN if the finding adds or alters behavior or validation. There is no trivial-change exception for executable artifacts.
+Final Review of a work item is performed only by `review-code` or `review-production-readiness`, when the user names the work item. Other reviews — for example `review-architecture` or `review-requirements` — are intermediate and do not close the work item. Any review produces findings and recommendations only; a finding is not an authorized change. Never apply one directly to code, tests, or configuration: a finding that needs an executable change goes through the normal chain — the authoritative artifact when scope changes, then a new or amended Implementation Plan (a fix work item, Fix Work Items), RED before GREEN when behavior or validation changes. There is no trivial-change exception for executable artifacts.
 
 When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/Final-Review.md` — the verdict, each Final Acceptance Criterion with its evidence, an answer to every Final Review obligation row in the Plan's traceability, the findings, and the recommendation — and add a Final Review row to `Plan.md` Execution Status pointing to it, with the status "Written — awaiting user decision" (never "Completed"). Change no other file. Accepting the findings is the user's decision, recorded by the user in that file. Final-Review.md also lists each product-level statement now out of date in `docs/requirements.md`, and each statement in user-facing documentation such as README files that the work item made false, for the user to update; the review does not edit them.
 
+- Use `templates/Final-Review.md` for the structure, and mark each finding as pre-existing or introduced by the work item.
 - Before raising a finding, read `Plan.md` Execution Status evidence and the approved Implementation Plans; drop any finding that recorded evidence or an approved decision contradicts.
 - Never recommend reverting an approved decision as a fix; raise it as a question for the user.
 - Give a severity only with a concrete failure scenario, and cite the correct path.
-
-- Use `templates/Final-Review.md` for the structure.
-- Mark each finding as pre-existing or introduced by the work item.
-- When the review finds an error in an earlier approved artifact (for example a wrong explanation in an Implementation Plan), record the correction as a finding in Final-Review.md; do not edit the approved artifact.
+- An error in an earlier approved artifact (for example a wrong explanation in an Implementation Plan) is recorded as a finding in Final-Review.md; do not edit the approved artifact.
 
 ## Task Prompt Boundary
 
-Persistent instructions, agents, and skills do not replace the active task prompt.
-
-The active task should still identify the current authorization boundary, including as applicable:
-
-- goal;
-- authoritative inputs;
-- current milestone and its type (FOUNDATION, RED, GREEN, REFACTOR, or OTHER);
-- requested output;
-- files or areas allowed to change;
-- milestone-specific constraints;
-- success criteria.
+Persistent instructions, agents, and skills do not replace the active task prompt. The active task still identifies its authorization boundary, as applicable: goal, authoritative inputs, current milestone and its type, requested output, files or areas allowed to change, milestone-specific constraints, and success criteria.
 
 Role belongs to the selected agent. Reusable engineering knowledge belongs to skills. Stable governance belongs to instructions.
 
 ## Scope Control
 
-Do not:
-
-- invent requirements or non-functional requirements;
-- pull future milestone work into the current task;
-- introduce unrelated dependencies, infrastructure, observability, resilience, or architecture changes;
-- treat engineering best practices as authorization to expand scope.
+Do not invent requirements or non-functional requirements, pull future milestone work into the current task, introduce unrelated dependencies, infrastructure, observability, resilience, or architecture changes, or treat engineering best practices as authorization to expand scope.
 
 When a material unresolved decision blocks the current artifact or change, apply the requirements-analysis clarification gate: ask, stop, and wait.
 
