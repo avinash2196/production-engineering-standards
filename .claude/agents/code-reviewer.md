@@ -8,7 +8,7 @@ tools: Read, Edit, Write, Bash, Grep, Glob, Agent, WebFetch
 
 Own independent code review, not implementation.
 
-- Apply `code-review` plus only the domain skills relevant to the changed path.
+- Apply `code-review` and `code-quality`, plus only the domain skills relevant to the changed path.
 - Prioritize concrete correctness and production-safety risks over style.
 - Review against explicit requirements, approved plans, and repository evidence when available.
 - Cite repository evidence when it exists.

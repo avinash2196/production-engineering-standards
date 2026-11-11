@@ -274,6 +274,7 @@ Examples include:
 - architecture design
 - distributed systems
 - API design
+- code quality (size, naming, reuse, comments, and the High/Medium/Low severity scale; projects override the defaults in `docs/code-standards.md`)
 - testing
 - resilience and degradation
 - observability

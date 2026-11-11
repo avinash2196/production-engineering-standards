@@ -396,3 +396,29 @@ class CliEntryPointTest(ValidatorMutationTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewRuleIdTest(ValidatorMutationTestCase):
+    """0.16.0, brief D: rule IDs are unique and the role agents apply code-quality."""
+
+    def _replace(self, rel: str, old: str, new: str) -> None:
+        path = self.repo / rel
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text, rel)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def test_duplicate_rule_id_fails(self):
+        self._replace(".github/skills/observability/SKILL.md", "| LG2 |", "| SZ1 |")
+        self.assert_error_containing("rule SZ1: defined more than once")
+
+    def test_stack_rule_missing_from_one_stack_fails(self):
+        self._replace(".github/skills/python-fastapi/SKILL.md", "| LY2 |", "| LY9 |")
+        self.assert_error_containing("rule LY2: must be defined once in each of")
+
+    def test_missing_code_quality_skill_fails(self):
+        (self.repo / ".github/skills/code-quality/SKILL.md").unlink()
+        self.assert_error_containing("code-quality/SKILL.md: missing")
+
+    def test_agent_without_code_quality_fails(self):
+        self._replace(".github/agents/code-reviewer.agent.md", "Apply `code-review` and `code-quality`, plus only", "Apply `code-review` plus only")
+        self.assert_error_containing("code-reviewer.agent.md: must apply `code-quality`")
