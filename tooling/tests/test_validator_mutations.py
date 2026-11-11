@@ -422,3 +422,25 @@ class ReviewRuleIdTest(ValidatorMutationTestCase):
     def test_agent_without_code_quality_fails(self):
         self._replace(".github/agents/code-reviewer.agent.md", "Apply `code-review` and `code-quality`, plus only", "Apply `code-review` plus only")
         self.assert_error_containing("code-reviewer.agent.md: must apply `code-quality`")
+
+
+class PluginHooksTest(ValidatorMutationTestCase):
+    """0.16.0 step 5: the plan scope guard hook is wired and its script exists."""
+
+    def _replace(self, rel: str, old: str, new: str) -> None:
+        path = self.repo / rel
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text, rel)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def test_missing_hook_script_fails(self):
+        (self.repo / ".claude/hooks/plan_scope_guard.py").unlink()
+        self.assert_error_containing("hook script plan_scope_guard.py does not exist")
+
+    def test_matcher_without_write_fails(self):
+        self._replace(".claude/hooks/hooks.json", "Edit|Write|MultiEdit", "Edit|MultiEdit")
+        self.assert_error_containing("plan scope guard matcher misses ['Write']")
+
+    def test_prepare_pr_without_fork_fails(self):
+        self._replace(".claude/commands/prepare-pr.md", "context: fork\n", "")
+        self.assert_error_containing("prepare-pr")
