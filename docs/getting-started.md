@@ -230,7 +230,7 @@ For an optional REFACTOR milestone (only when justified):
 3. `/refactor-code`
 4. verify the system remains GREEN
 
-Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After every milestone for the feature is complete, proceed to Final Review.
+Run this flow once per milestone, in the sequence `Plan.md` defines — for example FOUNDATION → RED → GREEN → optional REFACTOR for one capability, or Persistence RED → Persistence GREEN → Service RED → Service GREEN → ... across several. After each GREEN milestone, and after each single FOUNDATION, OTHER, or REFACTOR milestone, run `/prepare-pr <work-item>`. It reviews the diff against the executed plans, runs the full suite once unless a full run is recorded for the current commit, and drafts the commit message and PR body; it writes nothing. When you are satisfied, say go: `/prepare-pr <work-item> go <digest>` commits exactly the reviewed files with `docs/.ai/<work-item>/`, records the commit in `Plan.md`, and opens a draft pull request. It never merges. Run `/prepare-pr` with no work item for work done outside PDD. After every milestone for the feature is complete, proceed to Final Review.
 
 The important control is not the command names.
 

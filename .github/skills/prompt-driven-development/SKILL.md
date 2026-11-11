@@ -24,6 +24,8 @@ Requirements
         REFACTOR milestone from a verified GREEN baseline: Implementation Plan → Human Review → execution → Verification
     no production behavior change (test-only, build, configuration, infrastructure):
         OTHER milestone: Implementation Plan → Human Review → execution → Verification
+    after each GREEN, and after each single FOUNDATION, OTHER, or REFACTOR milestone:
+        prepare-pr: review → Human go → commit and draft pull request
 → Final Review
 ```
 
@@ -176,7 +178,7 @@ The same rule applies to every artifact a command builds on: the requirements be
 
 ### Fresh Context
 
-The artifacts carry all state between steps, so every command that works from artifacts runs in a fresh context with its role agent and no conversation history: `create-plan`, `create-api-contract`, and `create-implementation-plan` (planner); `generate-tests` (test-engineer); `implement-approved-plan` (implementation-engineer); `refactor-code` (refactoring-engineer); `review-code`, `review-production-readiness`, and `review-architecture` (the matching reviewer). Claude Code runs them with `context: fork`. Copilot runs them inline in the main conversation, because Copilot CLI subagents cannot yet write files with these agents' tool lists; there the command still reads state only from the artifacts and the repository and does not rely on earlier conversation. Commands that need back-and-forth with the user — `capture-requirements`, `review-requirements`, the setup commands, and `migrate-oracle-to-postgres` — run in the main conversation.
+The artifacts carry all state between steps, so every command that works from artifacts runs in a fresh context with its role agent and no conversation history: `create-plan`, `create-api-contract`, and `create-implementation-plan` (planner); `generate-tests` (test-engineer); `implement-approved-plan` (implementation-engineer); `refactor-code` (refactoring-engineer); `review-code`, `review-production-readiness`, and `review-architecture` (the matching reviewer); `prepare-pr` (code-reviewer). Claude Code runs them with `context: fork`. Copilot runs them inline in the main conversation, because Copilot CLI subagents cannot yet write files with these agents' tool lists; there the command still reads state only from the artifacts and the repository and does not rely on earlier conversation. Commands that need back-and-forth with the user — `capture-requirements`, `review-requirements`, the setup commands, and `migrate-oracle-to-postgres` — run in the main conversation.
 
 A fresh-context command reads state only from the artifacts and the repository, and only the inputs it needs:
 
@@ -188,8 +190,11 @@ A fresh-context command reads state only from the artifacts and the repository, 
 | `generate-tests` (RED) | requirements, Plan, contract, its Implementation Plan, repository |
 | `implement-approved-plan`, `refactor-code` | Plan (status and predecessor evidence), its Implementation Plan, repository |
 | `review-code`, `review-production-readiness`, `review-architecture` | every artifact of the work item, repository |
+| `prepare-pr` | Plan, contract, the Implementation Plans executed since the last commit, repository; in branch mode, the repository only |
 
 RED reads the requirements and contract because it checks that each assertion matches them. FOUNDATION, GREEN, OTHER, and REFACTOR execution applies exact code that the approved Implementation Plan already holds, so it does not read them; a difference stops execution.
+
+**Check the repository state first.** Every command, planning included, compares the working tree and its commits with what `Plan.md` records. Uncommitted changes are expected only for the files of milestones that Execution Status records as executed since its last `Committed as <hash>` entry, and for `docs/.ai/<work-item>/`. Any other uncommitted, untracked, or committed-but-unrecorded change is unplanned: stop and report it (`Stopped — awaiting user: <the changes>`) instead of building on it. `prepare-pr` commits each finished milestone together with `docs/.ai/<work-item>/`, so a new clone, worktree, or session sees the artifacts.
 
 **Answers to a command's questions are recorded in the artifact, never left in the conversation.** When the user answers questions a fresh-context command stopped on, the next run takes those answers quoted after the work item (for example `create-implementation-plan <work-item> answers: OQ-1 "…"`) and records each one in the artifact it writes, under its question ID, as `[User: <ID>, <date>]`. The main conversation does not edit the artifact itself.
 
@@ -208,6 +213,7 @@ Run tests scoped to the change, and the full suite once per milestone that chang
 | GREEN execution | The full suite once; a second run only for tests that touch persistent state or override configuration (`implementation-planning` Repeatable, Isolated Verification) |
 | FOUNDATION, OTHER execution | Build and the checks the plan names; the full suite once when production or build files change |
 | REFACTOR execution | The full suite once after the change; the baseline is the recorded GREEN run unless the repository changed since |
+| `prepare-pr` | The full suite once, unless the working tree is clean apart from `docs/.ai/` and `Plan.md` records a full run at the current commit; always once in branch mode |
 | Final Review | Rerun only when no full run is recorded for the current repository state |
 
 The Implementation Plan lists the affected tests and how they were found (tests in the changed packages, tests that reference changed classes, tests the contract names); the user approves the list with the plan. A known flaky test follows `implementation-planning` Pre-existing Failures.
@@ -350,6 +356,7 @@ After an approved milestone is successfully executed and verified:
 - update only the execution/status section of `Plan.md`;
 - record the completed milestone;
 - record actual verification evidence or concise notes where appropriate;
+- after `prepare-pr` commits the milestone, add `Committed as <hash>` to its row; changes only under `docs/.ai/` since that commit count as the same tested state;
 - do not rewrite requirements, milestone scope, architecture, exclusions, success criteria, or future milestones.
 
 If verification fails or does not demonstrate the intended milestone evidence, do not mark the milestone complete.

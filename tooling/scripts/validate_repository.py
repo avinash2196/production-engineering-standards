@@ -68,6 +68,7 @@ REQUIRED_PDD_OPERATIONS = [
     "implement-approved-plan",
     "refactor-code",
     "review-code",
+    "prepare-pr",
 ]
 
 COMMAND_ENVIRONMENTS = {
@@ -273,6 +274,7 @@ FRESH_CONTEXT_COMMANDS = {
     "review-code": "code-reviewer",
     "review-production-readiness": "production-readiness-reviewer",
     "review-architecture": "architecture-reviewer",
+    "prepare-pr": "code-reviewer",
 }
 
 
@@ -761,6 +763,47 @@ RULE_ID_SHARED = {
 CODE_QUALITY_AGENTS = ("planner", "implementation-engineer", "refactoring-engineer", "code-reviewer")
 
 
+# Claude Code loads plugin hooks from <plugin root>/hooks/hooks.json. Every
+# hook command must run a script shipped in that folder through
+# ${CLAUDE_PLUGIN_ROOT}, so the hook works from any install location.
+PLUGIN_HOOKS_FILE = f"{PLUGIN_ROOT}/hooks/hooks.json"
+HOOK_SCRIPT_REF = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/hooks/([A-Za-z0-9_.-]+)")
+
+
+def validate_plugin_hooks(root: Path, errors: list[str]) -> None:
+    data = _load_json(root, PLUGIN_HOOKS_FILE, errors)
+    if data is None:
+        return
+    events = data.get("hooks")
+    if not isinstance(events, dict) or not events:
+        errors.append(f"{PLUGIN_HOOKS_FILE}: missing 'hooks' object")
+        return
+    guarded = False
+    for event, groups in events.items():
+        for group in groups if isinstance(groups, list) else []:
+            for hook in group.get("hooks", []):
+                command = hook.get("command", "")
+                scripts = HOOK_SCRIPT_REF.findall(command)
+                if hook.get("type") != "command" or not scripts:
+                    errors.append(
+                        f"{PLUGIN_HOOKS_FILE}: {event} hook must be a command that runs "
+                        "a script through ${CLAUDE_PLUGIN_ROOT}/hooks/"
+                    )
+                for script in scripts:
+                    if not (root / PLUGIN_ROOT / "hooks" / script).is_file():
+                        errors.append(f"{PLUGIN_HOOKS_FILE}: hook script {script} does not exist")
+                if event == "PreToolUse" and "plan_scope_guard.py" in scripts:
+                    matcher = set(group.get("matcher", "").split("|"))
+                    missing = {"Edit", "Write", "MultiEdit", "NotebookEdit"} - matcher
+                    if missing:
+                        errors.append(
+                            f"{PLUGIN_HOOKS_FILE}: plan scope guard matcher misses {sorted(missing)}"
+                        )
+                    guarded = True
+    if not guarded:
+        errors.append(f"{PLUGIN_HOOKS_FILE}: no PreToolUse hook runs plan_scope_guard.py")
+
+
 def validate_review_rule_ids(root: Path, errors: list[str]) -> None:
     skill_root = root / ".github/skills"
     if not (skill_root / "code-quality/SKILL.md").exists():
@@ -802,6 +845,7 @@ VALIDATORS = [
     validate_pdd_contract,
     validate_no_code_change_bypass,
     validate_review_rule_ids,
+    validate_plugin_hooks,
 ]
 
 

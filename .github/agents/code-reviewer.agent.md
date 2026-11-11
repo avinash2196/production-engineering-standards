@@ -61,3 +61,5 @@ Do not modify production source code or tests during review.
 Do not fix the findings yourself.
 
 Repository edits are limited to review/documentation artifacts.
+
+`prepare-pr` stop 2 may also stage and commit the reviewed files, push the branch, and open a draft pull request, exactly as that command defines; it never changes their content.
