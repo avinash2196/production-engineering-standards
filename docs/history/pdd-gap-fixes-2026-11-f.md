@@ -61,7 +61,7 @@ Asked one at a time; each answer is recorded here.
 
 ## 0.16.1 change plan: split the PDD skill (S7)
 
-Status: draft, awaiting the user's approval. No file changes until approved. Answers (user, 2026-11-10): one skill with part files, not separate skills; Final Review commands load every part.
+Status: approved by the user on 2026-11-10. Answers (user, 2026-11-10): one skill with part files, not separate skills; Final Review commands load every part.
 
 **Goal.** Each command loads only the parts of `prompt-driven-development` it needs. No rule is added, removed or reworded: sections move between files unchanged, apart from the links between them.
 
