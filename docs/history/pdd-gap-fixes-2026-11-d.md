@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch D): code quality, review, and API conventions
 
-Status: decisions recorded (user, 2026-11-09); see "Decisions". Nothing here is applied yet. Target 0.16.0, together with C20, lighter plans and brief E.
+Status: applied on `release/0.16.0` for 0.16.0 (PR #20 code quality and review rules; PR #22 `prepare-pr`). Not yet released: the trial and the merge to `main` remain. One change from the original decision, now reflected below (user decision, 0.16.0 step 3): project overrides live in `docs/code-standards.md`, which the project owns, not in a `## Code Standards` section of the instruction file, because the setup command copies that file verbatim.
 
 ## Why this brief
 
@@ -16,7 +16,7 @@ Nothing covers file or method size, naming, reuse and shared code, comments, PR 
 ## Design (agreed in conversation, 2026-10-30)
 
 1. **One source of truth.** A new language-neutral `code-quality` skill. The planner applies it when writing exact code in an Implementation Plan, the implementation and refactoring engineers apply it when executing, and the code reviewer checks against it. The same rules apply at every stage, so the review finds less.
-2. **Numbers are defaults, not plugin rules.** The plugin stays project-neutral. Each limit is a default that a project can override in a `## Code Standards` section of its CLAUDE.md or copilot-instructions (added to both setup templates). A project value always wins.
+2. **Numbers are defaults, not plugin rules.** The plugin stays project-neutral. Each limit is a default that a project can override in `docs/code-standards.md` (both setup templates point to it; the setup command never writes it). A project value always wins.
 3. **The existing repository wins.** Where the repository already has a clear convention (naming, folder layout, error shape, API style), follow it. The defaults apply only where there is none.
 4. **Severities: High, Medium, Low (user decision, 2026-11-09, replacing Blocker/Warning).** One scale across planning, review and `prepare-pr`. **High** (was Blocker): must be fixed before approval or before a PR is opened. **Medium** (was Warning): fix it, or record a one-line justification in the Implementation Plan, the review or the PR body; a justified Medium finding counts as satisfied. **Low**: optional polish; listed, never blocking. A severity is given only with a concrete failure scenario (`code-review` rule 7).
 5. **No noise.** Every finding cites a rule ID and `file:line`. The existing rule "do not manufacture checklist findings" stays. A rule that does not apply to the change is not reported.
@@ -136,14 +136,14 @@ The lifecycle has no step between an executed milestone and a pull request. `rev
 - Agents: planner, implementation-engineer, refactoring-engineer, and code-reviewer reference `code-quality`.
 - `implementation-planning`: the exact code in a plan follows `code-quality`, and the self-check lists any justified Medium finding.
 - New `.github/prompts/prepare-pr.prompt.md` and `.claude/commands/prepare-pr.md` (PR1–PR6). README Quickstart and `docs/getting-started.md`: the step after each executed milestone. `prompt-driven-development` lifecycle: where `prepare-pr` sits.
-- Both setup templates: an optional `## Code Standards` section for project overrides (limits, shared-code location, domain packages).
-- Validator and tests: the skill exists and is mirrored, every rule ID is unique, the agents reference it, the template has the override section, and `prepare-pr` is mirrored and bound to the namespaced code-reviewer.
+- Both setup templates: a pointer to the project's optional `docs/code-standards.md` for overrides (limits, shared-code location, domain packages).
+- Validator and tests: the skill exists and is mirrored, every rule ID is unique, the agents reference it, the templates point to `docs/code-standards.md`, and `prepare-pr` is mirrored and bound to the namespaced code-reviewer.
 
 ## Decisions (user, 2026-11-09)
 
 | # | Question | Decision |
 | --- | --- | --- |
-| 1 | Default limits | Keep: 400-line file, 40-line method, nesting 3, 4 parameters, 400-line PR. Projects override them in `## Code Standards`. |
+| 1 | Default limits | Keep: 400-line file, 40-line method, nesting 3, 4 parameters, 400-line PR. Projects override them in `docs/code-standards.md`. |
 | 2 | Rules with no run evidence (E6 only) | Keep all, at their listed severity, except CM2, which is dropped. LY1, LG3, LG5 and AP2 stay High. |
 | 3 | SZ and NM severity | Medium everywhere. |
 | 4 | Release target | 0.16.0, with C20, lighter plans and brief E, so one trial tests the Implementation Plan changes together. |
