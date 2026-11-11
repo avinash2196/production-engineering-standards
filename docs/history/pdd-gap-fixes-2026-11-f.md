@@ -59,6 +59,49 @@ Asked one at a time; each answer is recorded here.
 | Q5 | When may a dependent work item start: after its predecessor's Final Review, or after its predecessor's contract is approved? | When its input is approved: a consumer starts once the contract it depends on is approved; a dependency on another work item's code waits for that work item's Final Review (user, 2026-11-10). |
 | Q6 | Skill split (S7): in 0.17.0 together with S1–S6, or first, as its own release? | First, as 0.16.1, with no rule changes, so projects save tokens now; S1–S6 follow in 0.17.0 (user, 2026-11-10). |
 
+## 0.16.1 change plan: split the PDD skill (S7)
+
+Status: draft, awaiting the user's approval. No file changes until approved.
+
+**Goal.** Each command loads only the parts of `prompt-driven-development` it needs. No rule is added, removed or reworded: sections move between files unchanged, apart from the links between them.
+
+**Mechanism.** The skill stays one skill. `SKILL.md` keeps a short core; the other sections move into files in the same skill folder, which the model reads on demand. The skill already works this way for `templates/` (for example `templates/Plan.md`), in both Claude Code and Copilot, so no new loading mechanism is assumed. The core gets a **Parts** table naming each file, its sections, and which commands read it, so a reference such as "`prompt-driven-development` Test Scope and Output" still resolves without editing the 60-odd references across agents and commands.
+
+**Files and sections** (word counts on `v0.16.0`):
+
+| File | Sections (moved unchanged) | Words |
+| --- | --- | --- |
+| `SKILL.md` (core) | Lifecycle, Milestone Types table, Work-Item Folders, Artifact Authority, Approval Status, Fresh Context, Task Prompt Boundary, Scope Control, plus the new Parts table | about 2,550 |
+| `milestone-types.md` | Failing Tests: RED or OTHER, Standalone REFACTOR, OTHER, Only RED Ends Failing, Fix Work Items, Milestone Controls (Adaptive Milestone Decomposition, Conditional SETUP / FOUNDATION) | about 2,050 |
+| `plan-rules.md` | Plan Content Rules, Changed Contracts | about 1,350 |
+| `execution.md` | Implementation Plan, Test Scope and Output, Plan Integrity, Plan Progress | about 1,300 |
+| `final-review.md` | Final Review Authority | about 350 |
+
+**What each command reads** (each command's `Apply` line names its parts):
+
+| Command | Parts | Words loaded (now 7,514) |
+| --- | --- | --- |
+| `capture-requirements`, setup commands | core | about 2,550 |
+| `create-plan` | core, `milestone-types`, `plan-rules` | about 5,950 |
+| `create-api-contract` | core, `plan-rules` | about 3,900 |
+| `create-implementation-plan`, `generate-tests` | core, `milestone-types`, `execution` | about 5,900 |
+| `implement-approved-plan`, `refactor-code`, `prepare-pr` | core, `execution` | about 3,850 |
+| `review-code`, `review-production-readiness` | all parts | 7,514 |
+
+Any command may still read another part when a rule it needs points there (for example a Plan Content Rule number); the table lists what it reads up front.
+
+**Changes.**
+
+- `.github/skills/prompt-driven-development/`: the split above, mirrored byte for byte to `.claude/skills/`.
+- Each PDD command, in both tools: its `Apply` line names its parts. The four role agents that reference the skill: the same.
+- Validator: the PDD required-token check reads the whole skill folder; a new check that every file in the Parts table exists, each section heading appears in exactly one file, and each part a command names exists.
+- Tests: the 33 reads of `prompt-driven-development/SKILL.md` read the whole skill folder through one helper; no assertion is deleted or weakened. New tests for the Parts table and the command load table.
+- Version 0.16.1 in all four manifest places. History: this section marked applied.
+
+**Verification.** Validator and full test suite. A before-and-after word count per command, reported in the PR. Not covered by tests: whether each tool actually reads the part files in a real run, checked in the first project run after release.
+
+**Release path.** One PR into `main` (a single mechanical change; no release branch), then tag `v0.16.1`.
+
 ## Not in this batch
 
 - Parallel milestones inside one Plan (F6): Plan Content Rule 1 stays.
