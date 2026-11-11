@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch E): findings from the v11 project reviews
 
-Status: decisions recorded (user, 2026-11-09); see "Decisions". Nothing here is applied yet. Target 0.16.0, alongside C19, C20, lighter plans (carried from batch C) and brief D (code quality).
+Status: applied on `release/0.16.0` for 0.16.0: requirements (PR #19), Review Summary, lighter plans, P1, P4, C34 and C37 (PR #21), `prepare-pr`, C35 and P2 (PR #22), C27–C29 and C36 (PR #23), and P3 (PR #24). T1 model tiering was rejected (user, 2026-11-10). Not yet released: the trial and the merge to `main` remain. The C19 probe (Copilot CLI subagent file writes) is still open, waiting for Copilot quota.
 
 ## Why this brief
 
