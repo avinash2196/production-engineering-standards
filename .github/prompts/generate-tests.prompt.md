@@ -23,7 +23,9 @@ Read:
 - the current repository state;
 - the approved RED Implementation Plan.
 
-Implement only the test/check changes authorized by the approved RED Implementation Plan.
+Implement only the test/check changes authorized by the approved RED Implementation Plan. For a paired plan, apply only its RED part.
+
+Run only the new tests, plus tests that use a shared test file this milestone changes, after compiling everything (`prompt-driven-development` Test Scope and Output); write output to a log file and record its summary and failing tests.
 
 Do not write production implementation.
 Do not weaken, disable, or skip tests merely to manufacture RED.
@@ -43,7 +45,7 @@ After valid RED is actually established, update only the corresponding execution
 
 If RED is invalid or verification fails unexpectedly, do not mark the RED milestone complete.
 
-Completing the RED milestone does not complete or authorize GREEN. GREEN is a separate milestone that still requires its own approved Implementation Plan and Human Review.
+Completing the RED milestone does not complete or authorize GREEN. GREEN is a separate milestone that still requires its own approved Implementation Plan and Human Review — except in a paired plan, where the same approved plan's GREEN part runs next through `implement-approved-plan`. Record the paired plan's status as `RED executed — see Plan.md; GREEN approved, not yet executed`.
 
 Before reporting completion, re-read every test/check assertion you wrote or changed (or the existing test named as RED evidence) and confirm each one still asserts the actual approved behavior (not the current unimplemented state) — a test that asserts acceptance of input the approved artifacts require to be rejected, or that stops asserting the required exception/value, is not valid RED evidence even if it fails for an unrelated reason. Also confirm that no test asserting only that something does not happen passes vacuously in RED — each such test must first exercise the positive case in the same test. Compare the new tests that pass at RED with the Implementation Plan's "Preserved-behavior tests (expected to pass at RED)" list: they must match exactly; any other new test that passes stops execution for re-approval.
 

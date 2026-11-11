@@ -43,7 +43,7 @@ If the work item changes an existing contract, name the current contract the CON
 
 ## Milestones
 
-Decomposition: one pair | one milestone | Split: <reason — separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup>
+Decomposition: one pair | one pair, one plan | one milestone | Split: <reason — separate engineering decision, size, independent capabilities, different risk, ordering, or different verification setup>
 
 <!-- Apply the `prompt-driven-development` skill's Adaptive Milestone Decomposition rules: as few milestones as keep each Implementation Plan reviewable; split only for a stated reason, never mechanically.
 

@@ -19,12 +19,14 @@ Before changing any file, confirm the Implementation Plan is approved in its Hum
 
 Read:
 
-- the authoritative artifacts;
+- `Plan.md`: its status and the GREEN baseline evidence;
 - the current repository state;
-- the approved REFACTOR Implementation Plan;
+- the approved REFACTOR Implementation Plan (it holds the exact code; do not read the requirements or the contract);
 - verified GREEN baseline evidence — a preceding GREEN milestone's, or for a standalone REFACTOR the full verification suite passing on the unmodified repository, which you run and record before changing anything.
 
 Perform only the behavior-preserving changes authorized by the approved REFACTOR Implementation Plan.
+
+After the change, run the full suite once (`prompt-driven-development` Test Scope and Output); write output to a log file and record its summary and failing tests.
 
 Do not add features, expand contracts, or pull future milestone work into the refactor.
 

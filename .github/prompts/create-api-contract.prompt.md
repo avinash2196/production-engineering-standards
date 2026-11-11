@@ -14,6 +14,8 @@ Apply `api-design`, `requirements-analysis`, and `prompt-driven-development`.
 
 Work item: operate only on the work-item folder the user names (`prompt-driven-development` Work-Item Folders). If no work item is named, ask and stop.
 
+When the arguments carry the user's answers to questions an earlier run stopped on, record each in the artifact under its question ID (`prompt-driven-development` Fresh Context).
+
 Read the approved requirements and Plan before defining the contract. Confirm the Plan's Status records approval (`prompt-driven-development` Approval Status); if none is recorded, ask and stop.
 
 This command executes the CONTRACT milestone recorded in the approved `Plan.md`. If the Plan records no CONTRACT milestone, or its predecessor is not satisfied, stop and surface that for human review. Resolve every decision the Plan assigns to the CONTRACT milestone; do not add scope the Plan does not assign.
