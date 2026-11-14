@@ -143,6 +143,14 @@ Persistent instructions, agents, and skills do not replace the active task promp
 
 Role belongs to the selected agent. Reusable engineering knowledge belongs to skills. Stable governance belongs to instructions.
 
+## Attempts and Escalation
+
+Applies to diagnosis, dry runs, and debugging in every command. Inside execution a failed check still stops at once (`execution.md` Plan Integrity).
+
+- One quick attempt when the error shows the cause. Escalate to diagnosis (`requirements-analysis` Diagnosis Before a Fix) when the attempt fails, the error returns or moves, the cause is not visible in the error, the fix spreads beyond where the error points, or evidence contradicts the explanation.
+- At most 3 attempts in all, each on a different basis and each stating what it expects to see. A repeated change, or one that only widens an earlier one, is not an attempt: stop. Re-running the same command after a transient failure (network, rate limit, cold start), up to 3 times with no change, is not an attempt.
+- **Stop and discuss** when attempts run out, no hypothesis survives, the evidence needed is out of reach, or about 20–30 minutes pass with no new information. Report: the symptom, the evidence read, each attempt and why it failed, hypotheses ruled out and open, what is needed from the user, and two or three options with a recommendation. Then wait.
+
 ## Scope Control
 
 Do not invent requirements or non-functional requirements, pull future milestone work into the current task, introduce unrelated dependencies, infrastructure, observability, resilience, or architecture changes, or treat engineering best practices as authorization to expand scope.

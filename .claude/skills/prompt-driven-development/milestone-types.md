@@ -32,7 +32,7 @@ Only a RED milestone may end with a failing check, and only with valid RED evide
 
 ### Fix Work Items
 
-A defect found after a work item's Plan is approved or its Final Review is done, or a Final Review finding the user accepted, is fixed as its own work item with the fewest milestones: `Decomposition: one pair, one plan` when the fix changes behavior (RED still proves the defect first), or `Decomposition: one milestone` when it is OTHER. Its requirements are short: the defect, the expected behavior, and how to reproduce it. Its Implementation Plan is the Review Summary, the exact diff, and the verification command. It still needs the user's approval at every gate; nothing is approved automatically because it is small.
+A defect found after a work item's Plan is approved or its Final Review is done, or a Final Review finding the user accepted, is fixed as its own work item with the fewest milestones: `Decomposition: one pair, one plan` when the fix changes behavior (RED still proves the defect first), or `Decomposition: one milestone` when it is OTHER. Its requirements are short: the defect, the expected behavior, and how to reproduce it, plus the quick-path line or the Diagnosis (`requirements-analysis` Diagnosis Before a Fix). Its Plan cites the diagnosed cause; a fix aimed at anything else stops and asks. Its Implementation Plan is the Review Summary, the exact diff, and the verification command. It still needs the user's approval at every gate; nothing is approved automatically because it is small.
 
 ## Milestone Controls
 

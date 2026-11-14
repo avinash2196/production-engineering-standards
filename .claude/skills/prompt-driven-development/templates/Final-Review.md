@@ -25,7 +25,7 @@ This review produces findings and recommendations only (`prompt-driven-developme
 | --- | --- | --- |
 |  |  |  |
 
-<!-- Evidence cites recorded milestone evidence or a command actually run. A criterion without evidence is not met. -->
+<!-- Evidence cites recorded milestone evidence or a command actually run. A criterion without evidence is not met. For a criterion that names a real external system, state the evidence kind (real, double, or not proven — accepted Qn); double evidence without an accepted gap is a blocking finding. -->
 
 ## Exclusions Check
 

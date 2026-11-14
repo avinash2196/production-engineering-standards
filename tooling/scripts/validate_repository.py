@@ -891,6 +891,31 @@ def validate_command_routing(root: Path, errors: list[str]) -> None:
                     errors.append(f"{rel}: Command Routing names `{name}`, missing from {env_rel}/")
 
 
+# 0.16.2 (brief G): real-system verification, light dry runs, attempts and escalation.
+REAL_VERIFICATION_TOKENS = {
+    "skills/requirements-analysis/SKILL.md": ["## Real-System Verification", "## Diagnosis Before a Fix", "A fake is never invented."],
+    "skills/prompt-driven-development/SKILL.md": ["## Attempts and Escalation", "At most 3 attempts in all", "**Stop and discuss**"],
+    "skills/prompt-driven-development/plan-rules.md": ["14. **Verification per milestone.**"],
+    "skills/prompt-driven-development/execution.md": ["### Real-System Evidence"],
+    "skills/prompt-driven-development/final-review.md": ["has only double evidence, with no accepted gap"],
+    "skills/prompt-driven-development/templates/requirements.md": ["## Real-System Verification", "## Diagnosis"],
+    "skills/prompt-driven-development/templates/Plan.md": ["## Verification Environment"],
+    "skills/implementation-planning/SKILL.md": ["Never during planning: build a container image", "Budget about 10 minutes"],
+}
+
+
+def validate_real_verification(root: Path, errors: list[str]) -> None:
+    for tree in (".github", ".claude"):
+        for rel, tokens in REAL_VERIFICATION_TOKENS.items():
+            path = root / tree / rel
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            for token in tokens:
+                if token not in text:
+                    errors.append(f"{tree}/{rel}: missing real-verification rule '{token}'")
+
+
 def validate_review_rule_ids(root: Path, errors: list[str]) -> None:
     skill_root = root / ".github/skills"
     if not (skill_root / "code-quality/SKILL.md").exists():
@@ -934,6 +959,7 @@ VALIDATORS = [
     validate_review_rule_ids,
     validate_plugin_hooks,
     validate_command_routing,
+    validate_real_verification,
     validate_pdd_skill_parts,
 ]
 
