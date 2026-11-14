@@ -98,6 +98,14 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 
 <!-- List the commands that verify milestones, each with its source (requirements, or repository evidence such as the build file). Do not take them from the application instruction file. For a project with no build yet, state that the FOUNDATION milestone establishes them. -->
 
+## Verification Environment
+
+| Milestone | Level | Target | Who deploys | Fake built from | Source |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+
+<!-- Plan Content Rule 14: one row per milestone, prefilled from the requirements' Real-System Verification; every row that differs, is new, or is not covered is confirmed by the user (`User: Qn`). Levels: local tests, local container, deployed test service, CI, user run. -->
+
 ## Execution Status
 
 | Milestone | Status | Evidence / Notes |
@@ -116,4 +124,4 @@ A FOUNDATION milestone requires its own approved Implementation Plan and Human R
 | --- | --- | --- |
 |  |  |  |
 
-<!-- Every acceptance criterion from the requirements and every Plan-level success criterion. "Demonstrated by" names the milestone whose completion evidence shows it, or Final Review inspection; that milestone must be able to produce that evidence. -->
+<!-- Every acceptance criterion from the requirements and every Plan-level success criterion. "Demonstrated by" names the milestone whose completion evidence shows it, or Final Review inspection; that milestone must be able to produce that evidence. A criterion that names a real external system also states its evidence kind: real, double, or not proven (accepted Qn). -->

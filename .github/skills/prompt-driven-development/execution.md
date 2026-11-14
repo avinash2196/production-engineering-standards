@@ -40,6 +40,10 @@ Test output:
 - Run a long command in the background with a completion notice where the tool supports it. Do not poll.
 - The gate still waits: a milestone is complete only after the result is read and recorded in `Plan.md`.
 
+### Real-System Evidence
+
+Evidence from a real external system records the target, the deployed revision or image digest, and the commit it was built from; evidence from a revision that does not match the branch does not count. The agent calls only targets the Plan's Verification Environment names, and never deploys, starts paid resources, or uses production credentials unless the approved Implementation Plan names the exact command and the Plan row says the agent runs it. Otherwise the user or CI runs it and the output is pasted into the evidence.
+
 ## Plan Integrity
 
 Before approval, the Plan is a working proposal and may be revised freely in response to human review. Human approval makes it the execution baseline: an authorization artifact and a living execution-status record that the AI never changes silently. Material unresolved decisions are resolved before approval. After approval, never rewrite the Plan to match implementation, change milestone definitions during execution, or expand scope for a technically useful improvement; only execution status changes (Plan Progress). Scope, milestone, architecture, or success-criteria changes need explicit replanning and human review.

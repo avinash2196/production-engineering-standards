@@ -105,6 +105,37 @@ Rules:
 - Record every answer in the work item's requirements (Recording Resolved Decisions). Operational requirements are then owned by milestones like any other requirement; `architecture-design`, `distributed-systems`, `observability`, and `resilience-and-degradation` apply when a recorded requirement calls for them.
 - Ask about needs, not solutions. Do not propose technologies, patterns, or infrastructure while asking.
 
+## Real-System Verification
+
+Keep three things apart: a local-development adapter (a product feature, for example mocked inference for local development), a test double (a test technique), and real verification (evidence that the real system works). An adapter or a double never proves a criterion about the real system.
+
+For each external system the work item calls — model, API, cloud service, database, broker — ask the user:
+
+1. Is it proven for real in this work item, and how: local tests, a local container, a deployed test service, CI, a run the user performs and pastes, or not proven?
+2. Where does the real one run (service name or URL, region)?
+3. Who deploys it, and how is the deployed revision read?
+4. May tests use a fake, and what is it built from (the approved contract, a recorded real response, other)? A fake is never invented.
+5. What cannot run locally (for example no GPU, an image or download too large, no credentials)?
+6. If it is not proven for real, does the user accept that gap?
+
+Rules:
+
+- Never answer for the user. When the project keeps `docs/verification-environments.md` (project-owned and optional; no command writes it), cite its answers as `[Repo: …]` and ask only the rest.
+- An unanswered question 1 is material: it blocks planning. A gap is recorded as accepted only with the user's answer to question 6.
+- Ask about the need, not a platform: never recommend a cloud provider or service.
+
+## Diagnosis Before a Fix
+
+For a fix work item, find the cause before any fix is proposed.
+
+- **Quick path.** When the error itself shows the cause (for example a stack trace pointing at one line, a missing setting it names), say so in one line with the evidence and skip the diagnosis.
+- **Diagnosis** otherwise, or when an attempt fails (`prompt-driven-development` Attempts and Escalation):
+  1. Collect evidence: the error output, application and service logs, the deployed revision, the diff since the last good state, the failing test output, the relevant configuration. Reuse what is already known in the session; read fresh anything that changes, such as logs and test output.
+  2. Reproduce with the smallest command that shows the failure, or state why it cannot be reproduced.
+  3. State one root cause with citations (log line, `path:line`, commit), and each alternative considered with why it was ruled out. A cause not shown by evidence is labelled a hypothesis.
+  4. Ask the user for evidence out of reach (for example logs only the user can open) instead of guessing.
+- Propose no fix and change no code here; the fix is planned from the diagnosed cause.
+
 ## Presenting Clarification Questions
 
 Present questions in two groups so the user can see what actually blocks planning:

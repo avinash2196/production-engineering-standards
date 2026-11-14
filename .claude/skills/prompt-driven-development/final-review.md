@@ -12,4 +12,5 @@ When a review is the Final Review of a Plan, write it to `docs/.ai/<work-item>/F
 - Before raising a finding, read `Plan.md` Execution Status evidence and the approved Implementation Plans; drop any finding that recorded evidence or an approved decision contradicts.
 - Never recommend reverting an approved decision as a fix; raise it as a question for the user.
 - Give a severity only with a concrete failure scenario, and cite the correct path.
+- A criterion that names a real external system and has only double evidence, with no accepted gap in the requirements or the Plan, is a blocking finding: the review cannot recommend acceptance until real evidence is added or the user accepts the gap.
 - An error in an earlier approved artifact (for example a wrong explanation in an Implementation Plan) is recorded as a finding in Final-Review.md; do not edit the approved artifact.

@@ -457,6 +457,30 @@ class PluginHooksTest(ValidatorMutationTestCase):
         )
         self.assert_error_containing("Command Routing must list Final Reviews")
 
+    def test_missing_attempts_rule_fails(self):
+        self._replace(
+            ".claude/skills/prompt-driven-development/SKILL.md",
+            "At most 3 attempts in all",
+            "Several attempts",
+        )
+        self.assert_error_containing("missing real-verification rule 'At most 3 attempts in all'")
+
+    def test_heavy_dry_run_rule_removed_fails(self):
+        self._replace(
+            ".github/skills/implementation-planning/SKILL.md",
+            "Never during planning: build a container image",
+            "During planning: build a container image",
+        )
+        self.assert_error_containing("missing real-verification rule 'Never during planning")
+
+    def test_missing_plan_rule_14_fails(self):
+        self._replace(
+            ".github/skills/prompt-driven-development/plan-rules.md",
+            "14. **Verification per milestone.**",
+            "14. **Verification.**",
+        )
+        self.assert_error_containing("missing real-verification rule '14. **Verification per milestone.**'")
+
     def test_missing_pdd_part_fails(self):
         (self.repo / ".github/skills/prompt-driven-development/plan-rules.md").unlink()
         self.assert_error_containing("plan-rules.md: missing PDD skill part")

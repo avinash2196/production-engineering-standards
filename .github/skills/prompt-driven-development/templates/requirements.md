@@ -44,6 +44,17 @@ Awaiting human review. This artifact does not authorize a Plan, contract, Implem
 
 <!-- Record "not required for this work item" as not required. It is not an exclusion unless the user excluded it. -->
 
+## Real-System Verification
+
+| System | Proven how | Where it runs | Who deploys / revision read by | Fake built from | Cannot run locally | Gap accepted | Source |
+|--------|------------|---------------|--------------------------------|-----------------|--------------------|--------------|--------|
+
+<!-- `requirements-analysis` Real-System Verification: one row per external system the work item calls. "Gap accepted" only with the user's answer. Omit this section when the work item calls no external system. -->
+
+## Diagnosis
+
+<!-- Fix work items only (`requirements-analysis` Diagnosis Before a Fix): the quick-path line with its evidence, or the evidence read, the reproduction, the root cause with citations, the alternatives ruled out, and evidence requested from the user. Omit this section for other work items. -->
+
 ## Decisions Deferred to Later Milestones
 
 <!-- In scope for this work item, decided by a named later milestone (for example CONTRACT). Each with that milestone and its source. Something not in this work item at all is an Explicit Exclusion, not a deferral. -->

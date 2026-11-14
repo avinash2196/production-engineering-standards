@@ -89,6 +89,8 @@ Apply the `implementation-planning` skill's Review Summary and Plan Size rules, 
 
 Apply the `implementation-planning` skill's Exact Code rules, and before stopping report per file that complete content or a complete diff is present, contains no pseudocode or placeholder, matches the Proposed Changes list, and traces every dependency, plugin, and configuration setting it introduces.
 
+Follow the milestone's row in the Plan's Verification Environment (Plan Content Rule 14); if the repository shows it cannot work, stop and ask.
+
 When revising an existing Implementation Plan, treat it as a revision, not a fresh draft: update every reference to each changed item, re-run the affected dry-run checks, and report what changed. Number a new Implementation Plan as the next `NNN` among the files present in this work item's folder.
 
 Remove every template comment (`<!-- … -->`) from the finished artifact.

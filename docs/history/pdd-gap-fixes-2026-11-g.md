@@ -1,6 +1,6 @@
 # PDD Gap Fixes — November 2026 (batch G): real verification, light dry runs, fix escalation
 
-Status: change plan awaiting the user's approval. Nothing applied. Target release 0.16.2, one PR into `main`, then tag `v0.16.2`. Brief F S1–S6 stay in 0.17.0.
+Status: change plan approved by the user on 2026-11-13 ("Approve and apply"), which also confirmed D5 (blocking) and the D6 structure; applied for 0.16.2. Measured words (v0.16.1 → 0.16.2): PDD core 2,651 → 2,845; `milestone-types` 2,078 → 2,104; `plan-rules` 1,371 → 1,512; `execution` 1,333 → 1,424; `final-review` 366 → 410; `requirements-analysis` 1,996 → 2,440; `implementation-planning` 3,287 → 3,424. Target release 0.16.2, one PR into `main`, then tag `v0.16.2`. Brief F S1–S6 stay in 0.17.0.
 
 ## Evidence
 
